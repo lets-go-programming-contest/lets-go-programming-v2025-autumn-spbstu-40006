@@ -95,9 +95,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	var wg sync.WaitGroup
 	errCh := make(chan error, len(c.runners))
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	for _, r := range c.runners {
 		wg.Add(1)
 		go func(run func(context.Context) error) {
