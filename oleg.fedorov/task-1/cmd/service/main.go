@@ -21,6 +21,7 @@ func isOperationSupported(operation string) bool {
 		"/": true,
 	}
 	_, exists := supported[operation]
+	
 	return exists
 }
 
