@@ -65,7 +65,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Введите операцию (+, -, *, /):")
 	scanner.Scan()
 	operation := scanner.Text()
 	if !isOperationSupported(operation) {
