@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrDivisionByZero   = errors.New("division by zero")
-	ErrInvalidOperation = errors.New("invalid operation")
+	ErrDivisionByZero   = errors.New("Division by zero")
+	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
 func isOperationSupported(operation string) bool {
