@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrDivisionByZero   = errors.New("Division by zero")
+	ErrDivisionByZero = errors.New("Division by zero")
 	ErrInvalidOperation = errors.New("Invalid operation")
 )
 
