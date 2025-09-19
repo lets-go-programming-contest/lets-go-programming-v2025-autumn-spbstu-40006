@@ -19,7 +19,7 @@ func main() {
 	}
 
 	_, err = fmt.Scan(&operator)
-	if err != nil {
+	if err != nil || (operator != "+" && operator != "-" && operator != "*" && operator != "/") {
 		fmt.Println("Invalid operation")
 		return
 	}
