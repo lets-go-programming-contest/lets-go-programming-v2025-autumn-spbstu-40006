@@ -17,6 +17,7 @@ func main() {
 		return
 	}
 	fmt.Scan(&sign)
+	
 	switch sign {
 	case "+":
 		result = i + j
