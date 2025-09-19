@@ -3,8 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	var i, result float32
-	var j int
+	var i, j, result int
 	var sign string
 	_, err := fmt.Scan(&i)
 	if (err != nil) {
