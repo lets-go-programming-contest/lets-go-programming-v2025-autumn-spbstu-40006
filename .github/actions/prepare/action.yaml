@@ -1,0 +1,17 @@
+name: Prepare Enviroment Action
+
+on:
+  workflow_call:
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout common files
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ env.COMMON_REPO_URL }}
+        path: ${{ env.COMMON_DIR }}
+    - name: Set safe directory
+      shell: bash
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+    
