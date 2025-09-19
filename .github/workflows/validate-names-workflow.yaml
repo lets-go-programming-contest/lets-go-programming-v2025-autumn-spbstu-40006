@@ -1,0 +1,39 @@
+name: Check PR and Commits
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$PR_TITLE" =~ ^\[TASK-[0-9]+(-[0-9]+)?\] ]]; then
+            echo "PR title must start with [TASK-<number>] or [TASK-<number>-<subtask-number>]" >&2
+            echo "Current title: $PR_TITLE" >&2
+            exit 1
+          fi
+          echo "PR title format is correct" 
+      - name: Validate commit messages match PR title prefix
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_PREFIX=$(echo "$PR_TITLE" | grep -o '\[[^]]*\]' | head -1)
+        
+          COMMITS_URL="${{ github.event.pull_request.commits_url }}"
+          COMMIT_MESSAGES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$COMMITS_URL" | jq -r '.[].commit.message')
+          
+          IFS=$'\n'
+          for COMMIT_MSG in $COMMIT_MESSAGES; do
+            COMMIT_PREFIX=$(echo "$COMMIT_MSG" | grep -o '\[[^]]*\]' | head -1)
+            
+            if [[ -z "$COMMIT_PREFIX" ]] || [[ "$COMMIT_PREFIX" != "$PR_PREFIX" ]] ; then
+              echo "Commit '$COMMIT_MSG' message must start with prefix: '$PR_PREFIX'"
+              exit 1
+            fi            
+          done
+          
+          echo "All commit messages have the correct prefix: $PR_PREFIX"
+      
