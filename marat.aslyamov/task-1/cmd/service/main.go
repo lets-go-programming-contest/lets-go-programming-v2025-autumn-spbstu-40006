@@ -15,8 +15,10 @@ func main() {
 		fmt.Println("Invalind second operand")
 		return
 	}
-	fmt.Scan(&sign)
-	
+	_, err = fmt.Scan(&sign)
+	if (err != nil) {
+		fmt.Println("Invalid operation")
+	}
 	switch sign {
 	case "+":
 		result = i + j
