@@ -18,7 +18,11 @@ func main() {
 		return
 	}
 
-	fmt.Scan(&operator)
+	_, err = fmt.Scan(&operator)
+	if err != nil {
+		fmt.Println("Invalid operator")
+		return
+	}
 
 	switch operator {
 	case "+":
@@ -33,7 +37,5 @@ func main() {
 		} else {
 			fmt.Println("Division by zero")
 		}
-	default:
-		fmt.Println("Invalid operation")
 	}
 }
