@@ -20,7 +20,7 @@ func main() {
 
 	_, err = fmt.Scan(&operator)
 	if err != nil {
-		fmt.Println("Invalid operator")
+		fmt.Println("Invalid operation")
 		return
 	}
 
