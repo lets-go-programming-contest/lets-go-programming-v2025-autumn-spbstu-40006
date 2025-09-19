@@ -15,6 +15,7 @@ func main() {
 		fmt.Println("Invalind second operand")
 		return
 	}
+	
 	fmt.Scan(&sign)
 	
 	switch sign {
