@@ -11,9 +11,9 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
 	if num, ok := x.(int); ok {
@@ -30,43 +30,66 @@ func (h *IntHeap) Pop() interface{} {
 	return x
 }
 
-func main() {
+func readInput() ([]int, int, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	scanner.Scan()
-	numOfDishes, err := strconv.Atoi(scanner.Text())
-	if err != nil {
-		return
-	}
-	if numOfDishes < 1 || numOfDishes > 10000 {
-		return
+	if !scanner.Scan() {
+		return nil, 0, fmt.Errorf("err: %w", scanner.Err())
 	}
 
-	scanner.Scan()
-	rText := scanner.Text()
-	ratingStrs := strings.Fields(rText)
+	numOfDishes, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		return nil, 0, fmt.Errorf("err: %w", err)
+	}
+
+	if numOfDishes < 1 || numOfDishes > 10000 {
+		return nil, 0, fmt.Errorf("err: from 1 to 10000")
+	}
+
+	if !scanner.Scan() {
+		return nil, 0, fmt.Errorf("err: %w", scanner.Err())
+	}
+
+	ratingText := scanner.Text()
+	ratingStrs := strings.Fields(ratingText)
 	if len(ratingStrs) != numOfDishes {
-		return
+		return nil, 0, fmt.Errorf("incorrect rating count: %d, %d", numOfDishes, len(ratingStrs))
 	}
 
 	ratings := make([]int, numOfDishes)
-	for i, str := range ratingStrs {
+	for index, str := range ratingStrs {
 		rating, err := strconv.Atoi(str)
 		if err != nil {
-			return
+			return nil, 0, fmt.Errorf("err: %w", err)
 		}
+
 		if rating < -10000 || rating > 10000 {
-			return
+			return nil, 0, fmt.Errorf("err (from -10000 to 10000): %d", rating)
 		}
-		ratings[i] = rating
+
+		ratings[index] = rating
 	}
 
-	scanner.Scan()
+	if !scanner.Scan() {
+		return nil, 0, fmt.Errorf("err: %w", scanner.Err())
+	}
+
 	kthNumber, err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		return
+		return nil, 0, fmt.Errorf("err: %w", err)
 	}
+
 	if kthNumber < 1 || kthNumber > numOfDishes {
+		return nil, 0, fmt.Errorf("err (from 1 to %d)", numOfDishes)
+	}
+
+	return ratings, kthNumber, nil
+}
+
+func main() {
+	ratings, kthNumber, err := readInput()
+	if err != nil {
+		fmt.Println("Ошибка:", err)
 		return
 	}
 
@@ -76,7 +99,10 @@ func main() {
 	for _, rating := range ratings {
 		if intHeap.Len() < kthNumber {
 			heap.Push(intHeap, rating)
-		} else if rating > (*intHeap)[0] {
+			continue
+		}
+
+		if rating > (*intHeap)[0] {
 			heap.Pop(intHeap)
 			heap.Push(intHeap, rating)
 		}
