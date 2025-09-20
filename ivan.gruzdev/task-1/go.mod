@@ -1,3 +1,3 @@
-module practical_project
+module github.com/MoneyprogerISG/task-1
 
 go 1.22.7
