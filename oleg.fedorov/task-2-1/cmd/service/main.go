@@ -69,6 +69,7 @@ func readInput() ([]int, int) {
 
 	scanner.Scan()
 	kthNumber, err := strconv.Atoi(scanner.Text())
+	
 	if err != nil {
 		return nil, 0
 	}
