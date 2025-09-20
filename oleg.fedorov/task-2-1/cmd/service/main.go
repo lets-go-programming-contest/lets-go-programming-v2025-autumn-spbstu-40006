@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-// IntHeap - минимальная куча для целых чисел
 type IntHeap []int
 
 func (h *IntHeap) Len() int           { return len(*h) }
@@ -36,6 +35,7 @@ func readInput() ([]int, int) {
 
 	scanner.Scan()
 	numOfDishes, err := strconv.Atoi(scanner.Text())
+
 	if err != nil {
 		return nil, 0
 	}
@@ -47,11 +47,13 @@ func readInput() ([]int, int) {
 	scanner.Scan()
 	ratingText := scanner.Text()
 	ratingStrs := strings.Fields(ratingText)
+
 	if len(ratingStrs) != numOfDishes {
 		return nil, 0
 	}
 
 	ratings := make([]int, numOfDishes)
+
 	for index, str := range ratingStrs {
 		rating, err := strconv.Atoi(str)
 		if err != nil {
