@@ -35,7 +35,6 @@ func readInput() ([]int, int) {
 
 	scanner.Scan()
 	numOfDishes, err := strconv.Atoi(scanner.Text())
-
 	if err != nil {
 		return nil, 0
 	}
@@ -69,7 +68,6 @@ func readInput() ([]int, int) {
 
 	scanner.Scan()
 	kthNumber, err := strconv.Atoi(scanner.Text())
-
 	if err != nil {
 		return nil, 0
 	}
