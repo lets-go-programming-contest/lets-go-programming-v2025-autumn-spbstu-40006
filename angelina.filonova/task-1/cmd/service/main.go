@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 )
 
 var (
-	ErrorDivisionByZero = errors.New("Division by zero")
-	ErrorInvalidOperation = errors.New("Invalid operation")
-	ErrorInvalidFirstOperand = errors.New("Invalid first operand")
+	ErrorDivisionByZero       = errors.New("Division by zero")
+	ErrorInvalidOperation     = errors.New("Invalid operation")
+	ErrorInvalidFirstOperand  = errors.New("Invalid first operand")
 	ErrorInvalidSecondOperand = errors.New("Invalid second operand")
 )
 
@@ -51,7 +51,7 @@ func main() {
 	}
 
 	var result int
-	var err error 
+	var err error
 
 	switch operand {
 	case "+":
@@ -61,7 +61,7 @@ func main() {
 	case "*":
 		result = multiply(num1, num2)
 	case "/":
-		result, err = divide(num1, num2) 
+		result, err = divide(num1, num2)
 	default:
 		err = ErrorInvalidOperation
 	}
