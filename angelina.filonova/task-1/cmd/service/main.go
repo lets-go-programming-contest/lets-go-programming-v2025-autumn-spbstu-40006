@@ -1,8 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"errors"
 )
 
 var (
@@ -34,7 +34,21 @@ func divide(a int, b int) (int, error) {
 func main() {
 	var num1, num2 int
 	var operand string
-	fmt.Scan(&num1, &num2, &operand)
+
+	if _, err := fmt.Scan(&num1); err != nil {
+		fmt.Println(ErrorInvalidFirstOperand)
+		return
+	}
+
+	if _, err := fmt.Scan(&num2); err != nil {
+		fmt.Println(ErrorInvalidSecondOperand)
+		return
+	}
+
+	if _, err := fmt.Scan(&operand); err != nil {
+		fmt.Println(ErrorInvalidOperation)
+		return
+	}
 
 	var result int
 	var err error 
