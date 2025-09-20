@@ -34,7 +34,9 @@ func readInput() ([]int, int) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	scanner.Scan()
+
 	numOfDishes, err := strconv.Atoi(scanner.Text())
+
 	if err != nil {
 		return nil, 0
 	}
