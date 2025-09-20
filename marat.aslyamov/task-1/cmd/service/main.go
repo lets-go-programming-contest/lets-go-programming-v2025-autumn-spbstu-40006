@@ -3,35 +3,38 @@ package main
 import "fmt"
 
 func main() {
-	var i, j, result int
-	var sign string
-	_, err := fmt.Scan(&i)
+	var (
+		operand1, operand2, result int
+		operation string
+	)
+	_, err := fmt.Scan(&operand1)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-	_, err = fmt.Scan(&j)
+	_, err = fmt.Scan(&operand2)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	_, err = fmt.Scan(&sign)
+	_, err = fmt.Scan(&operation)
 	if err != nil {
 		fmt.Println("Invalid operation")
+		return;
 	}
-	switch sign {
+	switch operation {
 	case "+":
-		result = i + j
+		result = operand1 + operand2
 	case "-":
-		result = i - j
+		result = operand1 - operand2
 	case "*":
-		result = i * j
+		result = operand1 * operand2
 	case "/":
-		if j == 0 {
+		if operand2 == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		result = i / j
+		result = operand1 / operand2
 	default:
 		fmt.Println("Invalid operation")
 		return
