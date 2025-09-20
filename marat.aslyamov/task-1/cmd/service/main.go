@@ -5,7 +5,7 @@ import "fmt"
 func main() {
 	var (
 		operand1, operand2, result int
-		operation string
+		operation                  string
 	)
 	_, err := fmt.Scan(&operand1)
 	if err != nil {
@@ -20,7 +20,7 @@ func main() {
 	_, err = fmt.Scan(&operation)
 	if err != nil {
 		fmt.Println("Invalid operation")
-		return;
+		return
 	}
 	switch operation {
 	case "+":
