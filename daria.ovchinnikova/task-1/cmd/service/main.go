@@ -3,35 +3,39 @@ package main
 import "fmt"
 
 func main() {
-	var first_operand int
-	var second_operand int
+	var firstOperand int
+	var secondOperand int
 	var operation string
 
-	_, err_first_op := fmt.Scan(&first_operand)
-	_, err_second_op := fmt.Scan(&second_operand)
-	fmt.Scan(&operation)
-	if err_first_op != nil {
+	_, errFirstOp := fmt.Scan(&firstOperand)
+	_, errSecondOp := fmt.Scan(&secondOperand)
+	_, errOp := fmt.Scan(&operation)
+	if errFirstOp != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-	if err_second_op != nil {
+	if errSecondOp != nil {
 		fmt.Println("Invalid second operand")
+		return
+	}
+	if errOp != nil {
+		fmt.Println("Invalid operation")
 		return
 	}
 
 	switch operation {
 	case "+":
-		fmt.Println(first_operand + second_operand)
+		fmt.Println(firstOperand + secondOperand)
 	case "-":
-		fmt.Println(first_operand - second_operand)
+		fmt.Println(firstOperand - secondOperand)
 	case "*":
-		fmt.Println(first_operand * second_operand)
+		fmt.Println(firstOperand * secondOperand)
 	case "/":
-		if second_operand == 0 {
+		if secondOperand == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Println(first_operand / second_operand)
+		fmt.Println(firstOperand / secondOperand)
 	default:
 		fmt.Println("Invalid operation")
 	}
