@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	for index := 0; index < depCount; index++ {
+	for range depCount {
 		scanner.Scan()
 
 		workersNumber, err := strconv.Atoi(scanner.Text())
@@ -29,7 +29,7 @@ func main() {
 		minTemp := 15
 		maxTemp := 30
 
-		for jndex := 0; jndex < workersNumber; jndex++ {
+		for range workersNumber {
 			scanner.Scan()
 			line := scanner.Text()
 			parts := strings.Fields(line)
