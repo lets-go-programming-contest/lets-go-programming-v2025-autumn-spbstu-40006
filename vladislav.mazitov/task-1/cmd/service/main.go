@@ -4,51 +4,42 @@ import (
 	"fmt"
 )
 
-func plus(a, b int) int {
-	return a + b
-}
-
-func minus(a, b int) int {
-	return a - b
-}
-
-func multiply(a, b int) int {
-	return a * b
-}
-
-func devide(a, b int) (int, error) {
-	if b == 0 {
-		return 0, fmt.Errorf("devide by zero")
-	}
-	return a / b, nil
-}
-
 func work() {
 	var (
 		first, second int
 		operation     string
 	)
 
-	if _, err := fmt.Scan(&first, &second, &operation); err != nil {
-		fmt.Printf("Invalid values\n")
+	_, err := fmt.Scan(&first)
+	if err != nil {
+		fmt.Println("Invalid first operand")
 		return
+	}
+
+	_, err = fmt.Scan(&second)
+	if err != nil {
+		fmt.Println("Invalid second operand")
+	}
+
+	_, err = fmt.Scan(&operation)
+	if err != nil {
+		fmt.Println("Invalid operation")
 	}
 
 	switch operation {
 	case "+":
-		fmt.Printf("Result is: %d", plus(first, second))
+		fmt.Println(first + second)
 
 	case "-":
-		fmt.Printf("Result is: %d", minus(first, second))
+		fmt.Println(first - second)
 	case "*":
-		fmt.Printf("Result is: %d", multiply(first, second))
+		fmt.Println(first * second)
 	case "/":
-		temp, err := devide(first, second)
-		if err != nil {
-			fmt.Printf("Error: %v", err)
+		if second == 0 {
+			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Printf("Result is: %d", temp)
+		fmt.Println(first / second)
 	default:
 		fmt.Println("Invalid operation")
 	}
