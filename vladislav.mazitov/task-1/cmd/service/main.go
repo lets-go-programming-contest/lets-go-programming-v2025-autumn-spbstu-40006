@@ -24,12 +24,12 @@ func work() {
 	_, err = fmt.Scan(&operation)
 	if err != nil {
 		fmt.Println("Invalid operation")
+		return
 	}
 
 	switch operation {
 	case "+":
 		fmt.Println(first + second)
-
 	case "-":
 		fmt.Println(first - second)
 	case "*":
