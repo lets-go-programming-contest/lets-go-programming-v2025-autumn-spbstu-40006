@@ -9,13 +9,16 @@ import (
 )
 
 func main() {
-	ratings, kthNumber := utils.ReadRatingsAndK()
-	if ratings == nil {
+	ratings, kthNumber, err := utils.ReadRatingsAndK()
+	if err != nil {
+		fmt.Printf("error reading: %v\n", err)
+
 		return
 	}
 
 	if len(ratings) == 0 {
 		fmt.Println("0")
+
 		return
 	}
 
@@ -29,7 +32,7 @@ func main() {
 			continue
 		}
 
-		if min, ok := highest.Peek(); ok && rating > min {
+		if minimum, ok := highest.Peek(); ok && rating > minimum {
 			heap.Pop(highest)
 			heap.Push(highest, rating)
 		}
