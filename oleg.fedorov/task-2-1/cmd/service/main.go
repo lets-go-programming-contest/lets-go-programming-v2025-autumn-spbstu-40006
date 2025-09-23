@@ -8,34 +8,59 @@ import (
 	"strings"
 )
 
-type TemperatureRange struct {
+const (
+	defaultMinTemp = 15
+	defaultMaxTemp = 30
+)
+
+type TemperatureController struct {
 	min int
 	max int
 }
 
-func NewTemperatureRange() *TemperatureRange {
-	return &TemperatureRange{
-		min: 15,
-		max: 30,
+func NewTemperatureController() *TemperatureController {
+	return &TemperatureController{
+		min: defaultMinTemp,
+		max: defaultMaxTemp,
 	}
 }
 
-func (tr *TemperatureRange) ApplyOperation(operation string, temperature int) string {
+func (tc *TemperatureController) ApplyConstraint(operation string, temperature int) {
 	switch operation {
 	case ">=":
-		if temperature > tr.min {
-			tr.min = temperature
+		if temperature > tc.min {
+			tc.min = temperature
 		}
 	case "<=":
-		if temperature < tr.max {
-			tr.max = temperature
+		if temperature < tc.max {
+			tc.max = temperature
 		}
 	}
+}
 
-	if tr.min <= tr.max {
-		return fmt.Sprintf("%d", tr.min)
+func (tc *TemperatureController) GetCurrentTemp() string {
+	if tc.min <= tc.max {
+		return strconv.Itoa(tc.min)
 	}
+
 	return "-1"
+}
+
+type Department struct {
+	workerCount int
+	controller  *TemperatureController
+}
+
+func NewDepartment(workerCount int) *Department {
+	return &Department{
+		workerCount: workerCount,
+		controller:  NewTemperatureController(),
+	}
+}
+
+func (d *Department) ProcessWorkerRequirement(operation string, temperature int) string {
+	d.controller.ApplyConstraint(operation, temperature)
+	return d.controller.GetCurrentTemp()
 }
 
 func main() {
@@ -44,20 +69,28 @@ func main() {
 	scanner.Scan()
 	depCount, _ := strconv.Atoi(scanner.Text())
 
-	for i := 0; i < depCount; i++ {
+	for range depCount {
 		scanner.Scan()
-		workersNumber, _ := strconv.Atoi(scanner.Text())
 
-		tempRange := NewTemperatureRange()
+		workersNumber, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			return
+		}
 
-		for j := 0; j < workersNumber; j++ {
+		department := NewDepartment(workersNumber)
+
+		for range workersNumber {
 			scanner.Scan()
 			line := scanner.Text()
 			parts := strings.Fields(line)
 			operation := parts[0]
-			temp, _ := strconv.Atoi(parts[1])
 
-			result := tempRange.ApplyOperation(operation, temp)
+			temp, err := strconv.Atoi(parts[1])
+			if err != nil {
+				return
+			}
+
+			result := department.ProcessWorkerRequirement(operation, temp)
 			fmt.Println(result)
 		}
 	}
