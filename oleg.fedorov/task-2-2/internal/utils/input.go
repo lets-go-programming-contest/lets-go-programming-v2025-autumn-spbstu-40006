@@ -2,10 +2,20 @@ package utils
 
 import (
 	"bufio"
-	"fmt"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
+)
+
+var (
+	ErrInvalidNumberOfDishes = errors.New("invalid number of dishes")
+	ErrNumberOfDishesRange   = errors.New("number of dishes out of range")
+	ErrRatingsCountMismatch  = errors.New("number of ratings doesn't match number of dishes")
+	ErrInvalidRating         = errors.New("invalid rating")
+	ErrRatingOutOfRange      = errors.New("rating out of range")
+	ErrInvalidKthNumber      = errors.New("invalid kth number")
+	ErrKthNumberOutOfRange   = errors.New("kth number out of range")
 )
 
 func ReadRatingsAndK() ([]int, int, error) {
@@ -38,11 +48,11 @@ func readNumberOfDishes(scanner *bufio.Scanner) (int, error) {
 
 	numOfDishes, err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		return 0, fmt.Errorf("invalid number of dishes: %v", err)
+		return 0, ErrInvalidNumberOfDishes
 	}
 
 	if numOfDishes < 0 || numOfDishes > 10000 {
-		return 0, fmt.Errorf("number of dishes out of range: %d", numOfDishes)
+		return 0, ErrNumberOfDishesRange
 	}
 
 	return numOfDishes, nil
@@ -55,21 +65,22 @@ func readRatings(scanner *bufio.Scanner, numOfDishes int) ([]int, error) {
 	ratingStrs := strings.Fields(ratingText)
 
 	if len(ratingStrs) != numOfDishes {
-		return nil, fmt.Errorf("number of ratings doesn't match number of dishes")
+		return nil, ErrRatingsCountMismatch
 	}
 
 	ratings := make([]int, numOfDishes)
-	for i, str := range ratingStrs {
+
+	for index, str := range ratingStrs {
 		rating, err := strconv.Atoi(str)
 		if err != nil {
-			return nil, fmt.Errorf("invalid rating: %s", str)
+			return nil, ErrInvalidRating
 		}
 
 		if rating < -10000 || rating > 10000 {
-			return nil, fmt.Errorf("rating out of range: %d", rating)
+			return nil, ErrRatingOutOfRange
 		}
 
-		ratings[i] = rating
+		ratings[index] = rating
 	}
 
 	return ratings, nil
@@ -80,11 +91,11 @@ func readKthNumber(scanner *bufio.Scanner, numOfDishes int) (int, error) {
 
 	kthNumber, err := strconv.Atoi(scanner.Text())
 	if err != nil {
-		return 0, fmt.Errorf("invalid kth number: %v", err)
+		return 0, ErrInvalidKthNumber
 	}
 
 	if kthNumber < 1 || kthNumber > numOfDishes {
-		return 0, fmt.Errorf("kth number out of range: %d", kthNumber)
+		return 0, ErrKthNumberOutOfRange
 	}
 
 	return kthNumber, nil
