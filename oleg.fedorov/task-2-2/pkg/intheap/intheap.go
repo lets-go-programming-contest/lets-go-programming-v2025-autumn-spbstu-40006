@@ -22,14 +22,14 @@ func (h *IntHeap) Push(x interface{}) {
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 
-	lenght := len(old)
-	if lenght == 0 {
+	length := len(old)
+	if length == 0 {
 		return nil
 	}
 
-	x := old[lenght-1]
+	x := old[length-1]
 
-	*h = old[0 : lenght-1]
+	*h = old[0 : length-1]
 
 	return x
 }
