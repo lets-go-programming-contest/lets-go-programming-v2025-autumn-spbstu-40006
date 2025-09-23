@@ -60,6 +60,7 @@ func NewDepartment(workerCount int) *Department {
 
 func (d *Department) ProcessWorkerRequirement(operation string, temperature int) string {
 	d.controller.ApplyConstraint(operation, temperature)
+
 	return d.controller.GetCurrentTemp()
 }
 
