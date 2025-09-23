@@ -31,11 +31,13 @@ func ReadRatingsAndK() ([]int, int) {
 	}
 
 	ratings := make([]int, numOfDishes)
+
 	for i, str := range ratingStrs {
 		rating, err := strconv.Atoi(str)
 		if err != nil || rating < -10000 || rating > 10000 {
 			return nil, 0
 		}
+
 		ratings[i] = rating
 	}
 

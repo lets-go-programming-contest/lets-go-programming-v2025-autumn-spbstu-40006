@@ -19,21 +19,25 @@ func main() {
 		return
 	}
 
-	h := &intheap.IntHeap{}
-	heap.Init(h)
+	highest := &intheap.IntHeap{}
+	heap.Init(highest)
 
 	for _, rating := range ratings {
-		if h.Len() < kthNumber {
-			heap.Push(h, rating)
+		if highest.Len() < kthNumber {
+			heap.Push(highest, rating)
+
 			continue
 		}
 
-		if rating > h.Peek() {
-			heap.Pop(h)
-			heap.Push(h, rating)
+		if min, ok := highest.Peek(); ok && rating > min {
+			heap.Pop(highest)
+			heap.Push(highest, rating)
 		}
 	}
 
-	result := h.Peek()
-	fmt.Println(result)
+	if result, ok := highest.Peek(); ok {
+		fmt.Println(result)
+	} else {
+		fmt.Println("0")
+	}
 }
