@@ -24,7 +24,6 @@ func main() {
 		fmt.Println("Invalid operation")
 	}
 
-	fmt.Scanln(&sign, &value1, &value2)
 	switch sign {
 	case "+":
 		fmt.Println(value1 + value2)
