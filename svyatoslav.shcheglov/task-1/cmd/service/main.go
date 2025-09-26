@@ -22,6 +22,7 @@ func main() {
 	_, err = fmt.Scan(&sign)
 	if err != nil {
 		fmt.Println("Invalid operation")
+		return
 	}
 
 	switch sign {
