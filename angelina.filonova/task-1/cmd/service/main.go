@@ -32,26 +32,28 @@ func divide(a int, b int) (int, error) {
 }
 
 func main() {
-	var num1, num2 int
-	var operand string
+	var (
+		num1, num2 int
+		operand    string
+		err        error
+	)
 
-	if _, err := fmt.Scan(&num1); err != nil {
+	if _, err = fmt.Scan(&num1); err != nil {
 		fmt.Println(ErrorInvalidFirstOperand)
 		return
 	}
 
-	if _, err := fmt.Scan(&num2); err != nil {
+	if _, err = fmt.Scan(&num2); err != nil {
 		fmt.Println(ErrorInvalidSecondOperand)
 		return
 	}
 
-	if _, err := fmt.Scan(&operand); err != nil {
+	if _, err = fmt.Scan(&operand); err != nil {
 		fmt.Println(ErrorInvalidOperation)
 		return
 	}
 
 	var result int
-	var err error
 
 	switch operand {
 	case "+":
