@@ -20,7 +20,11 @@ func main() {
 		return
 	}
 
-	fmt.Scan(&symbolOperation)
+	_, err = fmt.Scan(&symbolOperation)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
 
 	switch symbolOperation {
 	case "+":
