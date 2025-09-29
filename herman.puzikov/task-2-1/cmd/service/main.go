@@ -48,7 +48,7 @@ func main() {
 			if lowerBound > higherBound {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(higherBound)
+				fmt.Println(lowerBound)
 			}
 		}
 	}
