@@ -21,9 +21,12 @@ func main() {
 
 		for range emplNum {
 			var operator string
+
 			var desiredTemp int
+
 			if _, err := fmt.Scan(&operator, &desiredTemp); err != nil {
 				fmt.Fprintln(os.Stderr, "couldn't read employee:", err)
+
 				return
 			}
 
@@ -38,6 +41,7 @@ func main() {
 				}
 			default:
 				fmt.Fprintln(os.Stderr, "unsupported operator:", operator)
+
 				return
 			}
 
