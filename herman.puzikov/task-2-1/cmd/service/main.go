@@ -11,38 +11,40 @@ func main() {
 		return
 	}
 
-	for dept := 0; dept < n; dept++ {
+	for range n {
 		var k int
-		fmt.Scan(&k)
+		if _, err := fmt.Scan(&k); err != nil {
+			fmt.Fprintln(os.Stderr, "couldn't read the department count:", err)
+		}
 
-		lo, hi := 15, 30
+		lowerBound, higherBound := 15, 30
 
-		for i := 0; i < k; i++ {
-			var op string
+		for range k {
+			var operator string
 			var t int
-			if _, err := fmt.Scan(&op, &t); err != nil {
-				fmt.Fprintln(os.Stderr, "couldn't read employee", i, ":", err)
+			if _, err := fmt.Scan(&operator, &t); err != nil {
+				fmt.Fprintln(os.Stderr, "couldn't read employee:", err)
 				return
 			}
 
-			switch op {
+			switch operator {
 			case "<=":
-				if t < hi {
-					hi = t
+				if t < higherBound {
+					higherBound = t
 				}
 			case ">=":
-				if t > lo {
-					lo = t
+				if t > lowerBound {
+					lowerBound = t
 				}
 			default:
-				fmt.Fprintln(os.Stderr, "unsupported operator:", op)
+				fmt.Fprintln(os.Stderr, "unsupported operator:", operator)
 				return
 			}
 
-			if lo > hi {
+			if lowerBound > higherBound {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(hi)
+				fmt.Println(higherBound)
 			}
 		}
 	}
