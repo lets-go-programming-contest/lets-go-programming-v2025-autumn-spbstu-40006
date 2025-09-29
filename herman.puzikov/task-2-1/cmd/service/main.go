@@ -6,35 +6,35 @@ import (
 )
 
 func main() {
-	var n int
-	if _, err := fmt.Scan(&n); err != nil {
+	var deptNum int
+	if _, err := fmt.Scan(&deptNum); err != nil {
 		return
 	}
 
-	for range n {
-		var k int
-		if _, err := fmt.Scan(&k); err != nil {
+	for range deptNum {
+		var emplNum int
+		if _, err := fmt.Scan(&emplNum); err != nil {
 			fmt.Fprintln(os.Stderr, "couldn't read the department count:", err)
 		}
 
 		lowerBound, higherBound := 15, 30
 
-		for range k {
+		for range emplNum {
 			var operator string
-			var t int
-			if _, err := fmt.Scan(&operator, &t); err != nil {
+			var desiredTemp int
+			if _, err := fmt.Scan(&operator, &desiredTemp); err != nil {
 				fmt.Fprintln(os.Stderr, "couldn't read employee:", err)
 				return
 			}
 
 			switch operator {
 			case "<=":
-				if t < higherBound {
-					higherBound = t
+				if desiredTemp < higherBound {
+					higherBound = desiredTemp
 				}
 			case ">=":
-				if t > lowerBound {
-					lowerBound = t
+				if desiredTemp > lowerBound {
+					lowerBound = desiredTemp
 				}
 			default:
 				fmt.Fprintln(os.Stderr, "unsupported operator:", operator)
