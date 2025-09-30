@@ -41,7 +41,7 @@ func main() {
 			if rightBorder >= leftBorder {
 				fmt.Println(leftBorder)
 			} else {
-				print(-1)
+				println(-1)
 
 				break
 			}
