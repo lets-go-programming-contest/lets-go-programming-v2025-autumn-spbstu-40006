@@ -22,8 +22,8 @@ func main() {
 
 	for range countDepartment {
 		mustScan(&countStaff)
-		minTemp := 15
-		maxTemp := 30
+		minTemp, maxTemp := 15, 30
+
 		for range countStaff {
 			mustScan(&operation, &temperature)
 
