@@ -30,15 +30,10 @@ func (pq *PriorityQueue) Push(x interface{}) {
 
 func (pq *PriorityQueue) Pop() interface{} {
 	old := *pq
-
 	n := len(old)
-
 	lastElement := old[n-1]
-
 	*pq = old[:n-1]
-
 	return lastElement
-
 }
 
 func mustScan(a ...interface{}) {
@@ -59,7 +54,7 @@ func main() {
 
 	rating := make([]int, countDish)
 
-	for i := 0; i < countDish; i++ {
+	for i := range countDish {
 		mustScan(&rating[i])
 	}
 
@@ -75,5 +70,4 @@ func main() {
 	}
 
 	fmt.Println(heap.Pop(&priorityQueue))
-
 }
