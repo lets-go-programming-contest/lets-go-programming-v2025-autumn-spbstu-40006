@@ -23,7 +23,6 @@ func main() {
 
 	for i := 0; i < countDepartment; i++ {
 		mustScan(&countStaff)
-
 		minTemp, maxTemp = 15, 30
 
 		for j := 0; j < countStaff; j++ {
