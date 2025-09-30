@@ -42,8 +42,6 @@ func main() {
 				fmt.Println(leftBorder)
 			} else {
 				println(-1)
-
-				break
 			}
 		}
 	}
