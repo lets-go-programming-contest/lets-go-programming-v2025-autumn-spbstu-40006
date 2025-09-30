@@ -25,6 +25,7 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	if !ok {
 		return
 	}
+
 	*pq = append(*pq, value)
 }
 
@@ -33,6 +34,7 @@ func (pq *PriorityQueue) Pop() interface{} {
 	n := len(old)
 	lastElement := old[n-1]
 	*pq = old[:n-1]
+
 	return lastElement
 }
 
