@@ -14,18 +14,17 @@ func mustScan(a ...interface{}) {
 
 func main() {
 	var (
-		minTemp, maxTemp                         int = 15, 30
 		countDepartment, countStaff, temperature int
 		operation                                string
 	)
 
 	mustScan(&countDepartment)
 
-	for i := 0; i < countDepartment; i++ {
+	for range countDepartment {
 		mustScan(&countStaff)
-		minTemp, maxTemp = 15, 30
+		minTemp, maxTemp := 15, 30
 
-		for j := 0; j < countStaff; j++ {
+		for range countStaff {
 			mustScan(&operation, &temperature)
 
 			if operation == ">=" {
