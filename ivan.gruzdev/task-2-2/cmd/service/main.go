@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type PriorityQueue []int
+type PriorityQueue []int //nolint:recvcheck
 
 func (pq PriorityQueue) Len() int {
 	return len(pq)
