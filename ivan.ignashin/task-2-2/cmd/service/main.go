@@ -12,7 +12,11 @@ func (h MaxHeap) Less(i, j int) bool { return h[i] > h[j] }
 func (h MaxHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *MaxHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, value)
 }
 
 func (h *MaxHeap) Pop() interface{} {
@@ -26,6 +30,7 @@ func (h *MaxHeap) Pop() interface{} {
 
 func main() {
 	var numberOfElements, kElement int
+
 	_, err := fmt.Scan(&numberOfElements)
 	if err != nil {
 		return
