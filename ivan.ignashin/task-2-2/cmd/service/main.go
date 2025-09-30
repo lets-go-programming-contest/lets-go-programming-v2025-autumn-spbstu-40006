@@ -20,19 +20,29 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
 func main() {
 	var numberOfElements, kElement int
-	fmt.Scan(&numberOfElements)
-
-	ratings := make([]int, numberOfElements)
-	for i := 0; i < numberOfElements; i++ {
-		fmt.Scan(&ratings[i])
+	_, err := fmt.Scan(&numberOfElements)
+	if err != nil {
+		return
 	}
 
-	fmt.Scan(&kElement)
+	ratings := make([]int, numberOfElements)
+	for i := range numberOfElements {
+		_, err = fmt.Scan(&ratings[i])
+		if err != nil {
+			return
+		}
+	}
+
+	_, err = fmt.Scan(&kElement)
+	if err != nil {
+		return
+	}
 
 	ratingsHeap := &MaxHeap{}
 	heap.Init(ratingsHeap)
@@ -41,7 +51,7 @@ func main() {
 		heap.Push(ratingsHeap, rating)
 	}
 
-	for i := 0; i < kElement-1; i++ {
+	for range kElement - 1 {
 		heap.Pop(ratingsHeap)
 	}
 
