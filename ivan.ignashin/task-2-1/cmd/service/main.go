@@ -9,16 +9,22 @@ func main() {
 		numberOfOtdels, numberOfWorkers int
 		querryOperand                   string
 		querryNumber                    int
+		leftBorder, rightBorder         int
 	)
 
-	fmt.Scan(&numberOfOtdels)
+	_, err := fmt.Scan(&numberOfOtdels)
+	if err != nil {
+		fmt.Println("Error! Imvalod number of departments.")
+	}
 
 	for range numberOfOtdels {
-		var (
-			lefBorder   int = 15
-			rightBorder int = 30
-		)
-		fmt.Scan(&numberOfWorkers)
+		leftBorder = 15
+		rightBorder = 30
+
+		_, err := fmt.Scan(&numberOfWorkers)
+		if err != nil {
+			fmt.Println("Error! Imvalod number of workers.")
+		}
 
 		for range numberOfWorkers {
 			_, err := fmt.Scan(&querryOperand, &querryNumber)
@@ -27,15 +33,16 @@ func main() {
 					rightBorder = querryNumber
 				}
 			} else if querryOperand[0] == '>' {
-				if err == nil && querryNumber > lefBorder {
-					lefBorder = querryNumber
+				if err == nil && querryNumber > leftBorder {
+					leftBorder = querryNumber
 				}
 			}
 
-			if rightBorder >= lefBorder {
-				fmt.Println(lefBorder)
+			if rightBorder >= leftBorder {
+				fmt.Println(leftBorder)
 			} else {
 				print(-1)
+
 				break
 			}
 		}
