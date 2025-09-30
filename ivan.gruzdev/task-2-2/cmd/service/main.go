@@ -21,7 +21,11 @@ func (pq PriorityQueue) Swap(i, j int) {
 }
 
 func (pq *PriorityQueue) Push(x interface{}) {
-	*pq = append(*pq, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*pq = append(*pq, value)
 }
 
 func (pq *PriorityQueue) Pop() interface{} {
@@ -47,10 +51,10 @@ func mustScan(a ...interface{}) {
 func main() {
 	var (
 		countDish, preference int
-		pq                    PriorityQueue
+		priorityQueue         PriorityQueue
 	)
 
-	heap.Init(&pq)
+	heap.Init(&priorityQueue)
 	mustScan(&countDish)
 
 	rating := make([]int, countDish)
@@ -61,15 +65,15 @@ func main() {
 
 	mustScan(&preference)
 
-	for i := 0; i < countDish; i++ {
-		if pq.Len() < preference {
-			heap.Push(&pq, rating[i])
-		} else if pq[0] < rating[i] {
-			heap.Pop(&pq)
-			heap.Push(&pq, rating[i])
+	for i := range countDish {
+		if priorityQueue.Len() < preference {
+			heap.Push(&priorityQueue, rating[i])
+		} else if priorityQueue[0] < rating[i] {
+			heap.Pop(&priorityQueue)
+			heap.Push(&priorityQueue, rating[i])
 		}
 	}
 
-	fmt.Println(heap.Pop(&pq))
+	fmt.Println(heap.Pop(&priorityQueue))
 
 }
