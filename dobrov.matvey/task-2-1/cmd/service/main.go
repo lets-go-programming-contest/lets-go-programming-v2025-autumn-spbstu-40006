@@ -36,8 +36,12 @@ func processDepartment(countWorkers int) {
 		if broken {
 			var dump1, dump2 string
 			if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
+				fmt.Println(-1)
+
 				continue
 			}
+
+			fmt.Println(-1)
 
 			continue
 		}
