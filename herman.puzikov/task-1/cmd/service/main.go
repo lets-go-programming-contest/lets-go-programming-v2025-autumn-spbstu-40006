@@ -37,13 +37,23 @@ func main() {
 		operator string
 	)
 
-	if _, err := fmt.Scan(&fOp, &sOp, &operator); err != nil {
-		fmt.Fprintf(os.Stderr, "There has been an error while reading input: %v\n", err)
+	if _, err := fmt.Scan(&fOp); err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid first operand\n")
+		return
+	}
+
+	if _, err := fmt.Scan(&sOp); err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid second operand\n")
+		return
+	}
+
+	if _, err := fmt.Scan(&operator); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", ErrorInvalidOperation)
 		return
 	}
 
 	if res, err := calculate(operator, fOp, sOp); err != nil {
-		fmt.Fprintf(os.Stderr, "There has been an error while calculating: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 	} else {
 		fmt.Println(res)
 	}
