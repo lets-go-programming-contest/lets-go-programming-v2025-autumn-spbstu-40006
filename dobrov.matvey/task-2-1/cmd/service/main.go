@@ -13,7 +13,6 @@ func main() {
 
 	_, err := fmt.Scanln(&countDepartments)
 	if err != nil {
-
 		return
 	}
 
@@ -36,9 +35,7 @@ func processDepartment(countWorkers int) {
 	for range countWorkers {
 		if broken {
 			var dump1, dump2 string
-
 			if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
-
 				continue
 			}
 
@@ -104,13 +101,11 @@ func parseDesiredTemperature(
 	case "<=":
 		*needToIncrease = false
 	default:
-
 		return false
 	}
 
 	value, err := strconv.Atoi(strDesiredTemperature)
 	if err != nil {
-
 		return false
 	}
 
