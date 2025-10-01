@@ -51,6 +51,7 @@ func processDepartment(countWorkers int) {
 
 		if _, err := fmt.Scanln(&op, &sDesiredStr); err != nil {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
@@ -58,6 +59,7 @@ func processDepartment(countWorkers int) {
 
 		if !parseDesiredTemperature(op, sDesiredStr, &needUp, &desired) {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
@@ -65,6 +67,7 @@ func processDepartment(countWorkers int) {
 
 		if !applyConstraint(needUp, desired, &minT, &maxT) {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
@@ -84,6 +87,7 @@ func applyConstraint(needUp bool, desired int, minT *int, maxT *int) bool {
 			*maxT = desired
 		}
 	}
+
 	return *minT <= *maxT
 }
 
@@ -105,5 +109,6 @@ func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
 	}
 
 	*desiredTemperature = value
+
 	return true
 }
