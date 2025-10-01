@@ -6,75 +6,90 @@ import (
 )
 
 func main() {
-	var countDepartments, countWorkers int
+	var (
+		countDepartments, countWorkers int
+	)
+
 	_, err := fmt.Scanln(&countDepartments)
 	if err != nil {
 		return
 	}
 
-	for i := 0; i < countDepartments; i++ {
+	for range countDepartments {
 		_, err = fmt.Scanln(&countWorkers)
+
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
-		minTemperature, maxTemperature := 15, 30
-		broken := false
-		for k := 0; k < countWorkers; k++ {
-			if broken {
-				var dump1, dump2 string
-				if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
-					continue
-				}
-
-				continue
-			}
-
-			var (
-				needToIncrease                    bool
-				desiredTemperature                int
-				strOperand, strDesiredTemperature string
-			)
-
-			_, err = fmt.Scanln(&strOperand, &strDesiredTemperature)
-			if err != nil {
-				fmt.Println(-1)
-				broken = true
-				continue
-			}
-
-			if !parseDesiredTemperature(strOperand, strDesiredTemperature,
-				&needToIncrease, &desiredTemperature) {
-				fmt.Println(-1)
-				broken = true
-				continue
-			}
-
-			if needToIncrease {
-				if desiredTemperature >= minTemperature {
-					minTemperature = desiredTemperature
-				}
-			} else {
-				if desiredTemperature <= maxTemperature {
-					maxTemperature = desiredTemperature
-				}
-			}
-
-			if minTemperature > maxTemperature {
-				fmt.Println(-1)
-				broken = true
-				continue
-			}
-
-			fmt.Println(minTemperature)
-		}
+		processDepartment(countWorkers)
 	}
 }
 
+func processDepartment(countWorkers int) {
+	minT, maxT := 15, 30
+	broken := false
+
+	for range countWorkers {
+		if broken {
+			var dump1, dump2 string
+			if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
+
+				continue
+			}
+
+			continue
+		}
+
+		var (
+			needUp          bool
+			desired         int
+			op, sDesiredStr string
+		)
+
+		if _, err := fmt.Scanln(&op, &sDesiredStr); err != nil {
+			fmt.Println(-1)
+			broken = true
+
+			continue
+		}
+
+		if !parseDesiredTemperature(op, sDesiredStr, &needUp, &desired) {
+			fmt.Println(-1)
+			broken = true
+
+			continue
+		}
+
+		if !applyConstraint(needUp, desired, &minT, &maxT) {
+			fmt.Println(-1)
+			broken = true
+
+			continue
+		}
+
+		fmt.Println(minT)
+	}
+}
+
+func applyConstraint(needUp bool, desired int, minT *int, maxT *int) bool {
+	if needUp {
+		if desired >= *minT {
+			*minT = desired
+		}
+	} else {
+		if desired <= *maxT {
+			*maxT = desired
+		}
+	}
+	return *minT <= *maxT
+}
+
 func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
-	needToIncrease *bool, desiredTemperature *int,
-) bool {
+	needToIncrease *bool, desiredTemperature *int) bool {
+
 	switch strOperand {
 	case ">=":
 		*needToIncrease = true
@@ -90,6 +105,5 @@ func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
 	}
 
 	*desiredTemperature = value
-
 	return true
 }
