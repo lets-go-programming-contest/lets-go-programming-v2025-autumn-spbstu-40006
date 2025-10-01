@@ -6,21 +6,16 @@ import (
 )
 
 func main() {
-	var (
-		countDepartments, countWorkers int
-	)
+	var countDepartments, countWorkers int
 	_, err := fmt.Scanln(&countDepartments)
 	if err != nil {
-
 		return
 	}
 
 	for i := 0; i < countDepartments; i++ {
 		_, err = fmt.Scanln(&countWorkers)
-
 		if err != nil {
 			fmt.Println(-1)
-
 			continue
 		}
 
@@ -30,7 +25,6 @@ func main() {
 			if broken {
 				var dump1, dump2 string
 				if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
-
 					continue
 				}
 
@@ -44,11 +38,9 @@ func main() {
 			)
 
 			_, err = fmt.Scanln(&strOperand, &strDesiredTemperature)
-
 			if err != nil {
 				fmt.Println(-1)
 				broken = true
-
 				continue
 			}
 
@@ -56,7 +48,6 @@ func main() {
 				&needToIncrease, &desiredTemperature) {
 				fmt.Println(-1)
 				broken = true
-
 				continue
 			}
 
@@ -73,7 +64,6 @@ func main() {
 			if minTemperature > maxTemperature {
 				fmt.Println(-1)
 				broken = true
-
 				continue
 			}
 
@@ -83,8 +73,8 @@ func main() {
 }
 
 func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
-	needToIncrease *bool, desiredTemperature *int) bool {
-
+	needToIncrease *bool, desiredTemperature *int,
+) bool {
 	switch strOperand {
 	case ">=":
 		*needToIncrease = true
@@ -95,7 +85,6 @@ func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
 	}
 
 	value, err := strconv.Atoi(strDesiredTemperature)
-
 	if err != nil {
 		return false
 	}
