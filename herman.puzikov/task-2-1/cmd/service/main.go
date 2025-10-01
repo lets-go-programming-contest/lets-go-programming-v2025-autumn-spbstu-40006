@@ -20,9 +20,10 @@ func main() {
 		lowerBound, higherBound := 15, 30
 
 		for range emplNum {
-			var operator string
-
-			var desiredTemp int
+			var (
+				operator    string
+				desiredTemp int
+			)
 
 			if _, err := fmt.Scan(&operator, &desiredTemp); err != nil {
 				fmt.Fprintln(os.Stderr, "couldn't read employee:", err)
