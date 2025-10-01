@@ -36,7 +36,6 @@ func processDepartment(countWorkers int) {
 		if broken {
 			var dump1, dump2 string
 			if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
-
 				continue
 			}
 
@@ -44,12 +43,12 @@ func processDepartment(countWorkers int) {
 		}
 
 		var (
-			needUp          bool
-			desired         int
-			op, sDesiredStr string
+			needIncrease            bool
+			desiredTemp             int
+			operand, desiredTempStr string
 		)
 
-		if _, err := fmt.Scanln(&op, &sDesiredStr); err != nil {
+		if _, err := fmt.Scanln(&operand, &desiredTempStr); err != nil {
 			fmt.Println(-1)
 
 			broken = true
@@ -57,7 +56,7 @@ func processDepartment(countWorkers int) {
 			continue
 		}
 
-		if !parseDesiredTemperature(op, sDesiredStr, &needUp, &desired) {
+		if !parseDesiredTemperature(operand, desiredTempStr, &needIncrease, &desiredTemp) {
 			fmt.Println(-1)
 
 			broken = true
@@ -65,7 +64,7 @@ func processDepartment(countWorkers int) {
 			continue
 		}
 
-		if !applyConstraint(needUp, desired, &minT, &maxT) {
+		if !applyConstraint(needIncrease, desiredTemp, &minT, &maxT) {
 			fmt.Println(-1)
 
 			broken = true
