@@ -51,6 +51,7 @@ func processDepartment(countWorkers int) {
 
 		if _, err := fmt.Scanln(&operand, &desiredStr); err != nil {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
@@ -59,6 +60,7 @@ func processDepartment(countWorkers int) {
 		// wsl: if с проверкой — отдельным блоком после присваиваний/ввода
 		if !parseDesiredTemperature(operand, desiredStr, &needIncrease, &desired) {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
@@ -66,6 +68,7 @@ func processDepartment(countWorkers int) {
 
 		if !applyConstraint(needIncrease, desired, &minTemperature, &maxTemperature) {
 			fmt.Println(-1)
+
 			broken = true
 
 			continue
