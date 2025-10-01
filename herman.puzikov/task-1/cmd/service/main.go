@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrorDivisionByZero   = errors.New("division by zero")
-	ErrorInvalidOperation = errors.New("invalid operation")
+	ErrorDivisionByZero   = errors.New("Division by zero")
+	ErrorInvalidOperation = errors.New("Invalid operation")
 )
 
 func calculate(operator string, a, b int) (float64, error) {
