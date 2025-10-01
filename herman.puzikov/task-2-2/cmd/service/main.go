@@ -44,14 +44,14 @@ func main() {
 	for i := range dishesNum {
 		currentValue := values[i]
 		if intHeap.Len() < indexK {
-			intHeap.Push(currentValue)
+			heap.Push(intHeap, currentValue)
 
 			continue
 		}
 
 		if currentValue > (*intHeap)[0] {
-			intHeap.Pop()
-			intHeap.Push(currentValue)
+			heap.Pop(intHeap)
+			heap.Push(intHeap, currentValue)
 		}
 	}
 
