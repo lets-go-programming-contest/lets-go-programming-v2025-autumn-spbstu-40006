@@ -7,72 +7,56 @@ import (
 
 func main() {
 	var (
-		countDepartments, countWorkers int
+		countDepartments int
+		countWorkers     int
 	)
-
 	_, err := fmt.Scanln(&countDepartments)
 	if err != nil {
 		return
 	}
-
 	for range countDepartments {
 		_, err = fmt.Scanln(&countWorkers)
-
 		if err != nil {
 			fmt.Println(-1)
-
 			continue
 		}
-
 		processDepartment(countWorkers)
 	}
 }
 
 func processDepartment(countWorkers int) {
-	minT, maxT := 15, 30
+	minTemperature, maxTemperature := 15, 30
 	broken := false
-
 	for range countWorkers {
 		if broken {
 			var dump1, dump2 string
 			if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
 				continue
 			}
-
 			continue
 		}
-
 		var (
-			needIncrease            bool
-			desiredTemp             int
-			operand, desiredTempStr string
+			needIncrease bool
+			desired      int
+			operand      string
+			desiredStr   string
 		)
-
-		if _, err := fmt.Scanln(&operand, &desiredTempStr); err != nil {
+		if _, err := fmt.Scanln(&operand, &desiredStr); err != nil {
 			fmt.Println(-1)
-
 			broken = true
-
 			continue
 		}
-
-		if !parseDesiredTemperature(operand, desiredTempStr, &needIncrease, &desiredTemp) {
+		if !parseDesiredTemperature(operand, desiredStr, &needIncrease, &desired) {
 			fmt.Println(-1)
-
 			broken = true
-
 			continue
 		}
-
-		if !applyConstraint(needIncrease, desiredTemp, &minT, &maxT) {
+		if !applyConstraint(needIncrease, desired, &minTemperature, &maxTemperature) {
 			fmt.Println(-1)
-
 			broken = true
-
 			continue
 		}
-
-		fmt.Println(minT)
+		fmt.Println(minTemperature)
 	}
 }
 
@@ -86,13 +70,15 @@ func applyConstraint(needUp bool, desired int, minT *int, maxT *int) bool {
 			*maxT = desired
 		}
 	}
-
 	return *minT <= *maxT
 }
 
-func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
-	needToIncrease *bool, desiredTemperature *int) bool {
-
+func parseDesiredTemperature(
+	strOperand string,
+	strDesiredTemperature string,
+	needToIncrease *bool,
+	desiredTemperature *int,
+) bool {
 	switch strOperand {
 	case ">=":
 		*needToIncrease = true
@@ -101,13 +87,10 @@ func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
 	default:
 		return false
 	}
-
 	value, err := strconv.Atoi(strDesiredTemperature)
 	if err != nil {
 		return false
 	}
-
 	*desiredTemperature = value
-
 	return true
 }
