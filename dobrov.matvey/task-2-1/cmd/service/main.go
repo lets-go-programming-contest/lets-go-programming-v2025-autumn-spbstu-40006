@@ -11,6 +11,7 @@ func main() {
 	)
 	_, err := fmt.Scanln(&countDepartments)
 	if err != nil {
+
 		return
 	}
 
@@ -19,6 +20,7 @@ func main() {
 
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -27,7 +29,11 @@ func main() {
 		for k := 0; k < countWorkers; k++ {
 			if broken {
 				var dump1, dump2 string
-				fmt.Scanln(&dump1, &dump2)
+				if _, err := fmt.Scanln(&dump1, &dump2); err != nil {
+
+					continue
+				}
+
 				continue
 			}
 
@@ -42,12 +48,15 @@ func main() {
 			if err != nil {
 				fmt.Println(-1)
 				broken = true
+
 				continue
 			}
 
-			if !parseDesiredTemperature(strOperand, strDesiredTemperature, &needToIncrease, &desiredTemperature) {
+			if !parseDesiredTemperature(strOperand, strDesiredTemperature,
+				&needToIncrease, &desiredTemperature) {
 				fmt.Println(-1)
 				broken = true
+
 				continue
 			}
 
@@ -60,17 +69,21 @@ func main() {
 					maxTemperature = desiredTemperature
 				}
 			}
+
 			if minTemperature > maxTemperature {
 				fmt.Println(-1)
 				broken = true
+
 				continue
 			}
+
 			fmt.Println(minTemperature)
 		}
 	}
 }
 
-func parseDesiredTemperature(strOperand string, strDesiredTemperature string, needToIncrease *bool, desiredTemperature *int) bool {
+func parseDesiredTemperature(strOperand string, strDesiredTemperature string,
+	needToIncrease *bool, desiredTemperature *int) bool {
 
 	switch strOperand {
 	case ">=":
