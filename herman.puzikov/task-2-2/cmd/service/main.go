@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	myheap "github.com/Segfault-chan/task-2-2/pkg/intheap"
+	"github.com/Segfault-chan/task-2-2/pkg/intheap"
 )
 
 func main() {
@@ -38,20 +38,20 @@ func main() {
 		return
 	}
 
-	intHeap := &myheap.IntHeap{}
+	intHeap := &intheap.IntHeap{}
 	heap.Init(intHeap)
 
 	for i := range dishesNum {
 		currentValue := values[i]
 		if intHeap.Len() < indexK {
-			heap.Push(intHeap, currentValue)
+			intHeap.Push(currentValue)
 
 			continue
 		}
 
 		if currentValue > (*intHeap)[0] {
-			heap.Pop(intHeap)
-			heap.Push(intHeap, currentValue)
+			intHeap.Pop()
+			intHeap.Push(currentValue)
 		}
 	}
 
