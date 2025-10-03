@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+const (
+	defaultMinTemp = 15
+	defaultMaxTemp = 30
+)
+
 type Department struct {
 	minTemp  int
 	maxTemp  int
@@ -16,22 +21,23 @@ type Department struct {
 
 func NewDepartment(employee int) *Department {
 	return &Department{
-		minTemp:  15,
-		maxTemp:  30,
+		minTemp:  defaultMinTemp,
+		maxTemp:  defaultMaxTemp,
 		employee: employee,
 	}
 }
 
 func (d *Department) ProcessWorkerRequirement(operand string, temp int) int {
-	if operand == ">=" {
+	switch operand {
+	case ">=":
 		if temp > d.minTemp {
 			d.minTemp = temp
 		}
-	} else if operand == "<=" {
+	case "<=":
 		if temp < d.maxTemp {
 			d.maxTemp = temp
 		}
-	} else {
+	default:
 		d.minTemp = temp
 		d.maxTemp = temp
 	}
@@ -39,6 +45,7 @@ func (d *Department) ProcessWorkerRequirement(operand string, temp int) int {
 	if d.minTemp > d.maxTemp {
 		return -1
 	}
+
 	return d.minTemp
 }
 
@@ -49,14 +56,14 @@ func main() {
 	countDepartmentsStr := scanner.Text()
 	countDepartments, _ := strconv.Atoi(strings.TrimSpace(countDepartmentsStr))
 
-	for dep := 0; dep < countDepartments; dep++ {
+	for range countDepartments {
 		scanner.Scan()
 		countEmployeesStr := scanner.Text()
 		countEmployees, _ := strconv.Atoi(strings.TrimSpace(countEmployeesStr))
 
 		department := NewDepartment(countEmployees)
 
-		for emp := 0; emp < countEmployees; emp++ {
+		for range countEmployees {
 			scanner.Scan()
 			line := strings.TrimSpace(scanner.Text())
 
