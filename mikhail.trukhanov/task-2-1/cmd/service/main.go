@@ -5,7 +5,7 @@ import "fmt"
 func main() {
 	var (
 		numOfDepartments, numOfWorkers, temp int
-		sign string
+		sign                                 string
 	)
 
 	_, err := fmt.Scan(&numOfDepartments)
