@@ -11,6 +11,7 @@ func main() {
 	_, err := fmt.Scan(&numOfDepartments)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
@@ -20,6 +21,7 @@ func main() {
 		_, err := fmt.Scan(&numOfWorkers)
 		if err != nil {
 			fmt.Println("Invalid input")
+
 			return
 		}
 
@@ -27,6 +29,7 @@ func main() {
 			_, err := fmt.Scan(&sign, &temp)
 			if err != nil {
 				fmt.Println("Invalid input")
+
 				return
 			}
 
