@@ -4,12 +4,12 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/Mishaa105/task-2-2/pkg/IntHeap"
+	"github.com/Mishaa105/task-2-2/pkg/intheap"
 )
 
 func main() {
 	var amountOfDishes, dishNumber, num int
-	ai := IntHeap.New()
+	dishesHeap := intheap.New()
 
 	_, err := fmt.Scan(&amountOfDishes)
 	if err != nil {
@@ -25,7 +25,7 @@ func main() {
 
 			return
 		}
-		heap.Push(ai, num)
+		heap.Push(dishesHeap, num)
 	}
 
 	_, err = fmt.Scan(&dishNumber)
@@ -37,9 +37,9 @@ func main() {
 
 	for n := 0; n != dishNumber; n++ {
 		if n == dishNumber-1 {
-			fmt.Println((*ai)[0])
+			fmt.Println((*dishesHeap)[0])
 		} else {
-			heap.Pop(ai)
+			heap.Pop(dishesHeap)
 		}
 	}
 }
