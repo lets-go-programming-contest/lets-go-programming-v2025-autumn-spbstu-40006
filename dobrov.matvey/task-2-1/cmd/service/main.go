@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 )
@@ -95,6 +96,8 @@ func applyConstraint(needUp bool, desired int, minT *int, maxT *int) bool {
 	return *minT <= *maxT
 }
 
+var errInvalidOperand = errors.New("invalid operand")
+
 func parseDesiredTemperature(
 	strOperand string,
 	strDesiredTemperature string,
@@ -107,7 +110,7 @@ func parseDesiredTemperature(
 	case "<=":
 		*needToIncrease = false
 	default:
-		return fmt.Errorf("invalid operand: %s", strOperand)
+		return fmt.Errorf("%w: %s", errInvalidOperand, strOperand)
 	}
 
 	value, err := strconv.Atoi(strDesiredTemperature)
