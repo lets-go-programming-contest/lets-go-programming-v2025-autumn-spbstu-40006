@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	ErrorInvalidOperation     = errors.New("invalid operation")
-	ErrorInvalidFirstOperand  = errors.New("invalid first operand")
-	ErrorInvalidSecondOperand = errors.New("invalid second operand")
-	ErrorDivisionByZero       = errors.New("division by zero")
+	ErrorInvalidOperation     = errors.New("Invalid operation")
+	ErrorInvalidFirstOperand  = errors.New("Invalid first operand")
+	ErrorInvalidSecondOperand = errors.New("Invalid second operand")
+	ErrorDivisionByZero       = errors.New("Division by zero")
 )
 
 func calculate(a, b int, op string) (int, error) {
