@@ -9,6 +9,7 @@ import (
 
 func main() {
 	var amountOfDishes, dishNumber, num int
+
 	dishesHeap := intheap.New()
 
 	_, err := fmt.Scan(&amountOfDishes)
@@ -25,6 +26,7 @@ func main() {
 
 			return
 		}
+
 		heap.Push(dishesHeap, num)
 	}
 

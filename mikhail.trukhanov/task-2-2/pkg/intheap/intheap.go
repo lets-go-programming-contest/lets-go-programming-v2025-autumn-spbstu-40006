@@ -7,16 +7,15 @@ type intheap []int
 func New() *intheap {
 	h := &intheap{}
 	heap.Init(h)
+
 	return h
 }
 
 func (h *intheap) Len() int {
-
 	return len(*h)
 }
 
 func (h *intheap) Less(i, j int) bool {
-
 	return (*h)[i] > (*h)[j]
 }
 
