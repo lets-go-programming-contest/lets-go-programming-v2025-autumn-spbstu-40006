@@ -1,9 +1,6 @@
 package intheap
 
-import (
-	"container/heap"
-	"fmt"
-)
+import "container/heap"
 
 type intheap []int
 
@@ -15,16 +12,16 @@ func New() *intheap {
 
 func (h *intheap) Len() int {
 
-	return len(h)
+	return len(*h)
 }
 
 func (h *intheap) Less(i, j int) bool {
 
-	return h[i] > h[j]
+	return (*h)[i] > (*h)[j]
 }
 
 func (h *intheap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *intheap) Push(x any) {
