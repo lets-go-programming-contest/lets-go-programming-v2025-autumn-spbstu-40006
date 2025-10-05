@@ -30,9 +30,9 @@ func (h *intheap) Swap(i, j int) {
 func (h *intheap) Push(x any) {
 	val, ok := x.(int)
 	if !ok {
-		panic(fmt.Println("Expected int"))
+		panic("Expected int")
 	}
-	*h = append(*h, x.(int))
+	*h = append(*h, val)
 }
 
 func (h *intheap) Pop() any {
