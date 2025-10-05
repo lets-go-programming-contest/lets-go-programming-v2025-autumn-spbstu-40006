@@ -10,19 +10,19 @@ func work() {
 
 	_, err := fmt.Scan(&first)
 	if err != nil {
-		fmt.Printf("Invalid first operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
 	_, err = fmt.Scan(&second)
 	if err != nil {
-		fmt.Printf("Invalid second operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
 	_, err = fmt.Scan(&operation)
 	if err != nil {
-		fmt.Printf("Invalid operation")
+		fmt.Println("Invalid operation")
 		return
 	}
 
