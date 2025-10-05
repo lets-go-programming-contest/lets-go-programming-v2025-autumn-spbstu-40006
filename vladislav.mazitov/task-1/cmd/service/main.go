@@ -47,4 +47,3 @@ func work() {
 func main() {
 	work()
 }
-
