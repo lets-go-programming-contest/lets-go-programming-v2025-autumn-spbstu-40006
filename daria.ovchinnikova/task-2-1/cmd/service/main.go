@@ -13,6 +13,7 @@ func main() {
 	_, err := fmt.Scan(&numberOfDepatrs)
 	if err != nil {
 		fmt.Println("Invalid number of departments")
+
 		return
 	}
 
@@ -23,6 +24,7 @@ func main() {
 		_, err = fmt.Scan(&numberOfWorkers)
 		if err != nil {
 			fmt.Println("Invalid number of workers")
+
 			return
 		}
 
