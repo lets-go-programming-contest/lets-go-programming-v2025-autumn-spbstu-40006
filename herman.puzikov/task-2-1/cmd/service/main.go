@@ -8,13 +8,17 @@ import (
 func main() {
 	var deptNum int
 	if _, err := fmt.Scan(&deptNum); err != nil {
+		fmt.Fprintln(os.Stderr, "couldn't read the department count:", err)
+
 		return
 	}
 
 	for range deptNum {
 		var emplNum int
 		if _, err := fmt.Scan(&emplNum); err != nil {
-			fmt.Fprintln(os.Stderr, "couldn't read the department count:", err)
+			fmt.Fprintln(os.Stderr, "couldn't read the employees count:", err)
+
+			return
 		}
 
 		lowerBound, higherBound := 15, 30
