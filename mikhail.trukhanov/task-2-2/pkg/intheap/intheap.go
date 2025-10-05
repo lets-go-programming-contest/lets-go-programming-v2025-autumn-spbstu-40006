@@ -28,6 +28,7 @@ func (h *intheap) Push(x any) {
 	if !ok {
 		panic("Expected int")
 	}
+
 	*h = append(*h, val)
 }
 
