@@ -61,8 +61,7 @@ func processDepartment(countWorkers int) {
 			continue
 		}
 
-		// wsl: if с проверкой — отдельным блоком после присваиваний/ввода
-		if !parseDesiredTemperature(operand, desiredStr, &needIncrease, &desired) {
+		if err := parseDesiredTemperature(operand, desiredStr, &needIncrease, &desired); err != nil {
 			fmt.Println(-1)
 
 			broken = true
@@ -101,22 +100,22 @@ func parseDesiredTemperature(
 	strDesiredTemperature string,
 	needToIncrease *bool,
 	desiredTemperature *int,
-) bool {
+) error {
 	switch strOperand {
 	case ">=":
 		*needToIncrease = true
 	case "<=":
 		*needToIncrease = false
 	default:
-		return false
+		return fmt.Errorf("invalid operand: %s", strOperand)
 	}
 
 	value, err := strconv.Atoi(strDesiredTemperature)
 	if err != nil {
-		return false
+		return fmt.Errorf("invalid desired temperature %q: %w", strDesiredTemperature, err)
 	}
 
 	*desiredTemperature = value
 
-	return true
+	return nil
 }
