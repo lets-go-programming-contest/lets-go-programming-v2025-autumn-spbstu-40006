@@ -52,24 +52,53 @@ func (d *Department) ProcessWorkerRequirement(operand string, temp int) int {
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	scanner.Scan()
-	countDepartmentsStr := scanner.Text()
-	countDepartments, _ := strconv.Atoi(strings.TrimSpace(countDepartmentsStr))
+	if !scanner.Scan() {
+		fmt.Println("Не удалось прочитать количество департаментов")
+		return
+	}
+
+	countDepartmentsStr := strings.TrimSpace(scanner.Text())
+	countDepartments, err := strconv.Atoi(countDepartmentsStr)
+
+	if err != nil {
+		fmt.Println("Неверный формат числа департаментов:", err)
+		return
+	}
 
 	for range countDepartments {
-		scanner.Scan()
-		countEmployeesStr := scanner.Text()
-		countEmployees, _ := strconv.Atoi(strings.TrimSpace(countEmployeesStr))
+		if !scanner.Scan() {
+			fmt.Println("Не удалось прочитать количество сотрудников")
+			return
+		}
+		countEmployeesStr := strings.TrimSpace(scanner.Text())
+		countEmployees, err := strconv.Atoi(countEmployeesStr)
+		if err != nil {
+			fmt.Println("Неверный формат числа сотрудников:", err)
+			return
+		}
 
 		department := NewDepartment(countEmployees)
 
 		for range countEmployees {
-			scanner.Scan()
-			line := strings.TrimSpace(scanner.Text())
+			if !scanner.Scan() {
+				fmt.Println("Не удалось прочитать строку с требованием")
+				return
+			}
 
+			line := strings.TrimSpace(scanner.Text())
 			parts := strings.Fields(line)
+
+			if len(parts) != 2 {
+				fmt.Println("Неверный формат строки:", line)
+				return
+			}
+
 			operand := parts[0]
-			temp, _ := strconv.Atoi(parts[1])
+			temp, err := strconv.Atoi(parts[1])
+			if err != nil {
+				fmt.Println("Неверная температура:", parts[1], err)
+				return
+			}
 
 			result := department.ProcessWorkerRequirement(operand, temp)
 			fmt.Println(result)
