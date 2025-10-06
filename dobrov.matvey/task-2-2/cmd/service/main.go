@@ -2,14 +2,30 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
+)
+
+var (
+	ErrCountOutOfRange  = errors.New("count out of range")
+	ErrRatingOutOfRange = errors.New("rating out of range")
+	ErrOrderOutOfRange  = errors.New("order out of range")
+	ErrUnexpectedType   = errors.New("unexpected type from heap.Pop")
 )
 
 type IntHeap []int
 
-func (h *IntHeap) Len() int           { return len(*h) }
-func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
-func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
+func (h *IntHeap) Len() int {
+	return len(*h)
+}
+
+func (h *IntHeap) Less(i, j int) bool {
+	return (*h)[i] > (*h)[j]
+}
+
+func (h *IntHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
 
 func (h *IntHeap) Push(x any) {
 	v, ok := x.(int)
@@ -29,84 +45,94 @@ func (h *IntHeap) Pop() any {
 	return x
 }
 
-func readN() (int, error) {
-	var n int
-	_, err := fmt.Scan(&n)
+func readCount() (int, error) {
+	var count int
+	_, err := fmt.Scan(&count)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("readCount scan: %w", err)
 	}
-	if n < 1 || n > 10000 {
-		return 0, fmt.Errorf("n out of range")
+	if count < 1 || count > 10000 {
+		return 0, fmt.Errorf("readCount: %w", ErrCountOutOfRange)
 	}
-	return n, nil
+
+	return count, nil
 }
 
-func readRatings(n int) ([]int, error) {
-	ratings := make([]int, n)
-	for idx := range n {
+func readRatings(count int) ([]int, error) {
+	ratings := make([]int, count)
+
+	for idx := range count {
 		_, err := fmt.Scan(&ratings[idx])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("readRatings scan #%d: %w", idx, err)
 		}
+
 		if ratings[idx] < -10000 || ratings[idx] > 10000 {
-			return nil, fmt.Errorf("rating out of range")
+			return nil, fmt.Errorf("readRatings: %w", ErrRatingOutOfRange)
 		}
 	}
+
 	return ratings, nil
 }
 
-func readK(n int) (int, error) {
-	var k int
-	_, err := fmt.Scan(&k)
+func readOrder(count int) (int, error) {
+	var order int
+	_, err := fmt.Scan(&order)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("readOrder scan: %w", err)
 	}
-	if k < 1 || k > n {
-		return 0, fmt.Errorf("k out of range")
+	if order < 1 || order > count {
+		return 0, fmt.Errorf("readOrder: %w", ErrOrderOutOfRange)
 	}
-	return k, nil
+
+	return order, nil
 }
 
-func buildMaxHeap(a []int) *IntHeap {
+func buildMaxHeap(values []int) *IntHeap {
 	h := &IntHeap{}
 	heap.Init(h)
-	for _, v := range a {
+
+	for _, v := range values {
 		heap.Push(h, v)
 	}
+
 	return h
 }
 
-func kthMax(h *IntHeap, k int) (int, error) {
-	for range k - 1 {
+func kthMax(h *IntHeap, order int) (int, error) {
+	for range order - 1 {
 		heap.Pop(h)
 	}
-	v, ok := heap.Pop(h).(int)
+
+	val, ok := heap.Pop(h).(int)
 	if !ok {
-		return 0, fmt.Errorf("unexpected type")
+		return 0, fmt.Errorf("kthMax: %w", ErrUnexpectedType)
 	}
-	return v, nil
+
+	return val, nil
 }
 
 func main() {
-	n, err := readN()
+	count, err := readCount()
 	if err != nil {
 		return
 	}
 
-	ratings, err := readRatings(n)
+	ratings, err := readRatings(count)
 	if err != nil {
 		return
 	}
 
-	k, err := readK(n)
+	order, err := readOrder(count)
 	if err != nil {
 		return
 	}
 
 	h := buildMaxHeap(ratings)
-	ans, err := kthMax(h, k)
+	ans, err := kthMax(h, order)
 	if err != nil {
 		return
 	}
+
 	fmt.Println(ans)
 }
