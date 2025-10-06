@@ -51,6 +51,7 @@ func readCount() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("readCount scan: %w", err)
 	}
+
 	if count < 1 || count > 10000 {
 		return 0, fmt.Errorf("readCount: %w", ErrCountOutOfRange)
 	}
@@ -81,6 +82,7 @@ func readOrder(count int) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("readOrder scan: %w", err)
 	}
+
 	if order < 1 || order > count {
 		return 0, fmt.Errorf("readOrder: %w", ErrOrderOutOfRange)
 	}
@@ -89,14 +91,13 @@ func readOrder(count int) (int, error) {
 }
 
 func buildMaxHeap(values []int) *IntHeap {
-	h := &IntHeap{}
-	heap.Init(h)
+	maxHeap := &IntHeap{}
+	heap.Init(maxHeap)
 
 	for _, v := range values {
-		heap.Push(h, v)
+		heap.Push(maxHeap, v)
 	}
-
-	return h
+	return maxHeap
 }
 
 func kthMax(h *IntHeap, order int) (int, error) {
@@ -128,8 +129,8 @@ func main() {
 		return
 	}
 
-	h := buildMaxHeap(ratings)
-	ans, err := kthMax(h, order)
+	maxHeap := buildMaxHeap(ratings)
+	ans, err := kthMax(maxHeap, order)
 	if err != nil {
 		return
 	}
