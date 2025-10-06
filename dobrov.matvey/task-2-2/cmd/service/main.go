@@ -40,7 +40,7 @@ func main() {
 	}
 
 	dishRatings := make([]int, countDish)
-	for i := 0; i < countDish; i++ {
+	for i := range countDish {
 		_, err = fmt.Scan(&dishRatings[i])
 
 		if err != nil {
@@ -69,7 +69,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < (desiredDish - 1); i++ {
+	for range desiredDish - 1 {
 		heap.Pop(dishRatingsHeap)
 	}
 
