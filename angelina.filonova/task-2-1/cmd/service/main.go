@@ -6,55 +6,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/filon6/task-2-1/pkg/department"
 )
 
-const (
-	defaultMinTemp = 15
-	defaultMaxTemp = 30
-	partsCount     = 2
-)
-
-type Department struct {
-	minTemp  int
-	maxTemp  int
-	employee int
-}
-
-func NewDepartment(employee int) *Department {
-	return &Department{
-		minTemp:  defaultMinTemp,
-		maxTemp:  defaultMaxTemp,
-		employee: employee,
-	}
-}
-
-func (d *Department) ProcessWorkerRequirement(operand string, temp int) int {
-	switch operand {
-	case ">=":
-		if temp > d.minTemp {
-			d.minTemp = temp
-		}
-	case "<=":
-		if temp < d.maxTemp {
-			d.maxTemp = temp
-		}
-	default:
-		d.minTemp = temp
-		d.maxTemp = temp
-	}
-
-	if d.minTemp > d.maxTemp {
-		return -1
-	}
-
-	return d.minTemp
-}
+const partsCount = 2
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	if !scanner.Scan() {
-		fmt.Println("Не удалось прочитать количество департаментов")
+		fmt.Println("Не удалось прочитать количество отделов")
 
 		return
 	}
@@ -63,7 +25,7 @@ func main() {
 
 	countDepartments, err := strconv.Atoi(countDepartmentsStr)
 	if err != nil {
-		fmt.Println("Неверный формат числа департаментов:", err)
+		fmt.Println("Неверный формат числа отделов:", err)
 
 		return
 	}
@@ -83,7 +45,7 @@ func main() {
 			return
 		}
 
-		department := NewDepartment(countEmployees)
+		department := department.NewDepartment(countEmployees)
 
 		for range countEmployees {
 			if !scanner.Scan() {
