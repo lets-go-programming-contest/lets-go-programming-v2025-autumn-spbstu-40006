@@ -25,10 +25,12 @@ func (d *Department) ProcessWorkerRequirement(operand string, temp int) int {
 		if temp > d.minTemp {
 			d.minTemp = temp
 		}
+
 	case "<=":
 		if temp < d.maxTemp {
 			d.maxTemp = temp
 		}
+
 	default:
 		d.minTemp = temp
 		d.maxTemp = temp
