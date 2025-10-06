@@ -10,6 +10,7 @@ type IntHeap []int
 func (h *IntHeap) Len() int           { return len(*h) }
 func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
 func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
+
 func (h *IntHeap) Push(x any) {
 	v, ok := x.(int)
 	if !ok {
@@ -28,49 +29,84 @@ func (h *IntHeap) Pop() any {
 	return x
 }
 
-func main() {
-	var countDish, desiredDish int
-	_, err := fmt.Scan(&countDish)
-
+func readN() (int, error) {
+	var n int
+	_, err := fmt.Scan(&n)
 	if err != nil {
-		return
+		return 0, err
 	}
-
-	if countDish < 1 || countDish > 10000 {
-		return
+	if n < 1 || n > 10000 {
+		return 0, fmt.Errorf("n out of range")
 	}
+	return n, nil
+}
 
-	dishRatings := make([]int, countDish)
-	for idx := range countDish {
-		_, err = fmt.Scan(&dishRatings[idx])
+func readRatings(n int) ([]int, error) {
+	ratings := make([]int, n)
+	for idx := range n {
+		_, err := fmt.Scan(&ratings[idx])
 		if err != nil {
-			return
+			return nil, err
 		}
-
-		if dishRatings[idx] < -10000 || dishRatings[idx] > 10000 {
-			return
+		if ratings[idx] < -10000 || ratings[idx] > 10000 {
+			return nil, fmt.Errorf("rating out of range")
 		}
 	}
+	return ratings, nil
+}
 
-	dishRatingsHeap := &IntHeap{}
-	heap.Init(dishRatingsHeap)
-
-	for _, dishRating := range dishRatings {
-		heap.Push(dishRatingsHeap, dishRating)
+func readK(n int) (int, error) {
+	var k int
+	_, err := fmt.Scan(&k)
+	if err != nil {
+		return 0, err
 	}
+	if k < 1 || k > n {
+		return 0, fmt.Errorf("k out of range")
+	}
+	return k, nil
+}
 
-	_, err = fmt.Scan(&desiredDish)
+func buildMaxHeap(a []int) *IntHeap {
+	h := &IntHeap{}
+	heap.Init(h)
+	for _, v := range a {
+		heap.Push(h, v)
+	}
+	return h
+}
+
+func kthMax(h *IntHeap, k int) (int, error) {
+	for range k - 1 {
+		heap.Pop(h)
+	}
+	v, ok := heap.Pop(h).(int)
+	if !ok {
+		return 0, fmt.Errorf("unexpected type")
+	}
+	return v, nil
+}
+
+func main() {
+	n, err := readN()
 	if err != nil {
 		return
 	}
 
-	if desiredDish < 1 || desiredDish > countDish {
+	ratings, err := readRatings(n)
+	if err != nil {
 		return
 	}
 
-	for range desiredDish - 1 {
-		heap.Pop(dishRatingsHeap)
+	k, err := readK(n)
+	if err != nil {
+		return
 	}
 
-	fmt.Println(heap.Pop(dishRatingsHeap))
+	h := buildMaxHeap(ratings)
+	ans, err := kthMax(h, k)
+	if err != nil {
+		return
+	}
+	fmt.Println(ans)
 }
