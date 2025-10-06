@@ -31,6 +31,7 @@ func (h *IntHeap) Pop() any {
 func main() {
 	var countDish, desiredDish int
 	_, err := fmt.Scan(&countDish)
+
 	if err != nil {
 		return
 	}
