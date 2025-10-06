@@ -15,6 +15,7 @@ func (h *IntHeap) Push(x any) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, v)
 }
 
@@ -30,7 +31,6 @@ func (h *IntHeap) Pop() any {
 func main() {
 	var countDish, desiredDish int
 	_, err := fmt.Scan(&countDish)
-
 	if err != nil {
 		return
 	}
@@ -40,14 +40,13 @@ func main() {
 	}
 
 	dishRatings := make([]int, countDish)
-	for i := range countDish {
-		_, err = fmt.Scan(&dishRatings[i])
-
+	for idx := range countDish {
+		_, err = fmt.Scan(&dishRatings[idx])
 		if err != nil {
 			return
 		}
 
-		if dishRatings[i] < -10000 || dishRatings[i] > 10000 {
+		if dishRatings[idx] < -10000 || dishRatings[idx] > 10000 {
 			return
 		}
 	}
@@ -60,7 +59,6 @@ func main() {
 	}
 
 	_, err = fmt.Scan(&desiredDish)
-
 	if err != nil {
 		return
 	}
