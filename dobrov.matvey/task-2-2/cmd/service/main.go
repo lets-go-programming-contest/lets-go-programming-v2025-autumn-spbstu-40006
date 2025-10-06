@@ -47,6 +47,7 @@ func (h *IntHeap) Pop() any {
 
 func readCount() (int, error) {
 	var count int
+
 	_, err := fmt.Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("readCount scan: %w", err)
@@ -78,6 +79,7 @@ func readRatings(count int) ([]int, error) {
 
 func readOrder(count int) (int, error) {
 	var order int
+
 	_, err := fmt.Scan(&order)
 	if err != nil {
 		return 0, fmt.Errorf("readOrder scan: %w", err)
@@ -131,6 +133,7 @@ func main() {
 	}
 
 	maxHeap := buildMaxHeap(ratings)
+
 	ans, err := kthMax(maxHeap, order)
 	if err != nil {
 		return
