@@ -97,6 +97,7 @@ func buildMaxHeap(values []int) *IntHeap {
 	for _, v := range values {
 		heap.Push(maxHeap, v)
 	}
+
 	return maxHeap
 }
 
