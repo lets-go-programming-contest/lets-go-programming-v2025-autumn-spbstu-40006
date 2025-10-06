@@ -11,6 +11,7 @@ import (
 const (
 	defaultMinTemp = 15
 	defaultMaxTemp = 30
+	partsCount     = 2
 )
 
 type Department struct {
@@ -54,26 +55,31 @@ func main() {
 
 	if !scanner.Scan() {
 		fmt.Println("Не удалось прочитать количество департаментов")
+
 		return
 	}
 
 	countDepartmentsStr := strings.TrimSpace(scanner.Text())
-	countDepartments, err := strconv.Atoi(countDepartmentsStr)
 
+	countDepartments, err := strconv.Atoi(countDepartmentsStr)
 	if err != nil {
 		fmt.Println("Неверный формат числа департаментов:", err)
+
 		return
 	}
 
 	for range countDepartments {
 		if !scanner.Scan() {
 			fmt.Println("Не удалось прочитать количество сотрудников")
+
 			return
 		}
 		countEmployeesStr := strings.TrimSpace(scanner.Text())
+
 		countEmployees, err := strconv.Atoi(countEmployeesStr)
 		if err != nil {
 			fmt.Println("Неверный формат числа сотрудников:", err)
+
 			return
 		}
 
@@ -82,21 +88,25 @@ func main() {
 		for range countEmployees {
 			if !scanner.Scan() {
 				fmt.Println("Не удалось прочитать строку с требованием")
+
 				return
 			}
 
 			line := strings.TrimSpace(scanner.Text())
 			parts := strings.Fields(line)
 
-			if len(parts) != 2 {
+			if len(parts) != partsCount {
 				fmt.Println("Неверный формат строки:", line)
+
 				return
 			}
 
 			operand := parts[0]
+
 			temp, err := strconv.Atoi(parts[1])
 			if err != nil {
 				fmt.Println("Неверная температура:", parts[1], err)
+
 				return
 			}
 
