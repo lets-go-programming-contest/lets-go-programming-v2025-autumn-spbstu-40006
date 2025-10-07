@@ -17,7 +17,12 @@ func ParseYAML(filename string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening config file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	decoder := yaml.NewDecoder(file)
 	decoder.KnownFields(true)
