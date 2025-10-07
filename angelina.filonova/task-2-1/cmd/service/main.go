@@ -24,7 +24,6 @@ const partsCount = 2
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-
 	countDepartments, err := readInt(scanner)
 
 	if err != nil {
@@ -73,7 +72,6 @@ func processDepartment(scanner *bufio.Scanner) error {
 		}
 
 		line := strings.TrimSpace(scanner.Text())
-		
 		parts := strings.Fields(line)
 
 		if len(parts) != partsCount {
