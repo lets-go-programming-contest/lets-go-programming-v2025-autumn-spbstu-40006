@@ -12,7 +12,7 @@ const (
 	filePerm = 0o644
 )
 
-func ParseJSON(source ExchangeRate, path string) error {
+func ParseJSON(list []Currency, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return fmt.Errorf("couldn't create a directory: %w", err)
 	}
@@ -24,7 +24,7 @@ func ParseJSON(source ExchangeRate, path string) error {
 
 	encoder := json.NewEncoder(file)
 
-	if err := encoder.Encode(source); err != nil {
+	if err := encoder.Encode(list); err != nil {
 		return fmt.Errorf("problem while writing json: %w", err)
 	}
 

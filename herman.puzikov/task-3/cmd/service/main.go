@@ -28,7 +28,7 @@ func main() {
 
 	slices.SortFunc(exchangeRates.Currencies, utils.DescendingComparatorCurrency)
 
-	if err := utils.ParseJSON(*exchangeRates, configFile.OutputFile); err != nil {
+	if err := utils.ParseJSON(exchangeRates.Currencies, configFile.OutputFile); err != nil {
 		log.Panic(err)
 	}
 }
