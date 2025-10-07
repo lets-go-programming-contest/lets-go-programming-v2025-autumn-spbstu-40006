@@ -27,3 +27,9 @@ func (cf *CommaFloat) UnmarshalText(text []byte) error {
 	*cf = CommaFloat(v)
 	return nil
 }
+
+func (cf *CommaFloat) MarshalText() (text []byte, err error) {
+	buf := make([]byte, 0, 32)
+	buf = strconv.AppendFloat(buf, float64(*cf), 'f', 4, 64)
+	return buf, nil
+}
