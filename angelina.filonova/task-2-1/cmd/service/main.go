@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < countDepartments; i++ {
+	for range countDepartments {
 		if err := processDepartment(scanner); err != nil {
 			fmt.Println(err)
 
@@ -47,7 +47,6 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 	}
 
 	text := strings.TrimSpace(scanner.Text())
-
 	value, err := strconv.Atoi(text)
 	if err != nil {
 		return 0, ErrInvalidNumberFormat
@@ -64,7 +63,7 @@ func processDepartment(scanner *bufio.Scanner) error {
 
 	dept := department.NewDepartment(countEmployees)
 
-	for i := 0; i < countEmployees; i++ {
+	for range countEmployees {
 		if !scanner.Scan() {
 			return ErrReadRequirement
 		}
@@ -77,7 +76,6 @@ func processDepartment(scanner *bufio.Scanner) error {
 		}
 
 		operand := parts[0]
-
 		temp, err := strconv.Atoi(parts[1])
 		if err != nil {
 			return ErrInvalidTemperature
