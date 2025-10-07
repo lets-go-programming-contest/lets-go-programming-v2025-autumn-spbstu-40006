@@ -17,8 +17,8 @@ func main() {
 		return
 	}
 
-	if os.Args[1] != "-config" {
-		log.Panicf("Invalid operand: %v\nThe correct usage is: -config <path-to-config>\n", os.Args)
+	if os.Args[1] != "--config" {
+		log.Panicf("Invalid operand: %v\nThe correct usage is: --config <path-to-config>\n", os.Args)
 
 		return
 	}
