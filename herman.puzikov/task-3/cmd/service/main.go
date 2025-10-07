@@ -1,29 +1,22 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"os"
 	"slices"
 
 	"github.com/Segfault-chan/task-3/internal/utils"
 )
 
-const argsLen = 3
-
 func main() {
-	if len(os.Args) != argsLen {
-		log.Panicf("Invalid number of args: %v\nThe correct usage is: -config <path-to-config>\n", os.Args)
+	configPath := flag.String("config", "", "path to YAML config file")
+	flag.Parse()
 
-		return
+	if *configPath == "" {
+		log.Panic("no config file provided")
 	}
 
-	if os.Args[1] != "--config" {
-		log.Panicf("Invalid operand: %v\nThe correct usage is: --config <path-to-config>\n", os.Args)
-
-		return
-	}
-
-	configFile, err := utils.ParseYAML(os.Args[2])
+	configFile, err := utils.ParseYAML(*configPath)
 	if err != nil {
 		log.Panic(err)
 	}
