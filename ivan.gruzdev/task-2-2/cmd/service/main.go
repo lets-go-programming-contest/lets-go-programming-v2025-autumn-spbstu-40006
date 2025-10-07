@@ -3,7 +3,6 @@ package main
 import (
 	"container/heap"
 	"fmt"
-	"os"
 )
 
 type PriorityQueue []int
@@ -38,11 +37,12 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return lastElement
 }
 
-func mustScan(a ...interface{}) {
-	_, err := fmt.Scan(a...)
-	if err != nil {
-		os.Exit(1)
+func mustScan(a ...interface{}) error {
+	if _, err := fmt.Scan(a...); err != nil {
+		return fmt.Errorf("error reading the input: %w", err)
 	}
+
+	return nil
 }
 
 func main() {
@@ -52,15 +52,28 @@ func main() {
 	)
 
 	heap.Init(&priorityQueue)
-	mustScan(&countDish)
+
+	if err := mustScan(&countDish); err != nil {
+		fmt.Printf("Error reading dish count: %v\n", err)
+
+		return
+	}
 
 	rating := make([]int, countDish)
 
 	for i := range countDish {
-		mustScan(&rating[i])
+		if err := mustScan(&rating[i]); err != nil {
+			fmt.Printf("Error reading raiting[%d]: %v\n", i, err)
+
+			return
+		}
 	}
 
-	mustScan(&preference)
+	if err := mustScan(&preference); err != nil {
+		fmt.Printf("Error reading preference: %v\n", err)
+
+		return
+	}
 
 	for i := range countDish {
 		if priorityQueue.Len() < preference {
