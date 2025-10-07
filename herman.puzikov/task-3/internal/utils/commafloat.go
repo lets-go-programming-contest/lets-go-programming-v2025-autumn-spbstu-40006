@@ -15,12 +15,6 @@ var (
 	ErrInvalidNumber      = errors.New("invalid number")
 )
 
-const (
-	marshalBufCap     = 32
-	marshalFracDigits = 4
-	floatBitSize      = 64
-)
-
 func (cf *CommaFloat) UnmarshalText(text []byte) error {
 	str := strings.TrimSpace(string(text))
 	if str == "" {
@@ -40,11 +34,4 @@ func (cf *CommaFloat) UnmarshalText(text []byte) error {
 	*cf = CommaFloat(v)
 
 	return nil
-}
-
-func (cf *CommaFloat) MarshalText() ([]byte, error) {
-	buf := make([]byte, 0, marshalBufCap)
-	buf = strconv.AppendFloat(buf, float64(*cf), 'f', marshalFracDigits, floatBitSize)
-
-	return buf, nil
 }
