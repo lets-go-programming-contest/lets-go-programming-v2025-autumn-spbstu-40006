@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/xml"
 	"fmt"
-
 	"os"
 
 	"golang.org/x/net/html/charset"
@@ -17,13 +16,13 @@ type ExchangeRate struct {
 }
 
 type Currency struct {
-	ID        string `xml:"ID"`
-	NumCode   string `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Nominal   uint   `xml:"Nominal"`
-	Name      string `xml:"Name"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
+	ID        string     `xml:"ID"`
+	NumCode   string     `xml:"NumCode"`
+	CharCode  string     `xml:"CharCode"`
+	Nominal   uint       `xml:"Nominal"`
+	Name      string     `xml:"Name"`
+	Value     CommaFloat `xml:"Value"`
+	VunitRate CommaFloat `xml:"VunitRate"`
 }
 
 func ParseXML(filepath string) (*ExchangeRate, error) {
