@@ -26,6 +26,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	countDepartments, err := readInt(scanner)
+
 	if err != nil {
 		fmt.Println("error: invalid number of departments")
 
@@ -47,7 +48,9 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 	}
 
 	text := strings.TrimSpace(scanner.Text())
+
 	value, err := strconv.Atoi(text)
+
 	if err != nil {
 		return 0, ErrInvalidNumberFormat
 	}
@@ -57,6 +60,7 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 
 func processDepartment(scanner *bufio.Scanner) error {
 	countEmployees, err := readInt(scanner)
+
 	if err != nil {
 		return ErrInvalidEmployeeCount
 	}
@@ -69,6 +73,7 @@ func processDepartment(scanner *bufio.Scanner) error {
 		}
 
 		line := strings.TrimSpace(scanner.Text())
+		
 		parts := strings.Fields(line)
 
 		if len(parts) != partsCount {
@@ -76,12 +81,15 @@ func processDepartment(scanner *bufio.Scanner) error {
 		}
 
 		operand := parts[0]
+
 		temp, err := strconv.Atoi(parts[1])
+
 		if err != nil {
 			return ErrInvalidTemperature
 		}
 
 		result := dept.ProcessWorkerRequirement(operand, temp)
+
 		fmt.Println(result)
 	}
 
