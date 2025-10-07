@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -18,12 +19,14 @@ func main() {
 	countDepartments, err := readInt(scanner)
 	if err != nil {
 		fmt.Println("Ошибка: некорректное количество отделов")
+
 		return
 	}
 
-	for range countDepartments {
+	for i := 0; i < countDepartments; i++ {
 		if err := processDepartment(scanner); err != nil {
 			fmt.Println(err)
+
 			return
 		}
 	}
@@ -31,43 +34,45 @@ func main() {
 
 func readInt(scanner *bufio.Scanner) (int, error) {
 	if !scanner.Scan() {
-		return 0, fmt.Errorf("Ошибка: не удалось прочитать число")
+		return 0, errors.New("Ошибка: не удалось прочитать число")
 	}
 
 	text := strings.TrimSpace(scanner.Text())
 	value, err := strconv.Atoi(text)
 	if err != nil {
-		return 0, fmt.Errorf("Ошибка: неверный формат числа")
+		return 0, errors.New("Ошибка: неверный формат числа")
 	}
+
 	return value, nil
 }
 
 func processDepartment(scanner *bufio.Scanner) error {
 	countEmployees, err := readInt(scanner)
 	if err != nil {
-		return fmt.Errorf("Ошибка: некорректное количество сотрудников")
+		return errors.New("Ошибка: некорректное количество сотрудников")
 	}
 
 	dept := department.NewDepartment(countEmployees)
 
-	for range countEmployees {
+	for i := 0; i < countEmployees; i++ {
 		if !scanner.Scan() {
-			return fmt.Errorf("Ошибка: не удалось прочитать строку с требованием")
+			return errors.New("Ошибка: не удалось прочитать строку с требованием")
 		}
 
 		line := strings.TrimSpace(scanner.Text())
 		parts := strings.Fields(line)
+
 		if len(parts) != partsCount {
-			return fmt.Errorf("Ошибка: неверный формат строки")
+			return errors.New("Ошибка: неверный формат строки")
 		}
 
-		op := parts[0]
+		operand := parts[0]
 		temp, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return fmt.Errorf("Ошибка: неверная температура")
+			return errors.New("Ошибка: неверная температура")
 		}
 
-		result := dept.ProcessWorkerRequirement(op, temp)
+		result := dept.ProcessWorkerRequirement(operand, temp)
 		fmt.Println(result)
 	}
 
