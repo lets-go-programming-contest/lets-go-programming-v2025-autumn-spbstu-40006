@@ -15,105 +15,56 @@ const partsCount = 2
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-<<<<<<< HEAD
-	countDepartments, err := readInt(scanner, "количество отделов")
+	countDepartments, err := readInt(scanner)
 	if err != nil {
-		fmt.Println(err)
-=======
-	if !scanner.Scan() {
-		fmt.Println("Не удалось прочитать количество отделов")
-		return
-	}
-	countDepartmentsStr := strings.TrimSpace(scanner.Text())
-	countDepartments, err := strconv.Atoi(countDepartmentsStr)
-	if err != nil {
-		fmt.Println("Неверный формат количества отделов:", err)
->>>>>>> bc643ba ([TASK-2-1] fix lint go code againn)
+		fmt.Println("Ошибка: некорректное количество отделов")
 		return
 	}
 
 	for range countDepartments {
-<<<<<<< HEAD
 		if err := processDepartment(scanner); err != nil {
 			fmt.Println(err)
 			return
-=======
-		if !scanner.Scan() {
-			fmt.Println("Не удалось прочитать количество сотрудников")
-			return
-		}
-		countEmployeesStr := strings.TrimSpace(scanner.Text())
-		countEmployees, err := strconv.Atoi(countEmployeesStr)
-		if err != nil {
-			fmt.Println("Неверный формат количества сотрудников:", err)
-			return
-		}
-
-		department := NewDepartment(countEmployees)
-
-		for range countEmployees {
-			if !scanner.Scan() {
-				fmt.Println("Не удалось прочитать требование сотрудника")
-				return
-			}
-			line := strings.TrimSpace(scanner.Text())
-
-			parts := strings.Fields(line)
-			if len(parts) != 2 {
-				fmt.Println("Неверный формат строки:", line)
-				return
-			}
-
-			operand := parts[0]
-			temp, err := strconv.Atoi(parts[1])
-			if err != nil {
-				fmt.Println("Неверная температура:", parts[1], err)
-				return
-			}
-
-			result := department.ProcessWorkerRequirement(operand, temp)
-			fmt.Println(result)
->>>>>>> bc643ba ([TASK-2-1] fix lint go code againn)
 		}
 	}
 }
 
-func readInt(scanner *bufio.Scanner, name string) (int, error) {
+func readInt(scanner *bufio.Scanner) (int, error) {
 	if !scanner.Scan() {
-		return 0, fmt.Errorf("не удалось прочитать %s", name)
+		return 0, fmt.Errorf("Ошибка: не удалось прочитать число")
 	}
 
-	valueStr := strings.TrimSpace(scanner.Text())
-	value, err := strconv.Atoi(valueStr)
+	text := strings.TrimSpace(scanner.Text())
+	value, err := strconv.Atoi(text)
 	if err != nil {
-		return 0, fmt.Errorf("неверный формат числа %s: %v", name, err)
+		return 0, fmt.Errorf("Ошибка: неверный формат числа")
 	}
 	return value, nil
 }
 
 func processDepartment(scanner *bufio.Scanner) error {
-	countEmployees, err := readInt(scanner, "количество сотрудников")
+	countEmployees, err := readInt(scanner)
 	if err != nil {
-		return err
+		return fmt.Errorf("Ошибка: некорректное количество сотрудников")
 	}
 
 	dept := department.NewDepartment(countEmployees)
 
 	for range countEmployees {
 		if !scanner.Scan() {
-			return fmt.Errorf("не удалось прочитать строку с требованием")
+			return fmt.Errorf("Ошибка: не удалось прочитать строку с требованием")
 		}
 
 		line := strings.TrimSpace(scanner.Text())
 		parts := strings.Fields(line)
 		if len(parts) != partsCount {
-			return fmt.Errorf("неверный формат строки: %q", line)
+			return fmt.Errorf("Ошибка: неверный формат строки")
 		}
 
 		op := parts[0]
 		temp, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return fmt.Errorf("неверная температура: %q (%v)", parts[1], err)
+			return fmt.Errorf("Ошибка: неверная температура")
 		}
 
 		result := dept.ProcessWorkerRequirement(op, temp)
