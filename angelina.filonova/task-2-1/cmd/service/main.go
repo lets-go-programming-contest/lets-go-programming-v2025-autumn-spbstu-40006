@@ -12,12 +12,12 @@ import (
 )
 
 var (
-	ErrReadNumberFailed     = errors.New("Ошибка: не удалось прочитать число")
-	ErrInvalidNumberFormat  = errors.New("Ошибка: неверный формат числа")
-	ErrInvalidEmployeeCount = errors.New("Ошибка: некорректное количество сотрудников")
-	ErrReadRequirement      = errors.New("Ошибка: не удалось прочитать строку с требованием")
-	ErrInvalidLineFormat    = errors.New("Ошибка: неверный формат строки")
-	ErrInvalidTemperature   = errors.New("Ошибка: неверная температура")
+	ErrReadNumberFailed     = errors.New("failed to read number")
+	ErrInvalidNumberFormat  = errors.New("invalid number format")
+	ErrInvalidEmployeeCount = errors.New("invalid number of employees")
+	ErrReadRequirement      = errors.New("failed to read requirement line")
+	ErrInvalidLineFormat    = errors.New("invalid line format")
+	ErrInvalidTemperature   = errors.New("invalid temperature value")
 )
 
 const partsCount = 2
@@ -27,13 +27,15 @@ func main() {
 
 	countDepartments, err := readInt(scanner)
 	if err != nil {
-		fmt.Println("Ошибка: некорректное количество отделов")
+		fmt.Println("error: invalid number of departments")
+
 		return
 	}
 
-	for range countDepartments {
+	for i := 0; i < countDepartments; i++ {
 		if err := processDepartment(scanner); err != nil {
 			fmt.Println(err)
+
 			return
 		}
 	}
@@ -45,6 +47,7 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 	}
 
 	text := strings.TrimSpace(scanner.Text())
+
 	value, err := strconv.Atoi(text)
 	if err != nil {
 		return 0, ErrInvalidNumberFormat
@@ -61,18 +64,20 @@ func processDepartment(scanner *bufio.Scanner) error {
 
 	dept := department.NewDepartment(countEmployees)
 
-	for range countEmployees {
+	for i := 0; i < countEmployees; i++ {
 		if !scanner.Scan() {
 			return ErrReadRequirement
 		}
 
 		line := strings.TrimSpace(scanner.Text())
 		parts := strings.Fields(line)
+
 		if len(parts) != partsCount {
 			return ErrInvalidLineFormat
 		}
 
 		operand := parts[0]
+
 		temp, err := strconv.Atoi(parts[1])
 		if err != nil {
 			return ErrInvalidTemperature
