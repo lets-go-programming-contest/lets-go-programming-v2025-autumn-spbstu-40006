@@ -1,25 +1,44 @@
 package utils
 
 import (
+	"encoding/xml"
 	"fmt"
+
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"golang.org/x/net/html/charset"
 )
 
-func ParseYAML(dst *map[string]string, filename string) error {
-	file, err := os.Open(filename)
+type ExchangeRate struct {
+	XMLName    xml.Name   `xml:"ValCurs"`
+	Date       string     `xml:"Date,attr"`
+	Name       string     `xml:"name,attr"`
+	Currencies []Currency `xml:"Valute"`
+}
+
+type Currency struct {
+	ID        string `xml:"ID"`
+	NumCode   string `xml:"NumCode"`
+	CharCode  string `xml:"CharCode"`
+	Nominal   uint   `xml:"Nominal"`
+	Name      string `xml:"Name"`
+	Value     string `xml:"Value"`
+	VunitRate string `xml:"VunitRate"`
+}
+
+func ParseXML(filepath string) (*ExchangeRate, error) {
+	file, err := os.Open(filepath)
 	if err != nil {
-		return fmt.Errorf("failed to open YAML file: %w", err)
+		return nil, fmt.Errorf("error opening config file: %w", err)
 	}
 	defer file.Close()
 
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(dst); err != nil {
-		return fmt.Errorf("failed to decode YAML: %w", err)
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+	var exchRates ExchangeRate
+	if err := decoder.Decode(&exchRates); err != nil {
+		return nil, fmt.Errorf("error decoding XML: %w", err)
 	}
 
-	return nil
+	return &exchRates, nil
 }
-
-// func parseXML()
