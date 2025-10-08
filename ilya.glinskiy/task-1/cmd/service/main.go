@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"log"
-)
+import "fmt"
 
 func main() {
 	var num1, num2 int
@@ -11,7 +8,7 @@ func main() {
 
 	_, err := fmt.Scan(&num1)
 	if err != nil {
-		log.Println("Invalid first operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
@@ -36,7 +33,7 @@ func main() {
 		fmt.Println(num1 * num2)
 	case "/":
 		if num2 == 0 {
-			fmt.Println("Invalid operation")
+			fmt.Println("Division by zero")
 			return
 		}
 
