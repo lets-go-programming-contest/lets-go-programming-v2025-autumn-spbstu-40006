@@ -7,16 +7,16 @@ import (
 
 type MaxHeap []int
 
-func (h MaxHeap) Len() int {
-	return len(h)
+func (h *MaxHeap) Len() int {
+	return len(*h)
 }
 
-func (h MaxHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (h *MaxHeap) Less(i, j int) bool {
+	return (*h)[i] > (*h)[j]
 }
 
-func (h MaxHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *MaxHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *MaxHeap) Push(x interface{}) {
@@ -24,6 +24,7 @@ func (h *MaxHeap) Push(x interface{}) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, value)
 }
 
@@ -38,6 +39,7 @@ func (h *MaxHeap) Pop() interface{} {
 
 func main() {
 	var numberOfDishes, kNumber int
+
 	_, err := fmt.Scan(&numberOfDishes)
 	if err != nil {
 		fmt.Println("Invalid number of dishes")
@@ -46,6 +48,7 @@ func main() {
 	}
 
 	ratings := make([]int, numberOfDishes)
+
 	for i := range numberOfDishes {
 		_, err = fmt.Scan(&ratings[i])
 		if err != nil {
@@ -75,5 +78,4 @@ func main() {
 
 	choice := heap.Pop(ratingsHeap)
 	fmt.Println(choice)
-
 }
