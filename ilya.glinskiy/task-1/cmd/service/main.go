@@ -11,17 +11,20 @@ func main() {
 
 	_, err := fmt.Scan(&num1)
 	if err != nil {
-		log.Fatal("Invalid first operand")
+		log.Println("Invalid first operand")
+		return
 	}
 
 	_, err = fmt.Scan(&num2)
 	if err != nil {
-		log.Fatal("Invalid second operand")
+		fmt.Println("Invalid second operand")
+		return
 	}
 
 	_, err = fmt.Scan(&op)
 	if err != nil {
-		log.Fatal("Invalid operation")
+		fmt.Println("Invalid operation")
+		return
 	}
 
 	switch op {
@@ -33,9 +36,13 @@ func main() {
 		fmt.Println(num1 * num2)
 	case "/":
 		if num2 == 0 {
-			log.Fatal("Invalid operation")
+			fmt.Println("Invalid operation")
+			return
 		}
 
 		fmt.Println(num1 / num2)
+	default:
+		fmt.Println("Invalid operation")
+		return
 	}
 }
