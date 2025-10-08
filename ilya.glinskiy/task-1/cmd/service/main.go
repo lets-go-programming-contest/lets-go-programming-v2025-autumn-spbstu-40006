@@ -6,10 +6,8 @@ import (
 )
 
 func main() {
-	var (
-		num1, num2 int
-		op         string
-	)
+	var num1, num2 int
+	var op string
 
 	_, err := fmt.Scan(&num1)
 	if err != nil {
@@ -37,6 +35,7 @@ func main() {
 		if num2 == 0 {
 			log.Fatal("Invalid operation")
 		}
-		fmt.Println(float64(num1) / float64(num2))
+
+		fmt.Println(num1 / num2)
 	}
 }
