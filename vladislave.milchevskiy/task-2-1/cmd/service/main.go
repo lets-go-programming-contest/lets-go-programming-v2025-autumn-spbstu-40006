@@ -15,6 +15,7 @@ func main() {
 	for range numDepartments {
 		minT := 15
 		maxT := 30
+
 		var numWorkers int
 
 		_, err = fmt.Scan(&numWorkers)
@@ -27,6 +28,7 @@ func main() {
 		for range numWorkers {
 			var operation string
 			var Temp int
+
 			_, err = fmt.Scan(&operation, &Temp)
 
 			if err == nil && operation == ">=" {
