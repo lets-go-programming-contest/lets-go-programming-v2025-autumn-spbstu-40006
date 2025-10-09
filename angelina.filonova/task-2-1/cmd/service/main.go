@@ -78,15 +78,15 @@ func processDepartment(scanner *bufio.Scanner) error {
 
 	dept := department.NewDepartment(countEmployees)
 
-	for range countEmployees {
+	for i := 0; i < countEmployees; i++ {
 		if !scanner.Scan() {
 			return ErrReadRequirement
 		}
 
 		var (
-			line    = strings.TrimSpace(scanner.Text())
-			parts   = strings.Fields(line)
-			operand string
+			line           = strings.TrimSpace(scanner.Text())
+			parts          = strings.Fields(line)
+			operand string = parts[0]
 		)
 
 		if len(parts) != partsCount {
