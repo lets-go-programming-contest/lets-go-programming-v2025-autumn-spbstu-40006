@@ -96,6 +96,7 @@ func processDepartment(scanner *bufio.Scanner) error {
 
 		operand = parts[0]
 		temp, err = strconv.Atoi(parts[1])
+
 		if err != nil {
 			return ErrInvalidTemperature
 		}
