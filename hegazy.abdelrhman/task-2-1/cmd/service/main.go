@@ -4,63 +4,50 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	var departments int
-	if _, err := fmt.Fscan(reader, &departments); err != nil {
-		fmt.Fprintln(os.Stderr, "failed to read number of departments:", err)
+	var departments, workers int
 
+	if _, err := fmt.Fscan(reader, &departments); err != nil {
 		return
 	}
 
-	for deptIndex := range make([]struct{}, departments) {
-		_ = deptIndex // silence unused var if not needed
-
-		var employees int
-		if _, err := fmt.Fscan(reader, &employees); err != nil {
-			fmt.Fprintln(os.Stderr, "failed to read number of employees:", err)
-
+	for range departments {
+		if _, err := fmt.Fscan(reader, &workers); err != nil {
 			return
 		}
 
-		low := 15
-		high := 30
+		minTemp := 15
+		maxTemp := 30
 
-		for empIndex := 0; empIndex < employees; empIndex++ {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "failed to read employee preference:", err)
+		for range workers {
+			var (
+				operator    string
+				temperature int
+			)
 
+			if _, err := fmt.Fscan(reader, &operator, &temperature); err != nil {
 				return
 			}
 
-			line = strings.TrimSpace(line)
-			if line == "" {
-				empIndex--
-
-				continue
-			}
-
-			var value int
-			if strings.HasPrefix(line, ">=") {
-				if n, err := fmt.Sscanf(line, ">= %d", &value); err == nil && n == 1 && value > low {
-					low = value
+			if operator == ">=" {
+				if temperature > minTemp {
+					minTemp = temperature
 				}
-			} else if strings.HasPrefix(line, "<=") {
-				if n, err := fmt.Sscanf(line, "<= %d", &value); err == nil && n == 1 && value < high {
-					high = value
+			} else if operator == "<=" {
+				if temperature < maxTemp {
+					maxTemp = temperature
 				}
 			}
-		}
 
-		if low <= high {
-			fmt.Println(low)
-		} else {
-			fmt.Println(-1)
+			if minTemp > maxTemp {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(minTemp)
+			}
 		}
 	}
 }
