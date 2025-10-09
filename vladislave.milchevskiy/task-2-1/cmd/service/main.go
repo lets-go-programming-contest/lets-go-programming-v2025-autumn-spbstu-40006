@@ -27,6 +27,7 @@ func main() {
 
 		for range numWorkers {
 			var operation string
+
 			var Temp int
 
 			_, err = fmt.Scan(&operation, &Temp)
