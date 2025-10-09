@@ -89,8 +89,6 @@ func processDepartment(scanner *bufio.Scanner) error {
 			operand string
 		)
 
-		parts = strings.Fields(line)
-
 		if len(parts) != partsCount {
 			return ErrInvalidLineFormat
 		}
