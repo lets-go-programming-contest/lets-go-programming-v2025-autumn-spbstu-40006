@@ -23,15 +23,13 @@ var (
 const partsCount = 2
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-
 	var (
+		scanner          = bufio.NewScanner(os.Stdin)
 		countDepartments int
 		err              error
 	)
 
 	countDepartments, err = readInt(scanner)
-
 	if err != nil {
 		fmt.Println("invalid number of departments")
 
@@ -39,7 +37,8 @@ func main() {
 	}
 
 	for range countDepartments {
-		if err := processDepartment(scanner); err != nil {
+		err = processDepartment(scanner)
+		if err != nil {
 			fmt.Println(err)
 
 			return
@@ -52,42 +51,49 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 		return 0, ErrReadNumberFailed
 	}
 
-	text := strings.TrimSpace(scanner.Text())
+	var (
+		text  = strings.TrimSpace(scanner.Text())
+		value int
+		err   error
+	)
 
-	value, err := strconv.Atoi(text)
-
+	value, err = strconv.Atoi(text)
 	if err != nil {
 		return 0, ErrInvalidNumberFormat
 	}
-
 	return value, nil
 }
 
 func processDepartment(scanner *bufio.Scanner) error {
-	countEmployees, err := readInt(scanner)
+	var (
+		countEmployees int
+		err            error
+	)
 
+	countEmployees, err = readInt(scanner)
 	if err != nil {
 		return ErrInvalidEmployeeCount
 	}
 
 	dept := department.NewDepartment(countEmployees)
-
 	for range countEmployees {
 		if !scanner.Scan() {
 			return ErrReadRequirement
 		}
 
-		line := strings.TrimSpace(scanner.Text())
-		parts := strings.Fields(line)
+		var (
+			line    = strings.TrimSpace(scanner.Text())
+			parts   = strings.Fields(line)
+			operand string
+			temp    int
+		)
 
 		if len(parts) != partsCount {
 			return ErrInvalidLineFormat
 		}
 
-		operand := parts[0]
-
-		temp, err := strconv.Atoi(parts[1])
-
+		operand = parts[0]
+		temp, err = strconv.Atoi(parts[1])
 		if err != nil {
 			return ErrInvalidTemperature
 		}
@@ -95,6 +101,5 @@ func processDepartment(scanner *bufio.Scanner) error {
 		result := dept.ProcessWorkerRequirement(operand, temp)
 		fmt.Println(result)
 	}
-
 	return nil
 }
