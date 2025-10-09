@@ -58,7 +58,6 @@ func readInt(scanner *bufio.Scanner) (int, error) {
 	)
 
 	value, err = strconv.Atoi(text)
-
 	if err != nil {
 		return 0, ErrInvalidNumberFormat
 	}
@@ -73,7 +72,6 @@ func processDepartment(scanner *bufio.Scanner) error {
 	)
 
 	countEmployees, err = readInt(scanner)
-
 	if err != nil {
 		return ErrInvalidEmployeeCount
 	}
@@ -98,7 +96,6 @@ func processDepartment(scanner *bufio.Scanner) error {
 
 		operand = parts[0]
 		temp, err = strconv.Atoi(parts[1])
-
 		if err != nil {
 			return ErrInvalidTemperature
 		}
