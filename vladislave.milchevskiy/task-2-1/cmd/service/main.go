@@ -3,37 +3,39 @@ package main
 import "fmt"
 
 func main() {
-	var N int
+	var numDepartments int
 
-	_, err := fmt.Scan(&N)
+	_, err := fmt.Scan(&numDepartments)
 	if err != nil {
 		fmt.Println("Invalid number of departments")
+
 		return
 	}
 
-	for i := 0; i < N; i++ {
+	for range numDepartments {
 		minT := 15
 		maxT := 30
-		var K int
+		var numWorkers int
 
-		_, err = fmt.Scan(&K)
+		_, err = fmt.Scan(&numWorkers)
 		if err != nil {
 			fmt.Println("Invalid number of workers")
+
 			return
 		}
 
-		for j := 0; j < K; j++ {
-			var op string
-			var T int
-			_, err = fmt.Scan(&op, &T)
+		for range numWorkers {
+			var operation string
+			var Temp int
+			_, err = fmt.Scan(&operation, &Temp)
 
-			if err == nil && op == ">=" {
-				if T > minT {
-					minT = T
+			if err == nil && operation == ">=" {
+				if Temp > minT {
+					minT = Temp
 				}
-			} else if err == nil && op == "<=" {
-				if T < maxT {
-					maxT = T
+			} else if err == nil && operation == "<=" {
+				if Temp < maxT {
+					maxT = Temp
 				}
 			}
 
