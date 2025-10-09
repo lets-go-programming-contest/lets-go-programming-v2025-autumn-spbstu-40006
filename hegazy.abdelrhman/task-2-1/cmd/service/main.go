@@ -10,45 +10,59 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	var N int
-	fmt.Fscan(reader, &N) // number of departments
+	var departments int
+	if _, err := fmt.Fscan(reader, &departments); err != nil {
+		fmt.Fprintln(os.Stderr, "failed to read number of departments:", err)
+		return
+	}
 
-	for i := 0; i < N; i++ {
-		var K int
-		fmt.Fscan(reader, &K) // number of employees in this department
+	for deptIndex := 0; deptIndex < departments; deptIndex++ {
+		var employees int
+		if _, err := fmt.Fscan(reader, &employees); err != nil {
+			fmt.Fprintln(os.Stderr, "failed to read number of employees:", err)
+			return
+		}
 
 		low := 15
 		high := 30
 
-		for j := 0; j < K; j++ {
-			line, _ := reader.ReadString('\n')
+		for empIndex := 0; empIndex < employees; empIndex++ {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "failed to read employee preference:", err)
+				return
+			}
+
 			line = strings.TrimSpace(line)
 
-			// Sometimes after fmt.Fscan, the first line can be empty due to newline
 			if line == "" {
-				j--
+				empIndex--
+
 				continue
 			}
 
+			var value int
 			if strings.HasPrefix(line, ">=") {
-				var value int
-				fmt.Sscanf(line, ">= %d", &value)
-				if value > low {
-					low = value
+				if _, err := fmt.Sscanf(line, ">= %d", &value); err == nil {
+
+					if value > low {
+						low = value
+					}
 				}
 			} else if strings.HasPrefix(line, "<=") {
-				var value int
-				fmt.Sscanf(line, "<= %d", &value)
-				if value < high {
-					high = value
+				if _, err := fmt.Sscanf(line, "<= %d", &value); err == nil {
+
+					if value < high {
+						high = value
+					}
 				}
 			}
+		}
 
-			if low <= high {
-				fmt.Println(low)
-			} else {
-				fmt.Println(-1)
-			}
+		if low <= high {
+			fmt.Println(low)
+		} else {
+			fmt.Println(-1)
 		}
 	}
 }
