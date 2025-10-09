@@ -13,13 +13,17 @@ func main() {
 	var departments int
 	if _, err := fmt.Fscan(reader, &departments); err != nil {
 		fmt.Fprintln(os.Stderr, "failed to read number of departments:", err)
+
 		return
 	}
 
-	for deptIndex := 0; deptIndex < departments; deptIndex++ {
+	for deptIndex := range make([]struct{}, departments) {
+		_ = deptIndex // silence unused var if not needed
+
 		var employees int
 		if _, err := fmt.Fscan(reader, &employees); err != nil {
 			fmt.Fprintln(os.Stderr, "failed to read number of employees:", err)
+
 			return
 		}
 
@@ -30,11 +34,11 @@ func main() {
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "failed to read employee preference:", err)
+
 				return
 			}
 
 			line = strings.TrimSpace(line)
-
 			if line == "" {
 				empIndex--
 
@@ -43,18 +47,12 @@ func main() {
 
 			var value int
 			if strings.HasPrefix(line, ">=") {
-				if _, err := fmt.Sscanf(line, ">= %d", &value); err == nil {
-
-					if value > low {
-						low = value
-					}
+				if n, err := fmt.Sscanf(line, ">= %d", &value); err == nil && n == 1 && value > low {
+					low = value
 				}
 			} else if strings.HasPrefix(line, "<=") {
-				if _, err := fmt.Sscanf(line, "<= %d", &value); err == nil {
-
-					if value < high {
-						high = value
-					}
+				if n, err := fmt.Sscanf(line, "<= %d", &value); err == nil && n == 1 && value < high {
+					high = value
 				}
 			}
 		}
