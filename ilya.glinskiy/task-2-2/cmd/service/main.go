@@ -37,7 +37,7 @@ func main() {
 		err             error
 	)
 
-	dishHeap := &IntHeap{}
+	var dishHeap *IntHeap = &IntHeap{}
 	heap.Init(dishHeap)
 
 	_, err = fmt.Scan(&dishAmount)
@@ -59,11 +59,15 @@ func main() {
 	}
 
 	_, err = fmt.Scan(&num)
-	if err != nil || num >= dishHeap.Len() {
+	if err != nil || num > dishHeap.Len() {
 		fmt.Println("Invalid dish index")
 
 		return
 	}
 
-	fmt.Println((*dishHeap)[num])
+	for dishHeap.Len() > num {
+		heap.Pop(dishHeap)
+	}
+
+	fmt.Println(heap.Pop(dishHeap))
 }
