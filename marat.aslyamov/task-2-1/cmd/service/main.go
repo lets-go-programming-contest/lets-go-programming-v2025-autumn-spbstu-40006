@@ -5,7 +5,7 @@ import "fmt"
 func main() {
 	var (
 		departNum, emplsNum, minTemp, maxTemp, temp int
-		operand                      string
+		operand                                     string
 	)
 
 	_, err := fmt.Scan(&departNum)
@@ -14,6 +14,7 @@ func main() {
 
 		return
 	}
+
 	for range departNum {
 		minTemp = 15
 		maxTemp = 30
@@ -24,9 +25,10 @@ func main() {
 
 			return
 		}
+
 		for range emplsNum {
 			_, err = fmt.Scan(&operand, &temp)
-			
+
 			if err == nil && operand[0] == '>' && temp > minTemp {
 				minTemp = temp
 			} else if err == nil && operand[0] == '<' && temp < maxTemp {
