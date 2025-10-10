@@ -16,11 +16,11 @@ func main() {
 	}
 
 	for range departNum {
+		_, err = fmt.Scan(&emplsNum)
+
 		minTemp = 15
 		maxTemp = 30
-		_, err = fmt.Scan(&emplsNum)
-		
-		
+
 		if err != nil {
 			fmt.Println("Incorrect number of employees")
 
