@@ -18,7 +18,7 @@ func main() {
 	}
 
 	for range departmentAmount {
-		temperature = 15
+		temperature = -1
 		lowerTempLimit = 15
 		upperTempLimit = 30
 
@@ -26,7 +26,7 @@ func main() {
 		if err != nil || employeeAmount < 1 || employeeAmount > 1000 {
 			fmt.Println(-1)
 
-			return
+			continue
 		}
 
 		for range employeeAmount {
@@ -44,10 +44,6 @@ func main() {
 			case str == "<=" && curTempLimit >= lowerTempLimit:
 				upperTempLimit = min(upperTempLimit, curTempLimit)
 				temperature = min(upperTempLimit, temperature)
-			default:
-				fmt.Println(-1)
-
-				continue
 			}
 
 			fmt.Println(temperature)
