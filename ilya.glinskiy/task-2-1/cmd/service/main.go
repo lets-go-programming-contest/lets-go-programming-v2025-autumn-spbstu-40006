@@ -11,7 +11,7 @@ func main() {
 	)
 
 	_, err = fmt.Scan(&departmentAmount)
-	if err != nil || departmentAmount < 1 || departmentAmount > 1000 {
+	if err != nil {
 		fmt.Println(-1)
 
 		return
@@ -22,7 +22,7 @@ func main() {
 		upperLimit = 30
 
 		_, err = fmt.Scan(&employeeAmount)
-		if err != nil || employeeAmount < 1 || employeeAmount > 1000 {
+		if err != nil {
 			fmt.Println(-1)
 
 			continue
