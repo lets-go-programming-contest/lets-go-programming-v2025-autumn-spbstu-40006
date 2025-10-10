@@ -77,7 +77,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		var mnVal, mxVal = 15, 30
+		mnVal, mxVal := 15, 30
 
 		for range key {
 			str, err := istreamString(reader)
