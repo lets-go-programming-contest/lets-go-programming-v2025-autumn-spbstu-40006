@@ -19,6 +19,8 @@ func main() {
 		minTemp = 15
 		maxTemp = 30
 		_, err = fmt.Scan(&emplsNum)
+		
+		
 		if err != nil {
 			fmt.Println("Incorrect number of employees")
 
