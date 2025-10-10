@@ -4,47 +4,48 @@ import "fmt"
 
 func main() {
 	var (
-		department_amount, employee_amount, temperature    int
-		cur_temp_limit, lower_temp_limit, upper_temp_limit int
-		str                                                string
-		err                                                error
+		departmentAmount, employeeAmount, temperature int
+		curTempLimit, lowerTempLimit, upperTempLimit  int
+		str                                           string
+		err                                           error
 	)
 
-	_, err = fmt.Scan(&department_amount)
-	if err != nil || department_amount < 1 || department_amount > 1000 {
+	_, err = fmt.Scan(&departmentAmount)
+	if err != nil || departmentAmount < 1 || departmentAmount > 1000 {
 		fmt.Println(-1)
+
 		return
 	}
 
-	for i := 0; i < department_amount; i++ {
-		temperature = 0
-		lower_temp_limit = 15
-		upper_temp_limit = 30
+	for range departmentAmount {
+		temperature = 15
+		lowerTempLimit = 15
+		upperTempLimit = 30
 
-		_, err = fmt.Scan(&employee_amount)
-		if err != nil || employee_amount < 1 || employee_amount > 1000 {
+		_, err = fmt.Scan(&employeeAmount)
+		if err != nil || employeeAmount < 1 || employeeAmount > 1000 {
 			fmt.Println(-1)
+
 			return
 		}
 
-		for j := 0; j < employee_amount; j++ {
-			_, err = fmt.Scan(&str, &cur_temp_limit)
+		for range employeeAmount {
+			_, err = fmt.Scan(&str, &curTempLimit)
 			if err != nil {
 				fmt.Println(-1)
-				return
+				continue
 			}
 
-			if str == ">=" && cur_temp_limit <= upper_temp_limit {
-				lower_temp_limit = max(lower_temp_limit, cur_temp_limit)
-				temperature = max(lower_temp_limit, temperature)
-
-			} else if str == "<=" && cur_temp_limit >= lower_temp_limit {
-				upper_temp_limit = min(upper_temp_limit, cur_temp_limit)
-				temperature = min(upper_temp_limit, temperature)
-
-			} else {
+			switch {
+			case str == ">=" && curTempLimit <= upperTempLimit:
+				lowerTempLimit = max(lowerTempLimit, curTempLimit)
+				temperature = max(lowerTempLimit, temperature)
+			case str == "<=" && curTempLimit >= lowerTempLimit:
+				upperTempLimit = min(upperTempLimit, curTempLimit)
+				temperature = min(upperTempLimit, temperature)
+			default:
 				fmt.Println(-1)
-				return
+				continue
 			}
 
 			fmt.Println(temperature)
