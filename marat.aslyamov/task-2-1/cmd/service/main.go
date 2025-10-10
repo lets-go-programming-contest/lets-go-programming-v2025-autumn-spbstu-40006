@@ -4,24 +4,29 @@ import "fmt"
 
 func main() {
 	var (
-		N, K, minTemp, maxTemp, temp int
+		departNum, emplsNum, minTemp, maxTemp, temp int
 		operand                      string
 	)
-	_, err := fmt.Scan(&N)
+
+	_, err := fmt.Scan(&departNum)
 	if err != nil {
-		fmt.Println("Incorrect N argument")
+		fmt.Println("Incorrect number of departments")
+
 		return
 	}
-	for range N {
+	for range departNum {
 		minTemp = 15
 		maxTemp = 30
-		_, err = fmt.Scan(&K)
+		_, err = fmt.Scan(&emplsNum)
+
 		if err != nil {
-			fmt.Println("Incorrect K argument")
+			fmt.Println("Incorrect number of employees")
+
 			return
 		}
-		for range K {
+		for range emplsNum {
 			_, err = fmt.Scan(&operand, &temp)
+			
 			if err == nil && operand[0] == '>' && temp > minTemp {
 				minTemp = temp
 			} else if err == nil && operand[0] == '<' && temp < maxTemp {
