@@ -33,6 +33,7 @@ func main() {
 			_, err = fmt.Scan(&str, &curTempLimit)
 			if err != nil {
 				fmt.Println(-1)
+
 				continue
 			}
 
@@ -45,6 +46,7 @@ func main() {
 				temperature = min(upperTempLimit, temperature)
 			default:
 				fmt.Println(-1)
+
 				continue
 			}
 
