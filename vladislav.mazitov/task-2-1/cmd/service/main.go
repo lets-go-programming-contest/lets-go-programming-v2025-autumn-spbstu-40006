@@ -12,14 +12,14 @@ import (
 func istreamInt(reader *bufio.Reader) (int, error) {
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to read input: %w", err)
 	}
 
 	input = strings.TrimSpace(input)
 
 	val, err := strconv.Atoi(input)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to convert to int: %w", err)
 	}
 
 	return val, nil
@@ -28,7 +28,7 @@ func istreamInt(reader *bufio.Reader) (int, error) {
 func istreamString(reader *bufio.Reader) (string, error) {
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read input: %w", err)
 	}
 
 	return strings.TrimSpace(input), nil
@@ -57,22 +57,21 @@ func checkTemperatures(check string, minValue *int, maxValue *int) int {
 	}
 
 	if *minValue <= *maxValue {
-
 		return *minValue
 	} else {
-
 		return -1
 	}
 }
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	num, err := istreamInt(reader)
+
+	n, err := istreamInt(reader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for range num {
+	for range n {
 		key, err := istreamInt(reader)
 		if err != nil {
 			log.Fatal(err)
