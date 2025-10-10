@@ -4,10 +4,10 @@ import "fmt"
 
 func main() {
 	var (
-		departmentAmount, employeeAmount, temperature int
-		curTempLimit, lowerTempLimit, upperTempLimit  int
-		str                                           string
-		err                                           error
+		departmentAmount, employeeAmount       int
+		suggestedLimit, lowerLimit, upperLimit int
+		str                                    string
+		err                                    error
 	)
 
 	_, err = fmt.Scan(&departmentAmount)
@@ -18,9 +18,8 @@ func main() {
 	}
 
 	for range departmentAmount {
-		temperature = -1
-		lowerTempLimit = 15
-		upperTempLimit = 30
+		lowerLimit = 15
+		upperLimit = 30
 
 		_, err = fmt.Scan(&employeeAmount)
 		if err != nil || employeeAmount < 1 || employeeAmount > 1000 {
@@ -30,23 +29,19 @@ func main() {
 		}
 
 		for range employeeAmount {
-			_, err = fmt.Scan(&str, &curTempLimit)
-			if err != nil {
+			_, err = fmt.Scan(&str, &suggestedLimit)
+
+			if err == nil && str == ">=" && suggestedLimit > lowerLimit {
+				lowerLimit = suggestedLimit
+			} else if err == nil && str == "<=" && suggestedLimit < upperLimit {
+				upperLimit = suggestedLimit
+			}
+
+			if lowerLimit <= upperLimit {
+				fmt.Println(lowerLimit)
+			} else {
 				fmt.Println(-1)
-
-				continue
 			}
-
-			switch {
-			case str == ">=" && curTempLimit <= upperTempLimit:
-				lowerTempLimit = max(lowerTempLimit, curTempLimit)
-				temperature = max(lowerTempLimit, temperature)
-			case str == "<=" && curTempLimit >= lowerTempLimit:
-				upperTempLimit = min(upperTempLimit, curTempLimit)
-				temperature = min(upperTempLimit, temperature)
-			}
-
-			fmt.Println(temperature)
 		}
 	}
 }
