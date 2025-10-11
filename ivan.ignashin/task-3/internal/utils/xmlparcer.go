@@ -30,7 +30,6 @@ func ParseXML(path string) ([]Record, error) {
 
 	var rawRecords Records
 	err = xml.Unmarshal(xmlData, &rawRecords)
-
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal xml: %w", err)
 	}
