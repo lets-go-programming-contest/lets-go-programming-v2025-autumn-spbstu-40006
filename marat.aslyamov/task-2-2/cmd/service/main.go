@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"container/heap"
+	"fmt"
 )
 
 type IntHeap []int
@@ -13,26 +13,32 @@ func (h *IntHeap) Len() int {
 
 func (h *IntHeap) Less(i, j int) bool {
 	return (*h)[i] > (*h)[j]
-} 
+}
 
 func (h *IntHeap) Swap(i, j int) {
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+
+	*h = append(*h, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
-	x := old[n - 1]
-	*h = old[:n - 1]
+	x := old[n-1]
+	*h = old[:n-1]
+
 	return x
 }
 
 func main() {
-	var dishAmount, k int
+	var dishAmount, dishNum int
 
 	_, err := fmt.Scan(&dishAmount)
 	if err != nil {
@@ -48,7 +54,7 @@ func main() {
 	}
 
 	ratings := make([]int, dishAmount)
-	for i := 0; i < dishAmount; i++ {
+	for i := range ratings {
 		_, err = fmt.Scan(&ratings[i])
 		if err != nil {
 			fmt.Println("Incorrect raiting")
@@ -57,14 +63,14 @@ func main() {
 		}
 	}
 
-	_, err = fmt.Scan(&k)
+	_, err = fmt.Scan(&dishNum)
 	if err != nil {
 		fmt.Println("Incorrect number of dish")
 
 		return
 	}
 
-	if k <= 0 || k > dishAmount {
+	if dishNum <= 0 || dishNum > dishAmount {
 		fmt.Println("Number of dish must be in [1...N]")
 
 		return
@@ -77,7 +83,7 @@ func main() {
 		heap.Push(dishHeap, rating)
 	}
 
-	for i := 1; i < k; i++ {
+	for i := 1; i < dishNum; i++ {
 		heap.Pop(dishHeap)
 	}
 
