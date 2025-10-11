@@ -27,16 +27,17 @@ func SaveAsJSON(items []Record, path string) error {
 		return finalRecords[i].Value < finalRecords[j].Value
 	})
 
-	dir := filepath.Dir(path)
+	err := os.MkdirAll(filepath.Dir(path), 0o755)
 
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-
-	jsonData, err := json.MarshalIndent(finalRecords, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(path, jsonData, 0600)
+	jsonData, err := json.MarshalIndent(finalRecords, "", "  ")
+
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, jsonData, 0o600)
 }

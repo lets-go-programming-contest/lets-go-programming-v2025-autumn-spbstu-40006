@@ -23,17 +23,19 @@ type Records struct {
 
 func ParseXML(path string) ([]Record, error) {
 	xmlData, err := os.ReadFile(path)
+
 	if err != nil {
 		return nil, err
 	}
 
 	var rawRecords Records
 	err = xml.Unmarshal(xmlData, &rawRecords)
+
 	if err != nil {
 		return nil, err
 	}
 
-	var records []Record
+	records := make([]Record, 0, len(rawRecords.Items))
 
 	for _, item := range rawRecords.Items {
 		value, err := strconv.ParseFloat(strings.ReplaceAll(item.Value, ",", "."), 64)
