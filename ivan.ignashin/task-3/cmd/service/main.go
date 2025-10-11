@@ -18,7 +18,6 @@ func main() {
 	flag.Parse()
 
 	data, err := os.ReadFile(*configPath)
-
 	if err != nil {
 		panic(err)
 	}
