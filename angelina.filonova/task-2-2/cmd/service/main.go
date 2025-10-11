@@ -17,7 +17,7 @@ func main() {
 	}
 
 	dishValues := make([]int, countDishes)
-	for i := 0; i < countDishes; i++ {
+	for i := range countDishes {
 		if _, err := fmt.Scan(&dishValues[i]); err != nil {
 			fmt.Fprintln(os.Stderr, "error: failed to read dish value:", err)
 
