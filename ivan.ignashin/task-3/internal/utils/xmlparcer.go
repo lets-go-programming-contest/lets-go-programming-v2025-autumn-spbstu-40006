@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/net/html/charset"
 )
 
 type Record struct {
@@ -30,8 +33,10 @@ func ParseXML(path string) ([]Record, error) {
 
 	var rawRecords Records
 
-	err = xml.Unmarshal(xmlData, &rawRecords)
-	if err != nil {
+	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
+	decoder.CharsetReader = charset.NewReaderLabel
+
+	if err := decoder.Decode(&rawRecords); err != nil {
 		return nil, fmt.Errorf("unmarshal xml: %w", err)
 	}
 
