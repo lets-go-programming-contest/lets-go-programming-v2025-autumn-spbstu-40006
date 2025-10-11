@@ -8,6 +8,11 @@ import (
 	"sort"
 )
 
+const (
+	dirPerm  = 0o755
+	filePerm = 0o644
+)
+
 type FinalRecord struct {
 	NumCode  int     `json:"NumCode"`
 	CharCode string  `json:"CharCode"`
@@ -30,7 +35,7 @@ func SaveAsJSON(items []Record, path string) error {
 
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		return fmt.Errorf("create dir %s: %w", dir, err)
 	}
@@ -39,5 +44,5 @@ func SaveAsJSON(items []Record, path string) error {
 	if err != nil {
 		return fmt.Errorf("marshal json %w", err)
 	}
-	return os.WriteFile(path, jsonData, 0600)
+	return os.WriteFile(path, jsonData, filePerm)
 }
