@@ -10,7 +10,7 @@ import (
 
 type Record struct {
 	ID    int     `xml:"id"`
-	Name  string  `xml:"name"`
+	Name  string  `xml:"n	ame"`
 	Value float64 `xml:"value"`
 }
 
@@ -30,6 +30,7 @@ func ParseXML(path string) ([]Record, error) {
 
 	var rawRecords Records
 	err = xml.Unmarshal(xmlData, &rawRecords)
+
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal xml: %w", err)
 	}
