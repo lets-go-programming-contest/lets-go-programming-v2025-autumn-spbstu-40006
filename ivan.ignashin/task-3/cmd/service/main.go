@@ -23,6 +23,7 @@ func main() {
 	}
 
 	var cfg Config
+
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		panic(err)
