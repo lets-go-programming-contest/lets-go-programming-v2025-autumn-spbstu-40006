@@ -1,0 +1,50 @@
+package utils
+
+import (
+	"encoding/xml"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type Record struct {
+	ID    int     `xml:"id"`
+	Name  string  `xml:"name"`
+	Value float64 `xml:"value"`
+}
+
+type Records struct {
+	Items []struct {
+		ID    int    `xml:"NumCode"`
+		Name  string `xml:"CharCode"`
+		Value string `xml:"Value"`
+	} `xml:"Valute"`
+}
+
+func ParseXML(path string) ([]Record, error) {
+	xmlData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var rawRecords Records
+	err = xml.Unmarshal(xmlData, &rawRecords)
+	if err != nil {
+		return nil, err
+	}
+
+	var records []Record
+	for _, item := range rawRecords.Items {
+		value, err := strconv.ParseFloat(strings.ReplaceAll(item.Value, ",", "."), 64)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, Record{
+			ID:    item.ID,
+			Name:  item.Name,
+			Value: value,
+		})
+	}
+
+	return records, nil
+}
