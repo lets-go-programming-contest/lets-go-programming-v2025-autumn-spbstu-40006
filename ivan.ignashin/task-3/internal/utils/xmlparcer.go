@@ -10,7 +10,7 @@ import (
 
 type Record struct {
 	ID    int     `xml:"id"`
-	Name  string  `xml:"n	ame"`
+	Name  string  `xml:"name"`
 	Value float64 `xml:"value"`
 }
 

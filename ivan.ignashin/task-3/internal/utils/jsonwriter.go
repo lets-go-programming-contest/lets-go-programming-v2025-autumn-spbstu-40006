@@ -36,10 +36,8 @@ func SaveAsJSON(items []Record, path string) error {
 	}
 
 	jsonData, err := json.MarshalIndent(finalRecords, "", "  ")
-
 	if err != nil {
 		return fmt.Errorf("marshal json %w", err)
-
 	}
 
 	return os.WriteFile(path, jsonData, 0600)
