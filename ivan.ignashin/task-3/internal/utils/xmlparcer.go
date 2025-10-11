@@ -34,11 +34,13 @@ func ParseXML(path string) ([]Record, error) {
 	}
 
 	var records []Record
+
 	for _, item := range rawRecords.Items {
 		value, err := strconv.ParseFloat(strings.ReplaceAll(item.Value, ",", "."), 64)
 		if err != nil {
 			return nil, err
 		}
+
 		records = append(records, Record{
 			ID:    item.ID,
 			Name:  item.Name,

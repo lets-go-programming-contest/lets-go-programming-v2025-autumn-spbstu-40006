@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/IvanIgnashin7D/task-3/internal/utils"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -30,6 +29,7 @@ func main() {
 	}
 
 	records, err := utils.ParseXML(cfg.InputFile)
+
 	if err != nil {
 		panic(err)
 	}
