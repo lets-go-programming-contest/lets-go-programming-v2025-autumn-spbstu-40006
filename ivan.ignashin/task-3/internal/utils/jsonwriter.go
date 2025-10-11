@@ -44,5 +44,6 @@ func SaveAsJSON(items []Record, path string) error {
 	if err != nil {
 		return fmt.Errorf("marshal json %w", err)
 	}
+
 	return os.WriteFile(path, jsonData, filePerm)
 }
