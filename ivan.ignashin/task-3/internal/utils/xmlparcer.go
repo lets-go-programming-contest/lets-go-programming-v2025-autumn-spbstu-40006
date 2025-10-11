@@ -12,9 +12,9 @@ import (
 )
 
 type Valute struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
+	NumCodeStr string `xml:"NumCode"`
+	CharCode   string `xml:"CharCode"`
+	Value      string `xml:"Value"`
 }
 
 type ValCurs struct {
@@ -42,15 +42,19 @@ func ParseXML(path string) ([]Record, error) {
 	}
 
 	records := make([]Record, 0, len(valCurs.Valutes))
-	for _, v := range valCurs.Valutes {
-		value, err := strconv.ParseFloat(strings.ReplaceAll(v.Value, ",", "."), 64)
+	for _, valute := range valCurs.Valutes {
+		num, err := strconv.Atoi(strings.TrimSpace(valute.NumCodeStr))
 		if err != nil {
-			return nil, fmt.Errorf("parse float %s: %w", v.Value, err)
+			return nil, fmt.Errorf("parse NumCode %q: %w", valute.NumCodeStr, err)
+		}
+		value, err := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse Value %q: %w", valute.Value, err)
 		}
 
 		records = append(records, Record{
-			ID:    v.NumCode,
-			Name:  v.CharCode,
+			ID:    num,
+			Name:  valute.CharCode,
 			Value: value,
 		})
 	}
