@@ -11,18 +11,20 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type Record struct {
-	ID    int     `xml:"id"`
-	Name  string  `xml:"name"`
-	Value float64 `xml:"value"`
+type Valute struct {
+	NumCode  int    `xml:"NumCode"`
+	CharCode string `xml:"CharCode"`
+	Value    string `xml:"Value"`
 }
 
-type Records struct {
-	Items []struct {
-		ID    int    `xml:"NumCode"`
-		Name  string `xml:"CharCode"`
-		Value string `xml:"Value"`
-	} `xml:"Valute"`
+type ValCurs struct {
+	Valutes []Valute `xml:"Valute"`
+}
+
+type Record struct {
+	ID    int
+	Name  string
+	Value float64
 }
 
 func ParseXML(path string) ([]Record, error) {
@@ -31,26 +33,24 @@ func ParseXML(path string) ([]Record, error) {
 		return nil, fmt.Errorf("read xml file %s: %w", path, err)
 	}
 
-	var rawRecords Records
-
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	if err := decoder.Decode(&rawRecords); err != nil {
+	var valCurs ValCurs
+	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("unmarshal xml: %w", err)
 	}
 
-	records := make([]Record, 0, len(rawRecords.Items))
-
-	for _, item := range rawRecords.Items {
-		value, err := strconv.ParseFloat(strings.ReplaceAll(item.Value, ",", "."), 64)
+	records := make([]Record, 0, len(valCurs.Valutes))
+	for _, v := range valCurs.Valutes {
+		value, err := strconv.ParseFloat(strings.ReplaceAll(v.Value, ",", "."), 64)
 		if err != nil {
-			return nil, fmt.Errorf("parse float %s: %w", item.Value, err)
+			return nil, fmt.Errorf("parse float %s: %w", v.Value, err)
 		}
 
 		records = append(records, Record{
-			ID:    item.ID,
-			Name:  item.Name,
+			ID:    v.NumCode,
+			Name:  v.CharCode,
 			Value: value,
 		})
 	}
