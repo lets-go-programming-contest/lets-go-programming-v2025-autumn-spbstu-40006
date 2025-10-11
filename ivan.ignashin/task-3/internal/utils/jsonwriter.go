@@ -30,7 +30,7 @@ func SaveAsJSON(items []Record, path string) error {
 
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, 0o755)
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return fmt.Errorf("create dir %s: %w", dir, err)
 	}
@@ -39,5 +39,5 @@ func SaveAsJSON(items []Record, path string) error {
 	if err != nil {
 		return fmt.Errorf("marshal json %w", err)
 	}
-	return os.WriteFile(path, jsonData, 0o600)
+	return os.WriteFile(path, jsonData, 0600)
 }

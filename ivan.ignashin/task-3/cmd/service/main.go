@@ -24,19 +24,16 @@ func main() {
 
 	var cfg Config
 	err = yaml.Unmarshal(data, &cfg)
-
 	if err != nil {
 		panic(err)
 	}
 
 	records, err := utils.ParseXML(cfg.InputFile)
-
 	if err != nil {
 		panic(err)
 	}
 
 	err = utils.SaveAsJSON(records, cfg.OutputFile)
-
 	if err != nil {
 		panic(err)
 	}
