@@ -84,14 +84,15 @@ func processDepartment(scanner *bufio.Scanner) error {
 		}
 
 		var (
-			line           = strings.TrimSpace(scanner.Text())
-			parts          = strings.Fields(line)
-			operand string = parts[0]
+			line  = strings.TrimSpace(scanner.Text())
+			parts = strings.Fields(line)
 		)
 
 		if len(parts) != partsCount {
 			return ErrInvalidLineFormat
 		}
+
+		operand := parts[0]
 
 		if temp, err := strconv.Atoi(parts[1]); err != nil {
 			return ErrInvalidTemperature
