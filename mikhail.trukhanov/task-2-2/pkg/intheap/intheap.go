@@ -26,7 +26,7 @@ func (h *intheap) Swap(i, j int) {
 func (h *intheap) Push(x any) {
 	val, ok := x.(int)
 	if !ok {
-		panic("Expected int")
+		return
 	}
 
 	*h = append(*h, val)
