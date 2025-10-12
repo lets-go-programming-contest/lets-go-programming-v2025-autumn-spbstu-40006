@@ -1,5 +1,7 @@
 package intheap
 
+import "fmt"
+
 type IntHeap []int
 
 func (h *IntHeap) Len() int           { return len(*h) }
@@ -9,7 +11,9 @@ func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *IntHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
-		panic("IntHeap: invalid type")
+		fmt.Printf("IntHeap: invalid type %T\n", x)
+
+		return
 	}
 
 	*h = append(*h, value)
