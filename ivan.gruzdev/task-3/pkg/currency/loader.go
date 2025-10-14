@@ -15,8 +15,8 @@ func LoadCurrencies(filePath string) ValCurs {
 	}
 
 	decoder := charmap.Windows1251.NewDecoder()
-	decodedData, err := decoder.Bytes(data)
 
+	decodedData, err := decoder.Bytes(data)
 	if err != nil {
 		panic("Ошибка конвертации кодировки: " + err.Error())
 	}

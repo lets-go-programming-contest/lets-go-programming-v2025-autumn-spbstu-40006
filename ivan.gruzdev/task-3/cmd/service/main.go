@@ -18,5 +18,5 @@ func main() {
 
 	currency.SortValues(&currencies)
 
-	currency.SaveToJson(manual.OutputFile, currencies)
+	currency.SaveToJSON(manual.OutputFile, currencies)
 }

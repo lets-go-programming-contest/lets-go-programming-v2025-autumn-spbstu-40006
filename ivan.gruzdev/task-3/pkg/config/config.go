@@ -18,8 +18,8 @@ func LoadConfig(configPath string) Config {
 	}
 
 	var config Config
-	err = yaml.Unmarshal(data, &config)
 
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic("Error: parsing YAML: " + err.Error())
 	}

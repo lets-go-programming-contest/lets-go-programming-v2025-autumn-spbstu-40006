@@ -6,13 +6,17 @@ import (
 	"sort"
 )
 
+const (
+	filePerm = 0o644
+)
+
 func SortValues(currencies *ValCurs) {
 	sort.Slice(currencies.Currencies, func(i, j int) bool {
 		return ParseValue(currencies.Currencies[i].Value) > ParseValue(currencies.Currencies[j].Value)
 	})
 }
 
-func SaveToJson(filePath string, currencies ValCurs) {
+func SaveToJSON(filePath string, currencies ValCurs) {
 	result := make([]OutputCurrency, 0, len(currencies.Currencies))
 
 	for _, currency := range currencies.Currencies {
@@ -30,7 +34,7 @@ func SaveToJson(filePath string, currencies ValCurs) {
 		panic(err)
 	}
 
-	err = os.WriteFile(filePath, data, 0644)
+	err = os.WriteFile(filePath, data, filePerm)
 
 	if err != nil {
 		panic(err)
