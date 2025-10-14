@@ -30,7 +30,7 @@ func SaveAsJSON(items []Record, path string) error {
 	}
 
 	sort.Slice(finalRecords, func(i, j int) bool {
-		return finalRecords[i].Value < finalRecords[j].Value
+		return finalRecords[i].Value > finalRecords[j].Value
 	})
 
 	dir := filepath.Dir(path)
