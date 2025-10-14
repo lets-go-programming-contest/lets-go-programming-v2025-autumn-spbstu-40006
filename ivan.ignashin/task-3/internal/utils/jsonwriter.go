@@ -14,9 +14,9 @@ const (
 )
 
 type FinalRecord struct {
-	NumCode  int     `json:"NumCode"`
-	CharCode string  `json:"CharCode"`
-	Value    float64 `json:"Value"`
+	NumCode  int     `json:"num_code"`
+	CharCode string  `json:"char_ode"`
+	Value    float64 `json:"value"`
 }
 
 func SaveAsJSON(items []Record, path string) error {
