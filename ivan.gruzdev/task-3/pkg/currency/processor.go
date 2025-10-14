@@ -3,11 +3,13 @@ package currency
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"sort"
 )
 
 const (
-	filePerm = 0o644
+	filePerm = 0o600
+	dirPerm  = 0o755
 )
 
 func SortValues(currencies *ValCurs) {
@@ -17,6 +19,13 @@ func SortValues(currencies *ValCurs) {
 }
 
 func SaveToJSON(filePath string, currencies ValCurs) {
+	dir := filepath.Dir(filePath)
+	err := os.MkdirAll(dir, dirPerm)
+
+	if err != nil {
+		panic("Ошибка создания директории: " + err.Error())
+	}
+
 	result := make([]OutputCurrency, 0, len(currencies.Currencies))
 
 	for _, currency := range currencies.Currencies {
@@ -29,14 +38,12 @@ func SaveToJSON(filePath string, currencies ValCurs) {
 	}
 
 	data, err := json.MarshalIndent(result, "", " ")
-
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
 	err = os.WriteFile(filePath, data, filePerm)
-
 	if err != nil {
-		panic(err)
+		panic(err.Error)
 	}
 }
