@@ -22,6 +22,7 @@ type FinalRecord struct {
 
 func SaveAsJSON(items []Record, path string) error {
 	finalRecords := make([]FinalRecord, len(items))
+
 	for index, item := range items {
 		valueFloat, err := strconv.ParseFloat(item.Value, 64)
 		if err != nil {
