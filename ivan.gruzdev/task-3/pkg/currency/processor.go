@@ -20,8 +20,8 @@ func SortValues(currencies *ValCurs) {
 
 func SaveToJSON(filePath string, currencies ValCurs) {
 	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, dirPerm)
 
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		panic("Ошибка создания директории: " + err.Error())
 	}

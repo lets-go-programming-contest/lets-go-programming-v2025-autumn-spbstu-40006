@@ -27,8 +27,8 @@ func LoadCurrencies(filePath string) ValCurs {
 	}
 
 	var valCurs ValCurs
-	err = xml.Unmarshal([]byte(xmlStr), &valCurs)
 
+	err = xml.Unmarshal([]byte(xmlStr), &valCurs)
 	if err != nil {
 		panic("Error: parsing XML: " + err.Error())
 	}
