@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	configPath := flag.String("config", "config.yaml", "path to config file")
 
 	flag.Parse()
@@ -20,5 +19,4 @@ func main() {
 	currency.SortValues(&currencies)
 
 	currency.SaveToJson(manual.OutputFile, currencies)
-
 }

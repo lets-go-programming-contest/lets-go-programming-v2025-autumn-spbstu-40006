@@ -30,6 +30,9 @@ func SaveToJson(filePath string, currencies ValCurs) {
 		panic(err)
 	}
 
-	os.WriteFile(filePath, data, 0644)
+	err = os.WriteFile(filePath, data, 0644)
 
+	if err != nil {
+		panic(err)
+	}
 }
