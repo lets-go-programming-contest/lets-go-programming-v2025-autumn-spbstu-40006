@@ -30,10 +30,15 @@ func main() {
 
 		for range employeeAmount {
 			_, err = fmt.Scan(&str, &suggestedLimit)
+			if err != nil {
+				fmt.Println(-1)
 
-			if err == nil && str == ">=" && suggestedLimit > lowerLimit {
+				continue
+			}
+
+			if str == ">=" && suggestedLimit > lowerLimit {
 				lowerLimit = suggestedLimit
-			} else if err == nil && str == "<=" && suggestedLimit < upperLimit {
+			} else if str == "<=" && suggestedLimit < upperLimit {
 				upperLimit = suggestedLimit
 			}
 
