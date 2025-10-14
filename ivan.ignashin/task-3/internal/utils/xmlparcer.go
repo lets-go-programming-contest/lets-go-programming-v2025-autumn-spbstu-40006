@@ -5,14 +5,15 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"strings"
 
 	"golang.org/x/net/html/charset"
 )
 
 type Record struct {
-	ID    int     `xml:"numCode"`
-	Name  string  `xml:"CharCode"`
-	Value float64 `xml:"Value"`
+	ID    int    `xml:"NumCode"`
+	Name  string `xml:"CharCode"`
+	Value string `xml:"Value"`
 }
 
 type Records struct {
@@ -37,10 +38,12 @@ func ParseXML(path string) ([]Record, error) {
 	records := make([]Record, 0, len(rawRecords.Items))
 
 	for _, item := range rawRecords.Items {
+		value := strings.Replace(item.Value, ",", ".", -1)
+
 		records = append(records, Record{
 			ID:    item.ID,
 			Name:  item.Name,
-			Value: item.Value,
+			Value: value,
 		})
 	}
 
