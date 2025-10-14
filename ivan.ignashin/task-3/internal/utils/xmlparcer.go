@@ -38,7 +38,7 @@ func ParseXML(path string) ([]Record, error) {
 	records := make([]Record, 0, len(rawRecords.Items))
 
 	for _, item := range rawRecords.Items {
-		value := strings.Replace(item.Value, ",", ".", -1)
+		value := strings.ReplaceAll(item.Value, ",", ".")
 
 		records = append(records, Record{
 			ID:    item.ID,

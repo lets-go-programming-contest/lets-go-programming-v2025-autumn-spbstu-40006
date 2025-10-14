@@ -22,17 +22,16 @@ type FinalRecord struct {
 
 func SaveAsJSON(items []Record, path string) error {
 	finalRecords := make([]FinalRecord, len(items))
-	for i, item := range items {
-		f, err := strconv.ParseFloat(item.Value, 64)
-
+	for index, item := range items {
+		valueFloat, err := strconv.ParseFloat(item.Value, 64)
 		if err != nil {
 			return fmt.Errorf("parse float %s: %w", item.Value, err)
 		}
 
-		finalRecords[i] = FinalRecord{
+		finalRecords[index] = FinalRecord{
 			NumCode:  item.ID,
 			CharCode: item.Name,
-			Value:    f,
+			Value:    valueFloat,
 		}
 	}
 
