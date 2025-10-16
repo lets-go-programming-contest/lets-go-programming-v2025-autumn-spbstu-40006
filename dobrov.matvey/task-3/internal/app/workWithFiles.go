@@ -1,7 +1,7 @@
 package app
 
 import (
-	"error"
+	"errors"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
