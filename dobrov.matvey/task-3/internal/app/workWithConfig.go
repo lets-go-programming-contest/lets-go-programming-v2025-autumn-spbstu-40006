@@ -7,7 +7,7 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func getConfigPath() string {
+func GetConfigPath() string {
 	configPathPtr := flag.String("config", "", "config.yaml")
 	flag.Parse()
 

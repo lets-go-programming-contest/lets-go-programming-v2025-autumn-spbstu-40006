@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func fillNSortRates(curs ValCurs) []Rate {
+func FillNSortRates(curs ValCurs) []Rate {
 	var rates []Rate
 
 	for _, v := range curs.Valute {

@@ -1,26 +1,30 @@
 package main
 
+import (
+    "github.com/HorekProgrammer/task-3/internal/app"
+)
+
 func main() {
-	configPath := getConfigPath()
+	configPath := app.GetConfigPath()
 
 	var (
 		cfg  Config
 		curs ValCurs
 	)
 
-	err := readDataFromConfig(&cfg, configPath)
+	err := app.ReadDataFromConfig(&cfg, configPath)
 
 	if err != nil {
 		return
 	}
 
-	err = readDataFileNCanGetCurs(&curs, cfg.InputFile)
+	err = app.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
 
 	if err != nil {
 		return
 	}
 
-	rates := fillNSortRates(curs)
+	rates := app.FillNSortRates(curs)
 
-	fillOutputFile(rates, cfg)
+	app.FillOutputFile(rates, cfg)
 }
