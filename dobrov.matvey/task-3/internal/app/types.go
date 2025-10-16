@@ -1,4 +1,4 @@
-package main
+package app
 
 type ValCurs struct {
 	Valute []Valute `xml:"Valute"`

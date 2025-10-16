@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func readDataFromConfig(cfg *Config, configPath string) error {
+func ReadDataFromConfig(cfg *Config, configPath string) error {
 	info, err := os.Stat(configPath)
 
 	if err != nil {
@@ -37,7 +37,7 @@ func readDataFromConfig(cfg *Config, configPath string) error {
 	return nil
 }
 
-func readDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
+func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 	f, err := os.Open(inputFile)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func readDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 	return nil
 }
 
-func fillOutputFile(rates []Rate, cfg Config) error {
+func FillOutputFile(rates []Rate, cfg Config) error {
 	jsonData, err := json.MarshalIndent(rates, "", " ")
 
 	if err != nil {
