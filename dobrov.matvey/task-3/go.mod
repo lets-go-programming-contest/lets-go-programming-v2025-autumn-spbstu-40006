@@ -8,5 +8,3 @@ require (
 )
 
 require golang.org/x/text v0.16.0 // indirect
-
-replace golang.org/x/text => golang.org/x/text v0.16.0

@@ -7,23 +7,23 @@ import (
 )
 
 func FillNSortRates(curs ValCurs) []Rate {
-	var rates []Rate
+	rates := make([]Rate, 0, len(curs.Valute))
 
-	for _, v := range curs.Valute {
-		s := strings.ReplaceAll(v.ValueRaw, ",", ".")
+	for _, valute := range curs.Valute {
+		s := strings.ReplaceAll(valute.ValueRaw, ",", ".")
 		val, err := strconv.ParseFloat(s, 64)
 
 		if err != nil {
 			continue
 		}
 
-		if v.Nominal > 0 {
-			val = val / float64(v.Nominal)
+		if valute.Nominal > 0 {
+			val /= float64(valute.Nominal)
 		}
 
 		rate := Rate{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
+			NumCode:  valute.NumCode,
+			CharCode: valute.CharCode,
 			Value:    val,
 		}
 

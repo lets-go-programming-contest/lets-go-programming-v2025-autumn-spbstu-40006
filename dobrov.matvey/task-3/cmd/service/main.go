@@ -26,5 +26,9 @@ func main() {
 
 	rates := app.FillNSortRates(curs)
 
-	app.FillOutputFile(rates, cfg)
+	err = app.FillOutputFile(rates, cfg)
+	
+	if err != nil {
+		return
+	}
 }

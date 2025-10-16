@@ -1,8 +1,10 @@
 package app
 
 import (
+	"error"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,48 +13,58 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	errNoFile          = errors.New("input file does not exist")
+	errEmptyFile       = errors.New("input file is empty")
+	errReadConfig      = errors.New("read config failed")
+	errOpenData        = errors.New("open data file failed")
+	errDecodeData      = errors.New("decode data file failed")
+	errCreateJSON      = errors.New("create json failed")
+	errWriteOutputJSON = errors.New("write json file failed")
+)
+
 func ReadDataFromConfig(cfg *Config, configPath string) error {
 	info, err := os.Stat(configPath)
 
 	if err != nil {
-		return fmt.Errorf("file aint exist")
+		return errNoFile
 	}
 
 	if info.Size() == 0 {
-		return fmt.Errorf("file empty")
+		return errEmptyFile
 	}
 
 	data, err := os.ReadFile(configPath)
 
 	if err != nil {
-		return fmt.Errorf("aint read file")
+		return fmt.Errorf("%w: %v", errReadConfig, err)
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 
 	if err != nil {
-		return fmt.Errorf("error with parse config struct")
+		return fmt.Errorf("%w: %v", errReadConfig, err)
 	}
 
 	return nil
 }
 
 func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
-	f, err := os.Open(inputFile)
+	file, err := os.Open(inputFile)
 
 	if err != nil {
-		return fmt.Errorf("aint can open data file")
+		return fmt.Errorf("%w: %v", errOpenData, err)
 	}
 
-	defer f.Close()
+	defer func() { _ = file.Close() }()
 
-	dec := xml.NewDecoder(f)
+	dec := xml.NewDecoder(file)
 	dec.CharsetReader = charset.NewReaderLabel
 
 	err = dec.Decode(curs)
 
 	if err != nil {
-		return fmt.Errorf("aint can decode data file")
+		return fmt.Errorf("%w: %v", errDecodeData, err)
 	}
 
 	return nil
@@ -62,14 +74,16 @@ func FillOutputFile(rates []Rate, cfg Config) error {
 	jsonData, err := json.MarshalIndent(rates, "", " ")
 
 	if err != nil {
-		return fmt.Errorf("error with create json")
+		return fmt.Errorf("%w: %v", errCreateJSON, err)
 	}
 
-	os.Mkdir(filepath.Dir(cfg.OutputFile), 0755)
-	err = os.WriteFile(cfg.OutputFile, jsonData, 0644)
+	if err := os.MkdirAll(filepath.Dir(cfg.OutputFile), 0o755); err != nil {
+		return err
+	}
+	err = os.WriteFile(cfg.OutputFile, jsonData, 0o600)
 
 	if err != nil {
-		return fmt.Errorf("error with fill json file")
+		return fmt.Errorf("%w: %v", errWriteOutputJSON, err)
 	}
 
 	return nil
