@@ -8,8 +8,8 @@ func main() {
 	configPath := app.GetConfigPath()
 
 	var (
-		cfg  Config
-		curs ValCurs
+		cfg  app.Config
+		curs app.ValCurs
 	)
 
 	err := app.ReadDataFromConfig(&cfg, configPath)
