@@ -8,7 +8,7 @@ func main() {
 	var (
 		numDepartments, numEmployees int
 		operator                     string
-		temperature                 int
+		temperature                  int
 	)
 
 	_, err := fmt.Scan(&numDepartments)
@@ -57,3 +57,4 @@ func main() {
 		}
 	}
 }
+
