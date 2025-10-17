@@ -7,12 +7,8 @@ import (
 	"fmt"
 )
 
-var (
-	ErrInvalidNum       = errors.New("не является числом")
-	ErrInvalidParameter = errors.New("не является параметром")
-)
-
-func setTemperature(parameter string, temperature int, maxTemp, minTemp *int) (int, error) {
+var ErrInvalidParameter error = errors.New("-1")
+func setTemperature(parameter string, temperature int, maxTemp, minTemp *int) int {
 	switch parameter {
 	case ">=":
 		if temperature > *minTemp {
@@ -23,14 +19,14 @@ func setTemperature(parameter string, temperature int, maxTemp, minTemp *int) (i
 			*maxTemp = temperature
 		}
 	default:
-		return -1, ErrInvalidParameter
+		return -1
 	}
 
 	if *minTemp > *maxTemp {
-		return -1, ErrInvalidParameter
+		return -1
 	}
 
-	return *minTemp, nil
+	return *minTemp
 }
 
 func main() {
@@ -40,7 +36,7 @@ func main() {
 	)
 
 	if _, err := fmt.Scan(&numDep); err != nil {
-		fmt.Println(ErrInvalidNum)
+		fmt.Println(-1)
 
 		return
 	}
@@ -49,24 +45,20 @@ func main() {
 		maxTemp, minTemp := 30, 15
 
 		if _, err := fmt.Scan(&dearColleagues); err != nil {
-			fmt.Println(ErrInvalidNum)
+			fmt.Println(-1)
 
 			return
 		}
 
 		for range dearColleagues {
 			if _, err := fmt.Scan(&parameter, &temperature); err != nil {
-				fmt.Println(ErrInvalidNum)
+				fmt.Println(-1)
 
 				return
 			}
 
-			out, err := setTemperature(parameter, temperature, &maxTemp, &minTemp)
-			if err != nil {
-				fmt.Println(ErrInvalidParameter)
-
-				return
-			}
+			out := setTemperature(parameter, temperature, &maxTemp, &minTemp)
+			fmt.Println(out)
 
 			fmt.Println(out)
 		}
