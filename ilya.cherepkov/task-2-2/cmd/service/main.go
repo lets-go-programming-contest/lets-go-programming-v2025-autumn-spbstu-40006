@@ -40,7 +40,7 @@ func main() {
 	}
 
 	scores := make([]int, dishCount)
-	for i := 0; i < dishCount; i++ {
+	for i := range dishCount {
 
 		_, err = fmt.Scan(&scores[i])
 		if err != nil {
