@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-const dirPerm = 0o755
+const dirPerm = 0755
 
 type ValCurs struct {
 	Date    string   `xml:"Date,attr"`
@@ -49,6 +49,7 @@ func ParseXMLFile(path string) ([]Valute, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
+
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
@@ -56,6 +57,7 @@ func ParseXMLFile(path string) ([]Valute, error) {
 
 	for index := range valCurs.Valutes {
 		str := strings.ReplaceAll(valCurs.Valutes[index].ValueStr, ",", ".")
+
 		val, err := strconv.ParseFloat(str, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert value %q to float: %w", str, err)
