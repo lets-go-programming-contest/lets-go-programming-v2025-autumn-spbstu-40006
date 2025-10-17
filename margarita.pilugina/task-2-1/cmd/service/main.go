@@ -21,13 +21,10 @@ func setTemperature(parameter string, temperature int, maxTemp, minTemp *int) (i
 			*maxTemp = temperature
 		}
 	default:
-
-
 		return -1, ErrInvalidParameter
 	}
 
 	if *minTemp > *maxTemp {
-
 		return -1, ErrInvalidParameter
 	}
 
@@ -46,9 +43,7 @@ func main() {
 		return
 	}
 
-	for depI := range numDep {
-		_ = depI
-
+	for depI := 0; depI < numDep; depI++ {
 		maxTemp, minTemp := 30, 15
 
 		if _, err := fmt.Scan(&dearColleagues); err != nil {
@@ -57,9 +52,7 @@ func main() {
 			return
 		}
 
-		for dcI := range dearColleagues {
-			_ = dcI
-
+		for dcI := 0; dcI < dearColleagues; dcI++ {
 			if _, err := fmt.Scan(&parameter, &temperature); err != nil {
 				fmt.Println(ErrInvalidNum)
 
