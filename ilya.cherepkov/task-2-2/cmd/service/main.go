@@ -32,6 +32,7 @@ func (h *MinHeap) Pop() interface{} {
 
 func main() {
 	var dishCount, preferenceIndex int
+
 	_, err := fmt.Scan(&dishCount)
 	if err != nil {
 		fmt.Println("Invalid input")
@@ -41,6 +42,7 @@ func main() {
 
 	scores := make([]int, dishCount)
 	for i := range dishCount {
+
 		_, err = fmt.Scan(&scores[i])
 		if err != nil {
 			fmt.Println("Invalid input")
