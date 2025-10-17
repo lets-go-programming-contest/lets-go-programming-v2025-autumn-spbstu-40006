@@ -13,9 +13,11 @@ func (h *MinHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *MinHeap) Push(x interface{}) {
 	value, ok := x.(int)
+
 	if !ok {
 		panic("MinHeap.Push: value is not int")
 	}
+
 	*h = append(*h, value)
 }
 
@@ -31,6 +33,7 @@ func (h *MinHeap) Pop() interface{} {
 func main() {
 	var dishCount, preferenceIndex int
 	_, err := fmt.Scan(&dishCount)
+
 	if err != nil {
 		fmt.Println("Invalid input")
 
@@ -38,8 +41,9 @@ func main() {
 	}
 
 	scores := make([]int, dishCount)
-	for i := 0; i < dishCount; i++ {
+	for i := range dishCount {
 		_, err = fmt.Scan(&scores[i])
+
 		if err != nil {
 			fmt.Println("Invalid input")
 
@@ -48,6 +52,7 @@ func main() {
 	}
 
 	_, err = fmt.Scan(&preferenceIndex)
+
 	if err != nil {
 		fmt.Println("Invalid input")
 
@@ -57,7 +62,7 @@ func main() {
 	heapContainer := &MinHeap{}
 	heap.Init(heapContainer)
 
-	for i := 0; i < preferenceIndex; i++ {
+	for i := range preferenceIndex {
 		heap.Push(heapContainer, scores[i])
 	}
 
