@@ -14,6 +14,7 @@ func main() {
 	_, err := fmt.Scan(&numDepartments)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
@@ -24,12 +25,15 @@ func main() {
 		_, err := fmt.Scan(&numEmployees)
 		if err != nil {
 			fmt.Println("Invalid input")
+
 			return
 		}
+
 		for j := 0; j < numEmployees; j++ {
 			_, err := fmt.Scan(&operator, &temperature)
 			if err != nil {
 				fmt.Println("Invalid input")
+
 				return
 			}
 
@@ -42,6 +46,7 @@ func main() {
 					maxTemp = temperature
 				}
 			}
+
 			if minTemp <= maxTemp && possible {
 				fmt.Println(minTemp)
 			} else {
