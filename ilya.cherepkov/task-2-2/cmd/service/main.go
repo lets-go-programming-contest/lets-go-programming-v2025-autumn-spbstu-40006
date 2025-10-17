@@ -20,6 +20,7 @@ func (h *MinHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -53,7 +54,7 @@ func main() {
 	heapContainer := &MinHeap{}
 	heap.Init(heapContainer)
 
-	for i := 0; i < preferenceIndex; i++ {
+	for i := range preferenceIndex {
 		heap.Push(heapContainer, scores[i])
 	}
 
