@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	for i := range numDepartments {
+	for i := 0; i < numDepartments; i++ {
 		minTemp, maxTemp := 15, 30
 		possible := true
 
@@ -29,7 +29,7 @@ func main() {
 			return
 		}
 
-		for j := range numEmployees {
+		for j := 0; j < numEmployees; j++ {
 			_, err := fmt.Scan(&operator, &temperature)
 			if err != nil {
 				fmt.Println("Invalid input")
