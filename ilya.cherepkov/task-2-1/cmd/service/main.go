@@ -13,7 +13,6 @@ func main() {
 		fmt.Println("Invalid input")
 
 		return
-
 	}
 
 	for department := 0; department != departmentsCount; department++ {
@@ -24,7 +23,6 @@ func main() {
 			fmt.Println("Invalid input")
 
 			return
-
 		}
 
 		for employee := 0; employee != employeesCount; employee++ {
@@ -33,7 +31,6 @@ func main() {
 				fmt.Println("Invalid input")
 
 				return
-
 			}
 
 			if operator == ">=" && value > minimum {
