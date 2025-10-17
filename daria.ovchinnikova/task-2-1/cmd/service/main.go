@@ -30,13 +30,18 @@ func main() {
 
 		for range numberOfWorkers {
 			_, err = fmt.Scan(&sign, &valueTemp)
+			if err != nil {
+				fmt.Println("Invalid input format")
+
+				return
+			}
 
 			if sign == "<=" {
-				if err == nil && valueTemp < maxTemp {
+				if valueTemp < maxTemp {
 					maxTemp = valueTemp
 				}
 			} else if sign == ">=" {
-				if err == nil && valueTemp > minTemp {
+				if valueTemp > minTemp {
 					minTemp = valueTemp
 				}
 			}
