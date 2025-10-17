@@ -50,7 +50,6 @@ func ParseXMLFile(path string) ([]Valute, error) {
 
 	var valCurs ValCurs
 	err = decoder.Decode(&valCurs)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}
@@ -58,7 +57,6 @@ func ParseXMLFile(path string) ([]Valute, error) {
 	for index := range valCurs.Valutes {
 		str := strings.ReplaceAll(valCurs.Valutes[index].ValueStr, ",", ".")
 		val, err := strconv.ParseFloat(str, 64)
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert value %q to float: %w", str, err)
 		}
@@ -102,5 +100,5 @@ func SaveToJSON(path string, valutes []Valute) error {
 		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 
-	return encoder.Encode(results)
+	return nil
 }
