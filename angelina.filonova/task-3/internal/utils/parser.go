@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-const dirPerm = 0755
+const dirPerm = os.ModePerm
 
 type ValCurs struct {
 	Date    string   `xml:"Date,attr"`
