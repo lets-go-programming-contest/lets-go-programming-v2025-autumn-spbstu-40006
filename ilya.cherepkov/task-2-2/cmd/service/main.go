@@ -41,7 +41,6 @@ func main() {
 
 	scores := make([]int, dishCount)
 	for i := range dishCount {
-
 		_, err = fmt.Scan(&scores[i])
 		if err != nil {
 			fmt.Println("Invalid input")
