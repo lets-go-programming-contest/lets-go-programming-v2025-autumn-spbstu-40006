@@ -3,11 +3,9 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 )
 
-var ErrInvalidParameter error = errors.New("-1")
 func setTemperature(parameter string, temperature int, maxTemp, minTemp *int) int {
 	switch parameter {
 	case ">=":
@@ -58,7 +56,6 @@ func main() {
 			}
 
 			out := setTemperature(parameter, temperature, &maxTemp, &minTemp)
-			fmt.Println(out)
 
 			fmt.Println(out)
 		}
