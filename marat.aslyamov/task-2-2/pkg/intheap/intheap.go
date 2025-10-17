@@ -1,4 +1,4 @@
-package IntHeap
+package intheap
 
 type IntHeap []int
 

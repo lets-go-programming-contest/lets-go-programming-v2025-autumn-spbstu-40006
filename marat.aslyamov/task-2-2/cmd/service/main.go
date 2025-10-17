@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/tuesdayy2/task-2-2/pkg/intheap"
+	"github.com/tuesdayy1/task-2-2/pkg/intheap"
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 		return
 	}
 
-	dishHeap := &IntHeap{}
+	dishHeap := &intheap.IntHeap{}
 	heap.Init(dishHeap)
 
 	for _, rating := range ratings {
