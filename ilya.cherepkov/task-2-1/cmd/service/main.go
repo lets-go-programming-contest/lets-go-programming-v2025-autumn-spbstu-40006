@@ -11,7 +11,9 @@ func main() {
 	_, err := fmt.Scan(&departmentsCount)
 	if err != nil {
 		fmt.Println("Invalid input")
+
 		return
+
 	}
 
 	for department := 0; department != departmentsCount; department++ {
@@ -20,14 +22,18 @@ func main() {
 		_, err := fmt.Scan(&employeesCount)
 		if err != nil {
 			fmt.Println("Invalid input")
+
 			return
+
 		}
 
 		for employee := 0; employee != employeesCount; employee++ {
 			_, err := fmt.Scan(&operator, &value)
 			if err != nil {
 				fmt.Println("Invalid input")
+
 				return
+
 			}
 
 			if operator == ">=" && value > minimum {
