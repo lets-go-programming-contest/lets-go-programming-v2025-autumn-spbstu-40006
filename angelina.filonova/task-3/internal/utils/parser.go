@@ -12,6 +12,8 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
+const dirPerm = 0o755
+
 type ValCurs struct {
 	Date    string   `xml:"Date,attr"`
 	Name    string   `xml:"name,attr"`
@@ -36,23 +38,29 @@ func ParseXMLFile(path string) ([]Valute, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open XML file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic("failed to close file")
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	if err := decoder.Decode(&valCurs); err != nil {
+	err = decoder.Decode(&valCurs)
+	if err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	for i := range valCurs.Valutes {
-		str := strings.ReplaceAll(valCurs.Valutes[i].ValueStr, ",", ".")
+	for index := range valCurs.Valutes {
+		str := strings.ReplaceAll(valCurs.Valutes[index].ValueStr, ",", ".")
 		val, err := strconv.ParseFloat(str, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert value %q to float: %w", str, err)
 		}
-		valCurs.Valutes[i].Value = val
+		valCurs.Valutes[index].Value = val
 	}
 
 	return valCurs.Valutes, nil
@@ -60,16 +68,16 @@ func ParseXMLFile(path string) ([]Valute, error) {
 
 func SaveToJSON(path string, valutes []Valute) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return fmt.Errorf("failed to create directory %q: %w", dir, err)
 	}
 
 	results := make([]Result, len(valutes))
-	for i, v := range valutes {
-		results[i] = Result{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    v.Value,
+	for idx, val := range valutes {
+		results[idx] = Result{
+			NumCode:  val.NumCode,
+			CharCode: val.CharCode,
+			Value:    val.Value,
 		}
 	}
 
@@ -77,7 +85,12 @@ func SaveToJSON(path string, valutes []Valute) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file %q: %w", path, err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic("failed to close file")
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
