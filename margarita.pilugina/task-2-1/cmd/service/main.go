@@ -1,3 +1,5 @@
+// package main
+
 package main
 
 import (
@@ -43,7 +45,7 @@ func main() {
 		return
 	}
 
-	for depI := 0; depI < numDep; depI++ {
+	for range numDep {
 		maxTemp, minTemp := 30, 15
 
 		if _, err := fmt.Scan(&dearColleagues); err != nil {
@@ -52,7 +54,7 @@ func main() {
 			return
 		}
 
-		for dcI := 0; dcI < dearColleagues; dcI++ {
+		for range dearColleagues {
 			if _, err := fmt.Scan(&parameter, &temperature); err != nil {
 				fmt.Println(ErrInvalidNum)
 
@@ -61,7 +63,7 @@ func main() {
 
 			out, err := setTemperature(parameter, temperature, &maxTemp, &minTemp)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(ErrInvalidParameter)
 
 				return
 			}
