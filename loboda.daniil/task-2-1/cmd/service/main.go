@@ -2,42 +2,61 @@ package main
 
 import "fmt"
 
-func main() {
-	const baseLo, baseHi = 15, 30
+const (
+	baseLower = 15
+	baseUpper = 30
+)
 
-	var k int
-	if n, err := fmt.Scan(&k); err != nil || n != 1 || k < 0 {
+func readConstraint() (operator string, temperature int, valid bool) {
+	var op string
+	var temp int
+
+	fieldsRead, err := fmt.Scan(&op, &temp)
+	if err != nil || fieldsRead != 2 {
+		return "", 0, false
+	}
+	if op != ">=" && op != "<=" {
+		return "", 0, false
+	}
+	return op, temp, true
+}
+
+func applyConstraint(lower, upper int, operator string, temperature int) (int, int) {
+	switch operator {
+	case ">=":
+		if temperature > lower {
+			lower = temperature
+		}
+	case "<=":
+		if temperature < upper {
+			upper = temperature
+		}
+	}
+	return lower, upper
+}
+
+func printState(lower, upper int) {
+	if lower <= upper {
+		fmt.Println(lower)
+	} else {
+		fmt.Println(-1)
+	}
+}
+
+func main() {
+	var limitsCount int
+	if read, err := fmt.Scan(&limitsCount); err != nil || read != 1 || limitsCount < 0 {
 		return
 	}
 
-	lo, hi := baseLo, baseHi
+	lowerBound, upperBound := baseLower, baseUpper
 
-	for i := 0; i < k; i++ {
-		var op string
-		var t int
-
-		n, err := fmt.Scan(&op, &t)
-		if err != nil || n != 2 {
+	for range limitsCount {
+		operator, temperature, valid := readConstraint()
+		if !valid {
 			return
 		}
-
-		switch op {
-		case ">=":
-			if t > lo {
-				lo = t
-			}
-		case "<=":
-			if t < hi {
-				hi = t
-			}
-		default:
-			return
-		}
-
-		if lo <= hi {
-			fmt.Println(lo)
-		} else {
-			fmt.Println(-1)
-		}
+		lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operator, temperature)
+		printState(lowerBound, upperBound)
 	}
 }
