@@ -7,54 +7,45 @@ const (
 	baseUpper = 30
 )
 
-func applyConstraint(lower, upper int, operatorToken string, temperature int) (int, int) {
-	if operatorToken == ">=" {
-		if temperature > lower {
-			lower = temperature
-		}
-
-		return lower, upper
-	}
-
-	if operatorToken == "<=" {
-		if temperature < upper {
-			upper = temperature
-		}
-
-		return lower, upper
-	}
-
-	return lower, upper
-}
-
-func printState(lower, upper int) {
-	if lower <= upper {
-		fmt.Println(lower)
-
-		return
-	}
-
-	fmt.Println(-1)
-}
-
 func main() {
-	var departmentsCount, employeesCount int
-	if _, err := fmt.Scan(&departmentsCount, &employeesCount); err != nil {
+	var departmentsCount int
+	if _, err := fmt.Scan(&departmentsCount); err != nil {
 		return
 	}
 
 	for range departmentsCount {
-		lowerBound, upperBound := baseLower, baseUpper
+		var workersCount int
+		if _, err := fmt.Scan(&workersCount); err != nil {
+			return
+		}
 
-		for range employeesCount {
-			var operatorToken string
+		lowerBound := baseLower
+		upperBound := baseUpper
+
+		for range workersCount {
+			var operator string
 			var temperature int
-			if _, err := fmt.Scan(&operatorToken, &temperature); err != nil {
+			if _, err := fmt.Scan(&operator, &temperature); err != nil {
 				return
 			}
 
-			lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operatorToken, temperature)
-			printState(lowerBound, upperBound)
+			if operator == ">=" {
+				if temperature > lowerBound {
+					lowerBound = temperature
+				}
+			} else if operator == "<=" {
+				if temperature < upperBound {
+					upperBound = temperature
+				}
+			} else {
+				return
+			}
+
+			if lowerBound <= upperBound {
+				fmt.Println(lowerBound)
+			} else {
+				fmt.Println(-1)
+			}
 		}
 	}
 }
