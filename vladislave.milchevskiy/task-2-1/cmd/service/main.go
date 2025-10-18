@@ -31,15 +31,24 @@ func main() {
 			var Temp int
 
 			_, err = fmt.Scan(&operation, &Temp)
+			if err != nil {
+				fmt.Println("Invalid operation")
 
-			if err == nil && operation == ">=" {
+				return
+			}
+
+			if operation == ">=" {
 				if Temp > minT {
 					minT = Temp
 				}
-			} else if err == nil && operation == "<=" {
+			} else if operation == "<=" {
 				if Temp < maxT {
 					maxT = Temp
 				}
+			} else {
+				fmt.Println("Invalid operation")
+
+				return
 			}
 
 			if minT <= maxT {
