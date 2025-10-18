@@ -7,32 +7,36 @@ func main() {
 		numDepartments, numEmployees, preferredTemp int
 		operation                                   string
 	)
+
 	_, err := fmt.Scan(&numDepartments)
 	if err != nil || numDepartments > 1000 {
 		fmt.Println("Incorrect number of departments")
+
 		return
 	}
 
-	for i := 0; i < numDepartments; i++ {
+	for range numDepartments {
 		_, err = fmt.Scan(&numEmployees)
 		if err != nil || numEmployees > 1000 {
 			fmt.Println("Incorrect number of employees")
+
 			return
 		}
 
 		minTemperature := 15
 		maxTemperature := 30
 
-		for j := 0; j < numEmployees; j++ {
+		for range numEmployees {
 			_, err = fmt.Scan(&operation, &preferredTemp)
 			if err != nil {
-				fmt.Println("Incorrect number if temperature")
+				fmt.Println("Incorrect temperature value")
+
 				return
 			}
 
-			if operation[0] == '>' && preferredTemp > minTemperature {
+			if operation == ">=" && preferredTemp > minTemperature {
 				minTemperature = preferredTemp
-			} else if operation[0] == '<' && preferredTemp < maxTemperature {
+			} else if operation == "<=" && preferredTemp < maxTemperature {
 				maxTemperature = preferredTemp
 			}
 
