@@ -7,22 +7,28 @@ const (
 	baseUpper = 30
 )
 
-func readConstraint() (operator string, temperature int, valid bool) {
-	var op string
-	var temp int
+func readConstraint() (string, int, bool) {
+	var (
+		operatorToken string
+		temperature   int
+	)
 
-	fieldsRead, err := fmt.Scan(&op, &temp)
+	fieldsRead, err := fmt.Scan(&operatorToken, &temperature)
 	if err != nil || fieldsRead != 2 {
+
 		return "", 0, false
 	}
-	if op != ">=" && op != "<=" {
+
+	if operatorToken != ">=" && operatorToken != "<=" {
+
 		return "", 0, false
 	}
-	return op, temp, true
+
+	return operatorToken, temperature, true
 }
 
-func applyConstraint(lower, upper int, operator string, temperature int) (int, int) {
-	switch operator {
+func applyConstraint(lower, upper int, operatorToken string, temperature int) (int, int) {
+	switch operatorToken {
 	case ">=":
 		if temperature > lower {
 			lower = temperature
@@ -32,6 +38,7 @@ func applyConstraint(lower, upper int, operator string, temperature int) (int, i
 			upper = temperature
 		}
 	}
+
 	return lower, upper
 }
 
@@ -46,17 +53,21 @@ func printState(lower, upper int) {
 func main() {
 	var limitsCount int
 	if read, err := fmt.Scan(&limitsCount); err != nil || read != 1 || limitsCount < 0 {
+
 		return
 	}
 
 	lowerBound, upperBound := baseLower, baseUpper
 
 	for range limitsCount {
-		operator, temperature, valid := readConstraint()
+		operatorToken, temperature, valid := readConstraint()
 		if !valid {
+
 			return
 		}
-		lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operator, temperature)
+
+		lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operatorToken, temperature)
+
 		printState(lowerBound, upperBound)
 	}
 }
