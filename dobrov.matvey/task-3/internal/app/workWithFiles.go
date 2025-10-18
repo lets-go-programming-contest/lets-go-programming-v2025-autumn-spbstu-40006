@@ -15,33 +15,22 @@ const (
 	filePerm = 0o600
 )
 
-func ReadDataFromConfig(cfg *Config, configPath string) error {
-	info, err := os.Stat(configPath)
-	if err != nil {
-		return err
-	}
-
-	if info.Size() == 0 {
-		return err
-	}
-
+func ReadDataFromConfig(cfg *Config, configPath string) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
-
-	return nil
 }
 
-func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
+func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) {
 	file, err := os.Open(inputFile)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	defer func() { _ = file.Close() }()
@@ -51,27 +40,23 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 
 	err = dec.Decode(curs)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
-
-	return nil
 }
 
-func FillOutputFile(rates []Rate, cfg Config) error {
+func FillOutputFile(rates []Rate, cfg Config) {
 	jsonData, err := json.MarshalIndent(rates, "", " ")
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	err = os.MkdirAll(filepath.Dir(cfg.OutputFile), dirPerm)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	err = os.WriteFile(cfg.OutputFile, jsonData, filePerm)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
-
-	return nil
 }

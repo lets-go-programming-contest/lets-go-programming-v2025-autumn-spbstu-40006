@@ -12,20 +12,11 @@ func main() {
 		curs app.ValCurs
 	)
 
-	err := app.ReadDataFromConfig(&cfg, configPath)
-	if err != nil {
-		panic(err)
-	}
+	app.ReadDataFromConfig(&cfg, configPath)
 
-	err = app.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
-	if err != nil {
-		panic(err)
-	}
+	app.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
 
 	rates := app.FillNSortRates(curs)
 
-	err = app.FillOutputFile(rates, cfg)
-	if err != nil {
-		panic(err)
-	}
+	app.FillOutputFile(rates, cfg)
 }
