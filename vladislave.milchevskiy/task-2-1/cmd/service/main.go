@@ -38,19 +38,19 @@ func main() {
 			}
 
 			switch operation {
-            		case ">=":
-                		if Temp > minT {
-                    			minT = Temp
-                		}
-            		case "<=":
-                		if Temp < maxT {
-                    			maxT = Temp
-                		}
-            		default:
-                		fmt.Println("Invalid operation")
+			case ">=":
+				if Temp > minT {
+					minT = Temp
+				}
+			case "<=":
+				if Temp < maxT {
+					maxT = Temp
+				}
+			default:
+				fmt.Println("Invalid operation")
 
-                		return
-            		}
+				return
+			}
 
 			if minT <= maxT {
 				fmt.Println(minT)
