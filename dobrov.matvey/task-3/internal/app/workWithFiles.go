@@ -36,13 +36,13 @@ func ReadDataFromConfig(cfg *Config, configPath string) error {
 	data, err := os.ReadFile(configPath)
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errReadConfig, err)
+		return errReadConfig
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errReadConfig, err)
+		return errReadConfig
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 	err = dec.Decode(curs)
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errDecodeData, err)
+		return errDecodeData
 	}
 
 	return nil
@@ -73,16 +73,17 @@ func FillOutputFile(rates []Rate, cfg Config) error {
 	jsonData, err := json.MarshalIndent(rates, "", " ")
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errCreateJSON, err)
+		return errCreateJSON
 	}
 
 	if err := os.MkdirAll(filepath.Dir(cfg.OutputFile), 0o755); err != nil {
 		return err
 	}
+
 	err = os.WriteFile(cfg.OutputFile, jsonData, 0o600)
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errWriteOutputJSON, err)
+		return errWriteOutputJSON
 	}
 
 	return nil

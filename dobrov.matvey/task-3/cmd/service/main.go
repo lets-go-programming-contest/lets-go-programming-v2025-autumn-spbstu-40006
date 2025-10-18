@@ -1,7 +1,7 @@
 package main
 
 import (
-    "github.com/HorekProgrammer/task-3/internal/app"
+	"github.com/HorekProgrammer/task-3/internal/app"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	rates := app.FillNSortRates(curs)
 
 	err = app.FillOutputFile(rates, cfg)
-	
+
 	if err != nil {
 		return
 	}
