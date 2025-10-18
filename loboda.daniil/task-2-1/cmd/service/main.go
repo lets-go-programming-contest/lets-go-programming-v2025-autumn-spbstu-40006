@@ -1,53 +1,60 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-)
+import "fmt"
 
 const (
 	baseLower = 15
 	baseUpper = 30
 )
 
-func main() {
-	in := bufio.NewReader(os.Stdin)
-	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
+func applyConstraint(lower, upper int, operatorToken string, temperature int) (int, int) {
+	if operatorToken == ">=" {
+		if temperature > lower {
+			lower = temperature
+		}
 
-	var departments, employees int
-	if _, err := fmt.Fscan(in, &departments, &employees); err != nil {
+		return lower, upper
+	}
+
+	if operatorToken == "<=" {
+		if temperature < upper {
+			upper = temperature
+		}
+
+		return lower, upper
+	}
+
+	return lower, upper
+}
+
+func printState(lower, upper int) {
+	if lower <= upper {
+		fmt.Println(lower)
+
 		return
 	}
 
-	for d := 0; d < departments; d++ {
-		lower, upper := baseLower, baseUpper
+	fmt.Println(-1)
+}
 
-		for j := 0; j < employees; j++ {
-			var op string
-			var t int
-			if _, err := fmt.Fscan(in, &op, &t); err != nil {
+func main() {
+	var departmentsCount, employeesCount int
+	if _, err := fmt.Scan(&departmentsCount, &employeesCount); err != nil {
+		return
+	}
+
+	for range departmentsCount {
+		lowerBound, upperBound := baseLower, baseUpper
+
+		for range employeesCount {
+			var operatorToken string
+			var temperature int
+			if _, err := fmt.Scan(&operatorToken, &temperature); err != nil {
 				return
 			}
 
-			if op == ">=" {
-				if t > lower {
-					lower = t
-				}
-			} else if op == "<=" {
-				if t < upper {
-					upper = t
-				}
-			} else {
-				return
-			}
-
-			if lower <= upper {
-				fmt.Fprintln(out, lower)
-			} else {
-				fmt.Fprintln(out, -1)
-			}
+			lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operatorToken, temperature)
+			printState(lowerBound, upperBound)
 		}
 	}
 }
