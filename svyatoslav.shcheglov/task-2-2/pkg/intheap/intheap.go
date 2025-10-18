@@ -20,8 +20,10 @@ func (h *IntHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
 		fmt.Printf("IntHeap: expected int type, got %T\n", x)
+
 		return
 	}
+
 	*h = append(*h, value)
 }
 
