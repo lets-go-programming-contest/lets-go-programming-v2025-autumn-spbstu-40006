@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -80,8 +81,10 @@ func FillOutputFile(rates []Rate, cfg Config) error {
 		return errCreateJSON
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cfg.OutputFile), dirPerm); err != nil {
-		return err
+	err = os.MkdirAll(filepath.Dir(cfg.OutputFile), dirPerm)
+
+	if err != nil {
+		return fmt.Errorf("mkdir error %w", err)
 	}
 
 	err = os.WriteFile(cfg.OutputFile, jsonData, filePerm)
