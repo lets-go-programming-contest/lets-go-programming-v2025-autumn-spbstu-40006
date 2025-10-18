@@ -9,7 +9,7 @@ func main() {
 	)
 
 	_, err := fmt.Scan(&numDepartments)
-	if err != nil || numDepartments > 1000 {
+	if err != nil {
 		fmt.Println("Incorrect number of departments")
 
 		return
@@ -17,7 +17,7 @@ func main() {
 
 	for range numDepartments {
 		_, err = fmt.Scan(&numEmployees)
-		if err != nil || numEmployees > 1000 {
+		if err != nil {
 			fmt.Println("Incorrect number of employees")
 
 			return
