@@ -29,10 +29,15 @@ func main() {
 
 		for range emplsNum {
 			_, err = fmt.Scan(&operand, &temp)
+			if err != nil {
+				fmt.Println("Incorrect number if temperature")
 
-			if err == nil && operand[0] == '>' && temp > minTemp {
+				return
+			}
+
+			if operand[0] == '>' && temp > minTemp {
 				minTemp = temp
-			} else if err == nil && operand[0] == '<' && temp < maxTemp {
+			} else if operand[0] == '<' && temp < maxTemp {
 				maxTemp = temp
 			}
 
