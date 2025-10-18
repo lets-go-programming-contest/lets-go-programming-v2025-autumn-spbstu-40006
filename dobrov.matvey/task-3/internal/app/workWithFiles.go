@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -20,6 +19,11 @@ var (
 	errDecodeData      = errors.New("decode data file failed")
 	errCreateJSON      = errors.New("create json failed")
 	errWriteOutputJSON = errors.New("write json file failed")
+)
+
+const (
+	dirPerm  = 0o755
+	filePerm = 0o600
 )
 
 func ReadDataFromConfig(cfg *Config, configPath string) error {
@@ -52,7 +56,7 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 	file, err := os.Open(inputFile)
 
 	if err != nil {
-		return fmt.Errorf("%w: %v", errOpenData, err)
+		return errOpenData
 	}
 
 	defer func() { _ = file.Close() }()
@@ -76,11 +80,11 @@ func FillOutputFile(rates []Rate, cfg Config) error {
 		return errCreateJSON
 	}
 
-	if err := os.MkdirAll(filepath.Dir(cfg.OutputFile), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(cfg.OutputFile), dirPerm); err != nil {
 		return err
 	}
 
-	err = os.WriteFile(cfg.OutputFile, jsonData, 0o600)
+	err = os.WriteFile(cfg.OutputFile, jsonData, filePerm)
 
 	if err != nil {
 		return errWriteOutputJSON
