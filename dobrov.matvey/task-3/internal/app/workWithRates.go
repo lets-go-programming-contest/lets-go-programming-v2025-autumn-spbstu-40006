@@ -11,8 +11,8 @@ func FillNSortRates(curs ValCurs) []Rate {
 
 	for _, valute := range curs.Valute {
 		s := strings.ReplaceAll(valute.ValueRaw, ",", ".")
-		//nolint:wsl // конфликт двух линтеров: gofugmpt (требует без пустой строки) и wsl (требует пустую строку)
 		val, err := strconv.ParseFloat(s, 64)
+		//nolint:wsl // gofumpt требует без пустой строки
 		if err != nil {
 			continue
 		}
