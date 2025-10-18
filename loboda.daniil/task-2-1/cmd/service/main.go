@@ -11,10 +11,8 @@ const (
 )
 
 func readConstraint() (string, int, bool) {
-	var (
-		operatorToken string
-		temperature   int
-	)
+	var operatorToken string
+	var temperature int
 
 	fieldsRead, err := fmt.Scan(&operatorToken, &temperature)
 	if err != nil || fieldsRead != 2 {
@@ -77,14 +75,13 @@ func main() {
 		return
 	}
 
-	for range departments {
+	for i := 0; i < departments; i++ {
 		lowerBound, upperBound := baseLower, baseUpper
 
-		for idx := range limitsPerDepartment {
-			if haveFirst && idx == 0 {
+		for j := 0; j < limitsPerDepartment; j++ {
+			if haveFirst && j == 0 {
 				lowerBound, upperBound = applyConstraint(lowerBound, upperBound, firstOperator, firstTemperature)
 				printState(lowerBound, upperBound)
-
 				continue
 			}
 
@@ -92,6 +89,7 @@ func main() {
 			if !valid {
 				return
 			}
+
 			lowerBound, upperBound = applyConstraint(lowerBound, upperBound, operatorToken, temperature)
 			printState(lowerBound, upperBound)
 		}
