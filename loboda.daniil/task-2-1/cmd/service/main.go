@@ -15,12 +15,10 @@ func readConstraint() (string, int, bool) {
 
 	fieldsRead, err := fmt.Scan(&operatorToken, &temperature)
 	if err != nil || fieldsRead != 2 {
-
 		return "", 0, false
 	}
 
 	if operatorToken != ">=" && operatorToken != "<=" {
-
 		return "", 0, false
 	}
 
@@ -45,15 +43,16 @@ func applyConstraint(lower, upper int, operatorToken string, temperature int) (i
 func printState(lower, upper int) {
 	if lower <= upper {
 		fmt.Println(lower)
-	} else {
-		fmt.Println(-1)
+
+		return
 	}
+
+	fmt.Println(-1)
 }
 
 func main() {
 	var limitsCount int
 	if read, err := fmt.Scan(&limitsCount); err != nil || read != 1 || limitsCount < 0 {
-
 		return
 	}
 
@@ -62,7 +61,6 @@ func main() {
 	for range limitsCount {
 		operatorToken, temperature, valid := readConstraint()
 		if !valid {
-
 			return
 		}
 
