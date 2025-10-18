@@ -14,18 +14,18 @@ func main() {
 
 	err := app.ReadDataFromConfig(&cfg, configPath)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	err = app.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	rates := app.FillNSortRates(curs)
 
 	err = app.FillOutputFile(rates, cfg)
 	if err != nil {
-		return
+		panic(err)
 	}
 }

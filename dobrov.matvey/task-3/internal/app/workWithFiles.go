@@ -3,23 +3,11 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
-	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"golang.org/x/net/html/charset"
 	"gopkg.in/yaml.v3"
-)
-
-var (
-	errNoFile          = errors.New("input file does not exist")
-	errEmptyFile       = errors.New("input file is empty")
-	errReadConfig      = errors.New("read config failed")
-	errOpenData        = errors.New("open data file failed")
-	errDecodeData      = errors.New("decode data file failed")
-	errCreateJSON      = errors.New("create json failed")
-	errWriteOutputJSON = errors.New("write json file failed")
 )
 
 const (
@@ -30,21 +18,21 @@ const (
 func ReadDataFromConfig(cfg *Config, configPath string) error {
 	info, err := os.Stat(configPath)
 	if err != nil {
-		return errNoFile
+		return err
 	}
 
 	if info.Size() == 0 {
-		return errEmptyFile
+		return err
 	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return errReadConfig
+		return err
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return errReadConfig
+		return err
 	}
 
 	return nil
@@ -53,7 +41,7 @@ func ReadDataFromConfig(cfg *Config, configPath string) error {
 func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 	file, err := os.Open(inputFile)
 	if err != nil {
-		return errOpenData
+		return err
 	}
 
 	defer func() { _ = file.Close() }()
@@ -63,7 +51,7 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 
 	err = dec.Decode(curs)
 	if err != nil {
-		return errDecodeData
+		return err
 	}
 
 	return nil
@@ -72,17 +60,17 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) error {
 func FillOutputFile(rates []Rate, cfg Config) error {
 	jsonData, err := json.MarshalIndent(rates, "", " ")
 	if err != nil {
-		return errCreateJSON
+		return err
 	}
 
 	err = os.MkdirAll(filepath.Dir(cfg.OutputFile), dirPerm)
 	if err != nil {
-		return fmt.Errorf("mkdir error %w", err)
+		return err
 	}
 
 	err = os.WriteFile(cfg.OutputFile, jsonData, filePerm)
 	if err != nil {
-		return errWriteOutputJSON
+		return err
 	}
 
 	return nil
