@@ -16,7 +16,6 @@ func main() {
 	}
 
 	for range numDepartments {
-
 		_, err = fmt.Scanln(&numWorkers)
 		if err != nil {
 			fmt.Println("Invalid input")
@@ -27,7 +26,7 @@ func main() {
 		for range numWorkers {
 			minTemp := 15
 			maxTemp := 30
-
+			
 			_, err = fmt.Scanln(&operation, &temp)
 			if err != nil {
 				fmt.Println("Invalid input")
