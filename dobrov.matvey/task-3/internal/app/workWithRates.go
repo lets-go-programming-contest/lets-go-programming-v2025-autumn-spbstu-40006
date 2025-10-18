@@ -12,7 +12,6 @@ func FillNSortRates(curs ValCurs) []Rate {
 	for _, valute := range curs.Valute {
 		s := strings.ReplaceAll(valute.ValueRaw, ",", ".")
 		val, err := strconv.ParseFloat(s, 64)
-
 		if err != nil {
 			continue
 		}
