@@ -17,10 +17,6 @@ func FillNSortRates(curs ValCurs) []Rate {
 			continue
 		}
 
-		if valute.Nominal > 0 {
-			val /= float64(valute.Nominal)
-		}
-
 		rate := Rate{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
