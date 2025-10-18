@@ -23,21 +23,25 @@ func main() {
 		upperBound := baseUpper
 
 		for range workersCount {
-			var operator string
-			var temperature int
-			if _, err := fmt.Scan(&operator, &temperature); err != nil {
+			var (
+				operatorToken string
+				temperature   int
+			)
+
+			if _, err := fmt.Scan(&operatorToken, &temperature); err != nil {
 				return
 			}
 
-			if operator == ">=" {
+			switch operatorToken {
+			case ">=":
 				if temperature > lowerBound {
 					lowerBound = temperature
 				}
-			} else if operator == "<=" {
+			case "<=":
 				if temperature < upperBound {
 					upperBound = temperature
 				}
-			} else {
+			default:
 				return
 			}
 
