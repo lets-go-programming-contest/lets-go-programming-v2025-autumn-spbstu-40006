@@ -17,33 +17,29 @@ func main() {
 	defer out.Flush()
 
 	var departments, employees int
-
 	if _, err := fmt.Fscan(in, &departments, &employees); err != nil {
-
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for d := 0; d < departments; d++ {
 		lower, upper := baseLower, baseUpper
+
 		for j := 0; j < employees; j++ {
 			var op string
 			var t int
-
 			if _, err := fmt.Fscan(in, &op, &t); err != nil {
-
 				return
 			}
-			switch op {
-			case ">=":
+
+			if op == ">=" {
 				if t > lower {
 					lower = t
 				}
-			case "<=":
+			} else if op == "<=" {
 				if t < upper {
 					upper = t
 				}
-			default:
-
+			} else {
 				return
 			}
 
