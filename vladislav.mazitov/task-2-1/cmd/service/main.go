@@ -35,7 +35,9 @@ func istreamString(reader *bufio.Reader) (string, error) {
 }
 
 func checkTemperatures(check string, minValue *int, maxValue *int) int {
-	if len(check) < 2 {
+	const minLength = 2
+
+	if len(check) < minLength {
 		return 0
 	}
 
