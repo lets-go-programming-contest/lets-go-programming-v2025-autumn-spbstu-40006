@@ -29,4 +29,3 @@ func (h *Tree) Pop() interface{} {
 
 	return x
 }
-
