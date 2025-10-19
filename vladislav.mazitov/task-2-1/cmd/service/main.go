@@ -35,6 +35,10 @@ func istreamString(reader *bufio.Reader) (string, error) {
 }
 
 func checkTemperatures(check string, minValue *int, maxValue *int) int {
+	if len(check) < 2 {
+		return 0
+	}
+
 	switch check[:2] {
 	case ">=":
 		temp, err := strconv.Atoi(strings.TrimSpace(check[3:]))
