@@ -28,8 +28,7 @@ func (h *IntMinHeap) Pop() any {
 }
 
 func main() {
-	name := "Go Developers"
-	fmt.Println("Azure for", name)
+
 	var number, kPosition int
 
 	if _, err := fmt.Scan(&number); err != nil || (number < 1 && number > 10000) {
