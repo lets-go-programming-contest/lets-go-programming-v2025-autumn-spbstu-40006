@@ -16,17 +16,9 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-var (
-	ErrUnknownCharset = errors.New("unknown charset")
-)
+var ErrUnknownCharset = errors.New("unknown charset")
 
-func panicIfErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func decode(data []byte, value interface{}) error {
+func decode(data []byte, out interface{}) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		switch charset {
@@ -37,22 +29,53 @@ func decode(data []byte, value interface{}) error {
 		}
 	}
 
-	return decoder.Decode(value)
+	return decoder.Decode(out)
 }
 
-func Process(cfg *config.Config) {
+func encode(path string, data any) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create output file '%s': %w", path, err)
+	}
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "\t")
+
+	if err := encoder.Encode(data); err != nil {
+		return fmt.Errorf("failed to encode JSON: %w", err)
+	}
+
+	return nil
+}
+
+func Process(cfg *config.Config) error {
 	data, err := os.ReadFile(cfg.InputFile)
-	panicIfErr(fmt.Errorf("failed to read input file '%s': %w", cfg.InputFile, err))
+	if err != nil {
+		return fmt.Errorf("failed to read input file '%s': %w", cfg.InputFile, err)
+	}
 
 	var xmlCurrencies currency.XMLCurrencies
-	err = decode(data, &xmlCurrencies)
-	panicIfErr(fmt.Errorf("failed to parse XML data: %w", err))
+	if err := decode(data, &xmlCurrencies); err != nil {
+		return fmt.Errorf("failed to parse XML: %w", err)
+	}
 
 	jsonCurrencies := make([]currency.JSONCurrency, 0, len(xmlCurrencies.Currencies))
 
 	for _, xmlCurrency := range xmlCurrencies.Currencies {
 		jsonCurrency, err := xmlCurrency.ToJSONCurrency()
-		panicIfErr(fmt.Errorf("failed to convert currency: %w", err))
+		if err != nil {
+			return fmt.Errorf("failed to convert currency '%s': %w", xmlCurrency.CharCode, err)
+		}
 
 		jsonCurrencies = append(jsonCurrencies, jsonCurrency)
 	}
@@ -61,22 +84,9 @@ func Process(cfg *config.Config) {
 		return jsonCurrencies[i].Value > jsonCurrencies[j].Value
 	})
 
-	err = os.MkdirAll(filepath.Dir(cfg.OutputFile), 0755)
-
-	panicIfErr(fmt.Errorf("failed to create output directory: %w", err))
-
-	file, err := os.Create(cfg.OutputFile)
-	panicIfErr(fmt.Errorf("failed to create output file '%s': %w", cfg.OutputFile, err))
-
-	defer func() {
-		if err := file.Close(); err != nil {
-			panic(fmt.Errorf("failed to close output file: %w", err))
-		}
-	}()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "\t")
-	if err := encoder.Encode(jsonCurrencies); err != nil {
-		panicIfErr(fmt.Errorf("failed to encode JSON: %w", err))
+	if err := encode(cfg.OutputFile, jsonCurrencies); err != nil {
+		return err
 	}
+
+	return nil
 }
