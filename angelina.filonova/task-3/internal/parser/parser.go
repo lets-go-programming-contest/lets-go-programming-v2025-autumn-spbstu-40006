@@ -26,26 +26,29 @@ type Valute struct {
 	Value    float64 `xml:"Value"    json:"value"`
 }
 
-func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type Alias Valute
 	aux := struct {
 		Value string `xml:"Value"`
 		*Alias
 	}{
+		Value: "",
 		Alias: (*Alias)(v),
 	}
 
-	if err := d.DecodeElement(&aux, &start); err != nil {
-		return err
+	if err := decoder.DecodeElement(&aux, &start); err != nil {
+		return fmt.Errorf("failed to decode XML element: %w", err)
 	}
 
 	str := strings.ReplaceAll(aux.Value, ",", ".")
 	val, err := strconv.ParseFloat(str, 64)
+
 	if err != nil {
 		return fmt.Errorf("invalid value %q: %w", aux.Value, err)
 	}
 
 	v.Value = val
+
 	return nil
 }
 
