@@ -2,6 +2,7 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -28,11 +29,11 @@ type XMLCurrencies struct {
 }
 
 func (c *XMLCurrency) ToJSONCurrency() (JSONCurrency, error) {
-	value := strings.Replace(c.Value, ",", ".", -1)
+	value := strings.ReplaceAll(c.Value, ",", ".")
 
 	parsedValue, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return JSONCurrency{}, err
+		return JSONCurrency{}, fmt.Errorf("failed to parse currency value '%s': %w", c.Value, err)
 	}
 
 	return JSONCurrency{
