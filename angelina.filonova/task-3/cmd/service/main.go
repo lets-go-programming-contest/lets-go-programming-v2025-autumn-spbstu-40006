@@ -4,7 +4,8 @@ import (
 	"flag"
 	"sort"
 
-	"github.com/filon6/task-3/internal/utils"
+	"github.com/filon6/task-3/internal/config"
+	"github.com/filon6/task-3/internal/parser"
 )
 
 func main() {
@@ -15,12 +16,12 @@ func main() {
 		panic("missing required flag: --config")
 	}
 
-	cfg, err := utils.LoadConfig(*configPath)
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		panic("failed to load config: " + err.Error())
 	}
 
-	valutes, err := utils.ParseXMLFile(cfg.InputFile)
+	valutes, err := parser.ParseXMLFile(cfg.InputFile)
 	if err != nil {
 		panic("failed to parse XML: " + err.Error())
 	}
@@ -29,7 +30,7 @@ func main() {
 		return valutes[i].Value > valutes[j].Value
 	})
 
-	if err := utils.SaveToJSON(cfg.OutputFile, valutes); err != nil {
+	if err := parser.SaveToJSON(cfg.OutputFile, valutes); err != nil {
 		panic("failed to save JSON: " + err.Error())
 	}
 }
