@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"github.com/dizey5k/task-3/internal/config"
 	"github.com/dizey5k/task-3/internal/converter"
@@ -13,15 +12,13 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		log.Panic("Config path is required")
+		panic("Config path is required")
 	}
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {
-		log.Panicf("Failed to load config: %v", err)
+		panic(err)
 	}
 
-	if err := converter.Process(cfg); err != nil {
-		log.Panicf("Processing failed: %v", err)
-	}
+	converter.Process(cfg)
 }
