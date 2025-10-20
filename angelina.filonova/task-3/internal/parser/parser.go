@@ -21,16 +21,32 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `xml:"NumCode"`
-	CharCode string  `xml:"CharCode"`
-	ValueStr string  `xml:"Value"`
-	Value    float64 `xml:"-"`
+	NumCode  int     `xml:"NumCode"  json:"num_code"`
+	CharCode string  `xml:"CharCode" json:"char_code"`
+	Value    float64 `xml:"Value"    json:"value"`
 }
 
-type Result struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type Alias Valute
+	aux := struct {
+		Value string `xml:"Value"`
+		*Alias
+	}{
+		Alias: (*Alias)(v),
+	}
+
+	if err := d.DecodeElement(&aux, &start); err != nil {
+		return err
+	}
+
+	str := strings.ReplaceAll(aux.Value, ",", ".")
+	val, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return fmt.Errorf("invalid value %q: %w", aux.Value, err)
+	}
+
+	v.Value = val
+	return nil
 }
 
 func ParseXMLFile(path string) ([]Valute, error) {
@@ -49,21 +65,8 @@ func ParseXMLFile(path string) ([]Valute, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-
-	err = decoder.Decode(&valCurs)
-	if err != nil {
+	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
-	}
-
-	for index := range valCurs.Valutes {
-		str := strings.ReplaceAll(valCurs.Valutes[index].ValueStr, ",", ".")
-
-		val, err := strconv.ParseFloat(str, 64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert value %q to float: %w", str, err)
-		}
-
-		valCurs.Valutes[index].Value = val
 	}
 
 	return valCurs.Valutes, nil
@@ -73,15 +76,6 @@ func SaveToJSON(path string, valutes []Valute) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return fmt.Errorf("failed to create directory %q: %w", dir, err)
-	}
-
-	results := make([]Result, len(valutes))
-	for idx, val := range valutes {
-		results[idx] = Result{
-			NumCode:  val.NumCode,
-			CharCode: val.CharCode,
-			Value:    val.Value,
-		}
 	}
 
 	file, err := os.Create(path)
@@ -98,7 +92,7 @@ func SaveToJSON(path string, valutes []Valute) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "    ")
 
-	if err := encoder.Encode(results); err != nil {
+	if err := encoder.Encode(valutes); err != nil {
 		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 
