@@ -18,6 +18,8 @@ import (
 
 var ErrUnknownCharset = errors.New("unknown charset")
 
+const dirPerm = 0o755
+
 func decode(data []byte, out interface{}) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -29,11 +31,15 @@ func decode(data []byte, out interface{}) error {
 		}
 	}
 
-	return decoder.Decode(out)
+	if err := decoder.Decode(out); err != nil {
+		return fmt.Errorf("failed to decode XML: %w", err)
+	}
+
+	return nil
 }
 
 func encode(path string, data any) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
