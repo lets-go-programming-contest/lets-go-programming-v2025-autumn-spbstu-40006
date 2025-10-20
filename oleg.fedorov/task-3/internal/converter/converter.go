@@ -23,12 +23,11 @@ const dirPerm = 0o755
 func decode(data []byte, out interface{}) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		switch charset {
-		case "windows-1251":
+		if charset == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
-		default:
-			return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
 		}
+
+		return input, nil
 	}
 
 	if err := decoder.Decode(out); err != nil {
@@ -38,7 +37,7 @@ func decode(data []byte, out interface{}) error {
 	return nil
 }
 
-func encode(path string, data any) error {
+func encode(path string, data []currency.JSONCurrency) error {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
