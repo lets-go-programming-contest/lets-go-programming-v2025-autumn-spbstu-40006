@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,23 +16,28 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+var (
+	ErrUnknownCharset = errors.New("unknown charset")
+)
+
 func panicIfErr(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-func decode(data []byte, v interface{}) error {
+func decode(data []byte, value interface{}) error {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		switch charset {
 		case "windows-1251":
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		default:
-			return nil, fmt.Errorf("unknown charset: %s", charset)
+			return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
 		}
 	}
-	return decoder.Decode(v)
+
+	return decoder.Decode(value)
 }
 
 func Process(cfg *config.Config) {
@@ -56,6 +62,7 @@ func Process(cfg *config.Config) {
 	})
 
 	err = os.MkdirAll(filepath.Dir(cfg.OutputFile), 0755)
+
 	panicIfErr(fmt.Errorf("failed to create output directory: %w", err))
 
 	file, err := os.Create(cfg.OutputFile)
@@ -69,6 +76,7 @@ func Process(cfg *config.Config) {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
-	err = encoder.Encode(jsonCurrencies)
-	panicIfErr(fmt.Errorf("failed to encode JSON: %w", err))
+	if err := encoder.Encode(jsonCurrencies); err != nil {
+		panicIfErr(fmt.Errorf("failed to encode JSON: %w", err))
+	}
 }
