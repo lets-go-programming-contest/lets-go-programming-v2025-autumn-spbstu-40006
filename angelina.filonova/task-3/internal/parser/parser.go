@@ -28,6 +28,7 @@ type Valute struct {
 
 func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	type Alias Valute
+
 	aux := struct {
 		Value string `xml:"Value"`
 		*Alias
