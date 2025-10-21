@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/IvanIgnashin7D/task-3/internal/XMLJSONParce"
+	"github.com/IvanIgnashin7D/task-3/internal/parcer"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,12 +29,12 @@ func main() {
 		panic(err)
 	}
 
-	records, err := XMLJSONParce.ParseXML(cfg.InputFile)
+	records, err := parcer.ParseXML(cfg.InputFile)
 	if err != nil {
 		panic(err)
 	}
 
-	err = XMLJSONParce.SaveAsJSON(records, cfg.OutputFile)
+	err = parcer.SaveAsJSON(records, cfg.OutputFile)
 	if err != nil {
 		panic(err)
 	}
