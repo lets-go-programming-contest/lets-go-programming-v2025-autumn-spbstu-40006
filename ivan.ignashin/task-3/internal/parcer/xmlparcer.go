@@ -44,8 +44,8 @@ func ParseXML(path string) ([]Record, error) {
 
 	for _, item := range raw.Items {
 		valueStr := strings.ReplaceAll(item.Value, ",", ".")
-		valueFloat, err := strconv.ParseFloat(valueStr, 64)
 
+		valueFloat, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse float %q: %w", item.Value, err)
 		}
