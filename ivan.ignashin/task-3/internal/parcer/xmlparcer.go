@@ -12,9 +12,9 @@ import (
 )
 
 type Record struct {
-	ID    int     `xml:"NumCode" json:"num_code"`
-	Name  string  `xml:"CharCode" json:"char_code"`
-	Value float64 `xml:"Value" json:"value"`
+	ID    int     `json:"num_code"  xml:"NumCode"`
+	Name  string  `json:"char_code" xml:"CharCode"`
+	Value float64 `json:"value"     xml:"Value"`
 }
 
 type RawRecords struct {
@@ -41,9 +41,11 @@ func ParseXML(path string) ([]Record, error) {
 	}
 
 	records := make([]Record, 0, len(raw.Items))
+
 	for _, item := range raw.Items {
 		valueStr := strings.ReplaceAll(item.Value, ",", ".")
 		valueFloat, err := strconv.ParseFloat(valueStr, 64)
+
 		if err != nil {
 			return nil, fmt.Errorf("parse float %q: %w", item.Value, err)
 		}
