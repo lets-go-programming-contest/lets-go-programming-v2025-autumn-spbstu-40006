@@ -1,10 +1,12 @@
-package utils
+package parser
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/Segfault-chan/task-3/internal/rates"
 )
 
 const (
@@ -12,7 +14,7 @@ const (
 	filePerm = 0o644
 )
 
-func ParseJSON(list []Currency, path string) error {
+func WriteJSON(list []rates.Currency, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return fmt.Errorf("couldn't create a directory: %w", err)
 	}

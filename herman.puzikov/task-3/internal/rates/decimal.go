@@ -1,4 +1,4 @@
-package utils
+package rates
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CommaFloat float64
+type Decimal float64
 
 var (
 	ErrEmptyNumber        = errors.New("empty number")
@@ -15,7 +15,7 @@ var (
 	ErrInvalidNumber      = errors.New("invalid number")
 )
 
-func (cf *CommaFloat) UnmarshalText(text []byte) error {
+func (cf *Decimal) UnmarshalText(text []byte) error {
 	str := strings.TrimSpace(string(text))
 	if str == "" {
 		return ErrEmptyNumber
@@ -31,7 +31,7 @@ func (cf *CommaFloat) UnmarshalText(text []byte) error {
 		return fmt.Errorf("%w: %q: %w", ErrInvalidNumber, text, err)
 	}
 
-	*cf = CommaFloat(v)
+	*cf = Decimal(v)
 
 	return nil
 }
