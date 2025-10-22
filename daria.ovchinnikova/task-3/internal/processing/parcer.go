@@ -46,7 +46,6 @@ func LoadXML(path string) []Currency {
 	}
 
 	currencies := make([]Currency, 0, len(raw.Items))
-
 	for _, r := range raw.Items {
 
 		f := parseValue(r.Value)
@@ -62,8 +61,7 @@ func LoadXML(path string) []Currency {
 }
 
 func parseValue(s string) float64 {
-	s = strings.Replace(s, ",", ".", 1)
-	f, err := strconv.ParseFloat(s, 64)
+	f, err := strconv.ParseFloat(strings.Replace(s, ",", ".", 1), 64)
 	if err != nil {
 		panic(err)
 	}

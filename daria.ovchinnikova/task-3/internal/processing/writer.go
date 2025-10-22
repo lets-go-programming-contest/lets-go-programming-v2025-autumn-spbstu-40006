@@ -17,9 +17,7 @@ func SaveJSON(path string, currencies []Currency) {
 		panic(err)
 	}
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(currencies); err != nil {
+	if err := json.NewEncoder(file).Encode(currencies); err != nil {
 		panic(err)
 	}
 }
