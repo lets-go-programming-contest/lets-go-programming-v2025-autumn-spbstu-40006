@@ -3,26 +3,29 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"path/filepath"
 
+	"github.com/Mishaa105/task-3/internal/config"
 	"github.com/Mishaa105/task-3/internal/decoding"
 	"github.com/Mishaa105/task-3/internal/saving"
 )
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config")
-	outputPath := flag.String("output", "output/result.json", "path to output file")
+	outputFlag := flag.String("output", "", "path to output file (overrides config)")
 	flag.Parse()
 
-	absOutputPath, err := filepath.Abs(*outputPath)
+	cfg, err := config.CheckInput(*configPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error resolving absolute output path: %v\n", err)
-		os.Exit(1)
+		panic(err)
+	}
+
+	outputPath := *outputFlag
+	if outputPath == "" {
+		outputPath = cfg.OutputFile
 	}
 
 	valCurs := decoding.Decoding(*configPath)
-	saving.SaveToJSON(absOutputPath, valCurs.Valutes)
+	saving.SaveToJSON(outputPath, valCurs.Valutes)
 
 	for _, val := range valCurs.Valutes {
 		fmt.Printf("NumCode: %d, CharCode: %s, Value: %.2f\n", val.NumCode, val.CharCode, val.Value)
