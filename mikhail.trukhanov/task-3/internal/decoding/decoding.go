@@ -42,6 +42,7 @@ func (v *Valute) UnmarshalXML(decode *xml.Decoder, start xml.StartElement) error
 	if err != nil {
 		return fmt.Errorf("cannot parse Value: %w", err)
 	}
+
 	v.Value = val
 
 	return nil
@@ -49,26 +50,26 @@ func (v *Valute) UnmarshalXML(decode *xml.Decoder, start xml.StartElement) error
 
 func Decoding(configPath string) ValCurs {
 	cfg, err := config.CheckInput(configPath)
-
 	if err != nil {
 		panic(err)
 	}
 
 	xmlFile, err := os.Open(cfg.InputFile)
-
 	if err != nil {
 		panic(err)
 	}
-
-	defer xmlFile.Close()
+	defer func() {
+		if err := xmlFile.Close(); err != nil {
+			fmt.Printf("failed to close file: %v\n", err)
+		}
+	}()
 
 	var valCurs ValCurs
 
 	decoder := xml.NewDecoder(xmlFile)
-
 	decoder.CharsetReader = charset.NewReaderLabel
-	err = decoder.Decode(&valCurs)
 
+	err = decoder.Decode(&valCurs)
 	if err != nil {
 		panic(err)
 	}
