@@ -11,9 +11,9 @@ import (
 )
 
 type Currency struct {
-	NumCode  int     `xml:"NumCode" json:"num_code"`
-	CharCode string  `xml:"CharCode" json:"char_code"`
-	Value    float64 `xml:"Value" json:"value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 type RawCurrencies struct {
@@ -29,7 +29,6 @@ func LoadXML(path string) []Currency {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -46,8 +45,10 @@ func LoadXML(path string) []Currency {
 		panic(err)
 	}
 
-	var currencies []Currency
+	currencies := make([]Currency, 0, len(raw.Items))
+
 	for _, r := range raw.Items {
+
 		f := parseValue(r.Value)
 		c := Currency{
 			NumCode:  r.NumCode,
@@ -66,5 +67,6 @@ func parseValue(s string) float64 {
 	if err != nil {
 		panic(err)
 	}
+
 	return f
 }
