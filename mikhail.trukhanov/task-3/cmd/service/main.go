@@ -10,7 +10,7 @@ import (
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config")
-	outputPath := flag.String("output", "output/result.json", "path to output file")
+	outputPath := flag.String("output", ".output/result.json", "path to output file")
 	flag.Parse()
 
 	valCurs := decoding.Decoding(*configPath)
