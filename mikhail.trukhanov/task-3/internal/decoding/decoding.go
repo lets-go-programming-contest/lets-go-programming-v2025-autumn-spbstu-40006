@@ -13,24 +13,24 @@ import (
 )
 
 type Valute struct {
-	NumCode  int     `xml:"NumCode" json:"num_code"`
-	CharCode string  `xml:"CharCode" json:"char_code"`
-	Value    float64 `xml:"Value" json:"value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
 	Valutes []Valute `xml:"Valute"`
 }
 
-func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(decode *xml.Decoder, start xml.StartElement) error {
 	var temp struct {
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
 
-	if err := d.DecodeElement(&temp, &start); err != nil {
-		return err
+	if err := decode.DecodeElement(&temp, &start); err != nil {
+		return fmt.Errorf("decode element failed: %w", err)
 	}
 
 	v.NumCode = temp.NumCode
@@ -49,20 +49,26 @@ func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 func Decoding(configPath string) ValCurs {
 	cfg, err := config.CheckInput(configPath)
+
 	if err != nil {
 		panic(err)
 	}
 
 	xmlFile, err := os.Open(cfg.InputFile)
+
 	if err != nil {
 		panic(err)
 	}
+
 	defer xmlFile.Close()
 
 	var valCurs ValCurs
+
 	decoder := xml.NewDecoder(xmlFile)
+
 	decoder.CharsetReader = charset.NewReaderLabel
 	err = decoder.Decode(&valCurs)
+
 	if err != nil {
 		panic(err)
 	}
