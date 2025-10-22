@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/Mishaa105/task-3/internal/decoding"
@@ -8,7 +9,10 @@ import (
 )
 
 func main() {
-	valCurs := decoding.Decoding("config.yaml")
+	configPath := flag.String("config", "config.yaml", "path")
+	flag.Parse()
+
+	valCurs := decoding.Decoding(*configPath)
 
 	for _, val := range valCurs.Valutes {
 		fmt.Printf("NumCode: %d, CharCode: %s, Value: %.2f\n", val.NumCode, val.CharCode, val.Value)
