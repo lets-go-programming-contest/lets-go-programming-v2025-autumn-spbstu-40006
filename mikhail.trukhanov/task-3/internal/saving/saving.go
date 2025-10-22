@@ -19,7 +19,12 @@ func SaveToJSON(path string, data []decoding.Valute) {
 	if err != nil {
 		panic(fmt.Errorf("cannot create output file: %w", err))
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("failed to close file: %v\n", err)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
