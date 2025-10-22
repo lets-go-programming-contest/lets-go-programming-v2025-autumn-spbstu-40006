@@ -19,7 +19,7 @@ func CheckInput(path string) (*Config, error) {
 	}
 
 	if len(data) == 0 {
-		return nil, fmt.Errorf("file is empty")
+		return nil, err
 	}
 
 	var cfg Config
