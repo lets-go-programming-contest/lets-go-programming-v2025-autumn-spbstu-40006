@@ -9,7 +9,6 @@ import (
 func main() {
 	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
-	println("CONFIG PATH:", *configPath)
 
 	if *configPath == "" {
 		panic("Config file path is required")
