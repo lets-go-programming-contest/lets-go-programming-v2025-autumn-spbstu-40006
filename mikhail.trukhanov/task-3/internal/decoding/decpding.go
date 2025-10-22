@@ -22,14 +22,14 @@ type ValCurs struct {
 	Valutes []Valute `xml:"Valute"`
 }
 
-func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error {
 	var temp struct {
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
 
-	if err := decoder.DecodeElement(&temp, &start); err != nil {
+	if err := decod.DecodeElement(&temp, &start); err != nil {
 		return fmt.Errorf("decode element failed: %w", err)
 	}
 
