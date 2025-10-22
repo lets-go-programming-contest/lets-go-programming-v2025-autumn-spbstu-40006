@@ -2,9 +2,12 @@ package processing
 
 import (
 	"encoding/xml"
+	"io"
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type Currency struct {
@@ -22,13 +25,24 @@ type RawCurrencies struct {
 }
 
 func LoadXML(path string) []Currency {
-	data, err := os.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
+	defer file.Close()
+
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch strings.ToLower(charset) {
+		case "windows-1251":
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		default:
+			return input, nil
+		}
+	}
 
 	var raw RawCurrencies
-	if err := xml.Unmarshal(data, &raw); err != nil {
+	if err := decoder.Decode(&raw); err != nil {
 		panic(err)
 	}
 
