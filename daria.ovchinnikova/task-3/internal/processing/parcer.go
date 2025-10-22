@@ -47,7 +47,6 @@ func LoadXML(path string) []Currency {
 
 	currencies := make([]Currency, 0, len(raw.Items))
 	for _, r := range raw.Items {
-
 		f := parseValue(r.Value)
 		c := Currency{
 			NumCode:  r.NumCode,
