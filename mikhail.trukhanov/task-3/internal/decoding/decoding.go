@@ -58,6 +58,7 @@ func Decoding(configPath string) ValCurs {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
 		if err := xmlFile.Close(); err != nil {
 			fmt.Printf("failed to close file: %v\n", err)

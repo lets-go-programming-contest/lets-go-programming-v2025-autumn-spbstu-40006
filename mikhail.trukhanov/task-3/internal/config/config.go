@@ -1,11 +1,14 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
+
+var ErrEmptyFile = errors.New("file is empty")
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -19,7 +22,7 @@ func CheckInput(path string) (*Config, error) {
 	}
 
 	if len(data) == 0 {
-		return nil, err
+		return nil, ErrEmptyFile
 	}
 
 	var cfg Config

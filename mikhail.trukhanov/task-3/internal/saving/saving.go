@@ -23,6 +23,7 @@ func SaveToJSON(path string, data []decoding.Valute) {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	if err := encoder.Encode(data); err != nil {
 		panic(fmt.Errorf("cannot write JSON: %w", err))
 	}
