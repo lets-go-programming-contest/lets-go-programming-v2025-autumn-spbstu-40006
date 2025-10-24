@@ -2,6 +2,7 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -11,9 +12,9 @@ type ValCurs struct {
 }
 
 type Currency struct {
-	NumCode  int           `xml:"NumCode" json:"num_code"`
+	NumCode  int           `xml:"NumCode"  json:"num_code"`
 	CharCode string        `xml:"CharCode" json:"char_code"`
-	Value    CurrencyValue `xml:"Value" json:"value"`
+	Value    CurrencyValue `xml:"Value"    json:"value"`
 }
 
 type CurrencyValue float64
@@ -23,13 +24,14 @@ func (currencyValue *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, startElem
 
 	err := decoder.DecodeElement(&str, &startElement)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
 	str = strings.Replace(str, ",", ".", 1)
+
 	value, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse float: %w", err)
 	}
 
 	*currencyValue = CurrencyValue(value)
