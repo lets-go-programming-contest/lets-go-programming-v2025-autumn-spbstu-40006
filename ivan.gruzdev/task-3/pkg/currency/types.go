@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+type CurrencyValue float64
+
 type ValCurs struct {
 	Currencies []Currency `xml:"Valute"`
 }
@@ -16,8 +18,6 @@ type Currency struct {
 	CharCode string        `xml:"CharCode" json:"char_code"`
 	Value    CurrencyValue `xml:"Value"    json:"value"`
 }
-
-type CurrencyValue float64
 
 func (currencyValue *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, startElement xml.StartElement) error {
 	var str string
