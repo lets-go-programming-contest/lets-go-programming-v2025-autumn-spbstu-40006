@@ -8,17 +8,17 @@ import (
 )
 
 const (
-	filePerm = 0o600
+	filePerm = 0o644
 	dirPerm  = 0o755
 )
 
 func SortValues(currencies *ValCurs) {
 	sort.Slice(currencies.Currencies, func(i, j int) bool {
-		return ParseValue(currencies.Currencies[i].Value) > ParseValue(currencies.Currencies[j].Value)
+		return currencies.Currencies[i].Value > currencies.Currencies[j].Value
 	})
 }
 
-func SaveToJSON(filePath string, currencies ValCurs) {
+func SaveToJSON(filePath string, currencies *ValCurs) {
 	dir := filepath.Dir(filePath)
 
 	err := os.MkdirAll(dir, dirPerm)
@@ -26,13 +26,13 @@ func SaveToJSON(filePath string, currencies ValCurs) {
 		panic("Ошибка создания директории: " + err.Error())
 	}
 
-	result := make([]OutputCurrency, 0, len(currencies.Currencies))
+	result := make([]Currency, 0, len(currencies.Currencies))
 
 	for _, currency := range currencies.Currencies {
-		object := OutputCurrency{
+		object := Currency{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
-			Value:    ParseValue(currency.Value),
+			Value:    currency.Value,
 		}
 		result = append(result, object)
 	}
@@ -44,6 +44,6 @@ func SaveToJSON(filePath string, currencies ValCurs) {
 
 	err = os.WriteFile(filePath, data, filePerm)
 	if err != nil {
-		panic(err.Error)
+		panic(err.Error())
 	}
 }

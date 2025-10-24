@@ -1,17 +1,38 @@
 package currency
 
+import (
+	"encoding/xml"
+	"strconv"
+	"strings"
+)
+
 type ValCurs struct {
-	Currencies []Valute `xml:"Valute"`
+	Currencies []Currency `xml:"Valute"`
 }
 
-type Valute struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
+type Currency struct {
+	NumCode  int           `xml:"NumCode" json:"num_code"`
+	CharCode string        `xml:"CharCode" json:"char_code"`
+	Value    CurrencyValue `xml:"Value" json:"value"`
 }
 
-type OutputCurrency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+type CurrencyValue float64
+
+func (currencyValue *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, startElement xml.StartElement) error {
+	var str string
+
+	err := decoder.DecodeElement(&str, &startElement)
+	if err != nil {
+		return err
+	}
+
+	str = strings.Replace(str, ",", ".", 1)
+	value, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return err
+	}
+
+	*currencyValue = CurrencyValue(value)
+
+	return nil
 }

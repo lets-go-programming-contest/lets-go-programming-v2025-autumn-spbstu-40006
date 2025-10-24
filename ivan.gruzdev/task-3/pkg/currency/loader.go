@@ -18,7 +18,7 @@ func LoadCurrencies(filePath string) ValCurs {
 
 	decodedData, err := decoder.Bytes(data)
 	if err != nil {
-		panic("Ошибка конвертации кодировки: " + err.Error())
+		panic("Encoding conversion error: " + err.Error())
 	}
 
 	xmlStr := string(decodedData)

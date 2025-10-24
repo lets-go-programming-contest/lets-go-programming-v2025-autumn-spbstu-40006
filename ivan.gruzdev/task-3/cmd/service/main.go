@@ -12,11 +12,11 @@ func main() {
 
 	flag.Parse()
 
-	manual := config.LoadConfig((*configPath))
+	cfg := config.LoadConfig((*configPath))
 
-	currencies := currency.LoadCurrencies(manual.InputFile)
+	currencies := currency.LoadCurrencies(cfg.InputFile)
 
 	currency.SortValues(&currencies)
 
-	currency.SaveToJSON(manual.OutputFile, currencies)
+	currency.SaveToJSON(cfg.OutputFile, &currencies)
 }
