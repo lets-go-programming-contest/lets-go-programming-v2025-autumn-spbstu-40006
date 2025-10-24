@@ -14,9 +14,9 @@ type ValCurs struct {
 }
 
 type Currency struct {
-	NumCode  int           `xml:"NumCode"  json:"num_code"`
-	CharCode string        `xml:"CharCode" json:"char_code"`
-	Value    CurrencyValue `xml:"Value"    json:"value"`
+	NumCode  int           `json:"num_code" xml:"NumCode"`
+	CharCode string        `json:"char_code" xml:"CharCode"`
+	Value    CurrencyValue `json:"value" xml:"Value"`
 }
 
 func (currencyValue *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, startElement xml.StartElement) error {
