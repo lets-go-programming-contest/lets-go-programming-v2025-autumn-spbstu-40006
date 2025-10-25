@@ -2,30 +2,30 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
 type CurrencyValue float64
 
-func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
+func (currencyValue *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, startElement xml.StartElement) error {
+	var str string
 
-	err := d.DecodeElement(&s, &start)
+	err := decoder.DecodeElement(&str, &startElement)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
-	s = strings.TrimSpace(s)
-	s = strings.ReplaceAll(s, "\u00A0", "")
-	s = strings.ReplaceAll(s, ",", ".")
+	str = strings.Replace(str, ",", ".", 1)
 
-	f, err := strconv.ParseFloat(s, 64)
+	value, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse float: %w", err)
 	}
 
-	*cv = CurrencyValue(f)
+	*currencyValue = CurrencyValue(value)
+
 	return nil
 }
 
