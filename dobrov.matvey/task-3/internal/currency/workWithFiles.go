@@ -1,6 +1,7 @@
 package currency
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -16,18 +17,15 @@ const (
 )
 
 func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) {
-	file, err := os.Open(inputFile)
+	data, err := os.ReadFile(inputFile)
 	if err != nil {
-		panic(fmt.Errorf("open %q: %w", inputFile, err))
+		panic(fmt.Errorf("read %q: %w", inputFile, err))
 	}
 
-	defer file.Close()
-
-	dec := xml.NewDecoder(file)
+	dec := xml.NewDecoder(bytes.NewReader(data))
 	dec.CharsetReader = charset.NewReaderLabel
 
-	err = dec.Decode(curs)
-	if err != nil {
+	if err := dec.Decode(curs); err != nil {
 		panic(fmt.Errorf("xml decode %q: %w", inputFile, err))
 	}
 }
@@ -39,11 +37,11 @@ func FillOutputFile(currency []Currency, outputPath string) {
 	}
 
 	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic(fmt.Errorf("mkdir %q: %w", dir, err))
 	}
 
-	if err := os.WriteFile(outputPath, jsonData, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, jsonData, filePerm); err != nil {
 		panic(fmt.Errorf("write %q: %w", outputPath, err))
 	}
 }
