@@ -42,13 +42,11 @@ func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) erro
 	}
 
 	str := strings.ReplaceAll(aux.Value, ",", ".")
-	val, err := strconv.ParseFloat(str, 64)
-
+	var err error
+	v.Value, err = strconv.ParseFloat(str, 64)
 	if err != nil {
 		return fmt.Errorf("invalid value %q: %w", aux.Value, err)
 	}
-
-	v.Value = val
 
 	return nil
 }
