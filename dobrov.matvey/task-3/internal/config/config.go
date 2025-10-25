@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -19,10 +20,13 @@ func GetConfigPath() string {
 	return *configPathPtr
 }
 
-func Read(cfg *Config, path string) error {
+func Read(cfg *Config, path string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		panic(fmt.Errorf("open %q: %w", path, err))
 	}
-	return yaml.Unmarshal(data, cfg)
+
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+		panic(err)
+	}
 }
