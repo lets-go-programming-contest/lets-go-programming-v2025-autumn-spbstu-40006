@@ -3,6 +3,7 @@ package currency
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -14,10 +15,10 @@ const (
 	filePerm = 0o644
 )
 
-func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) (err error) {
+func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) {
 	file, err := os.Open(inputFile)
 	if err != nil {
-		return err
+		panic(fmt.Errorf("open %q: %w", inputFile, err))
 	}
 
 	defer file.Close()
@@ -27,20 +28,22 @@ func ReadDataFileNCanGetCurs(curs *ValCurs, inputFile string) (err error) {
 
 	err = dec.Decode(curs)
 	if err != nil {
-		return err
+		panic(fmt.Errorf("xml decode %q: %w", inputFile, err))
 	}
-
-	return dec.Decode(curs)
 }
 
-func FillOutputFile(currency []Currency, outputPath string) error {
+func FillOutputFile(currency []Currency, outputPath string) {
 	jsonData, err := json.MarshalIndent(currency, "", " ")
 	if err != nil {
-		return err
+		panic(fmt.Errorf("json marshal: %w", err))
 	}
 
-	if err = os.MkdirAll(filepath.Dir(outputPath), dirPerm); err != nil {
-		return err
+	dir := filepath.Dir(outputPath)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		panic(fmt.Errorf("mkdir %q: %w", dir, err))
 	}
-	return os.WriteFile(outputPath, jsonData, filePerm)
+
+	if err := os.WriteFile(outputPath, jsonData, 0o644); err != nil {
+		panic(fmt.Errorf("write %q: %w", outputPath, err))
+	}
 }
