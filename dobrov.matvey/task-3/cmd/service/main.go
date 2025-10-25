@@ -1,22 +1,35 @@
 package main
 
 import (
-	"github.com/HorekProgrammer/task-3/internal/app"
+	"github.com/HorekProgrammer/task-3/internal/config"
+	"github.com/HorekProgrammer/task-3/internal/currency"
 )
 
 func main() {
-	configPath := app.GetConfigPath()
+	configPath := config.GetConfigPath()
 
 	var (
-		cfg  app.Config
-		curs app.ValCurs
+		cfg  config.Config
+		curs currency.ValCurs
 	)
 
-	app.ReadDataFromConfig(&cfg, configPath)
+	err := config.Read(&cfg, configPath)
 
-	app.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	rates := app.FillNSortRates(curs)
+	err = currency.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
 
-	app.FillOutputFile(rates, cfg)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	rates := currency.FillNSortRates(&curs)
+
+	err = currency.FillOutputFile(rates, cfg.OutputFile)
+
+	if err != nil {
+		panic(err.Error())
+	}
 }

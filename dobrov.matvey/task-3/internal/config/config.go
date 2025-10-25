@@ -1,6 +1,11 @@
-package app
+package config
 
-import "flag"
+import (
+	"flag"
+	"os"
+
+	"gopkg.in/yaml.v3"
+)
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -12,4 +17,12 @@ func GetConfigPath() string {
 	flag.Parse()
 
 	return *configPathPtr
+}
+
+func Read(cfg *Config, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(data, cfg)
 }
