@@ -19,8 +19,7 @@ func (value *ValueFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartEleme
 		return fmt.Errorf("decode value: %w", err)
 	}
 
-	str = strings.Replace(str, ",", ".", 1)
-	valueFloat, err := strconv.ParseFloat(str, 64)
+	valueFloat, err := strconv.ParseFloat(strings.Replace(str, ",", ".", 1), 64)
 	if err != nil {
 		return fmt.Errorf("parse float from: %w", err)
 	}
