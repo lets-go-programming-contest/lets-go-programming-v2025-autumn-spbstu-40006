@@ -11,18 +11,35 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
+type FloatValue float64
+
+func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var s string
+
+	err := d.DecodeElement(&s, &start)
+	if err != nil {
+		return err
+	}
+
+	s = strings.ReplaceAll(s, ",", ".")
+
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
+	}
+
+	*f = FloatValue(value)
+	return nil
+}
+
 type Record struct {
-	ID    int     `json:"num_code"  xml:"NumCode"`
-	Name  string  `json:"char_code" xml:"CharCode"`
-	Value float64 `json:"value"     xml:"Value"`
+	ID    int        `json:"num_code"  xml:"NumCode"`
+	Name  string     `json:"char_code" xml:"CharCode"`
+	Value FloatValue `json:"value"     xml:"Value"`
 }
 
 type RawRecords struct {
-	Items []struct {
-		ID    int    `xml:"NumCode"`
-		Name  string `xml:"CharCode"`
-		Value string `xml:"Value"`
-	} `xml:"Valute"`
+	Items []Record `xml:"Valute"`
 }
 
 func ParseXML(path string) ([]Record, error) {
@@ -32,7 +49,6 @@ func ParseXML(path string) ([]Record, error) {
 	}
 
 	var raw RawRecords
-
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = charset.NewReaderLabel
 
@@ -40,22 +56,5 @@ func ParseXML(path string) ([]Record, error) {
 		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	records := make([]Record, 0, len(raw.Items))
-
-	for _, item := range raw.Items {
-		valueStr := strings.ReplaceAll(item.Value, ",", ".")
-
-		valueFloat, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			return nil, fmt.Errorf("parse float %q: %w", item.Value, err)
-		}
-
-		records = append(records, Record{
-			ID:    item.ID,
-			Name:  item.Name,
-			Value: valueFloat,
-		})
-	}
-
-	return records, nil
+	return raw.Items, nil
 }

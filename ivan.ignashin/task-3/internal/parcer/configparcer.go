@@ -2,6 +2,7 @@ package parcer
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -18,13 +19,14 @@ func ParseConfig() (Config, error) {
 
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("read yanl: %w", err)
 	}
 
 	var cfg Config
+
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("decode yaml: %w", err)
 	}
 
 	return cfg, nil
