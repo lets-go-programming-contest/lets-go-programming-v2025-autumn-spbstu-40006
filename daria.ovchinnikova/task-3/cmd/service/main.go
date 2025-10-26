@@ -14,11 +14,19 @@ func main() {
 		panic("Config file path is required")
 	}
 
-	cfg := processing.LoadConfig(*configPath)
+	cfg, err := processing.LoadConfig(*configPath)
+	if err != nil {
+		panic(err)
+	}
 
-	valCurs := processing.LoadXML(cfg.InputFile)
+	valCurs, err := processing.LoadXML(cfg.InputFile)
+	if err != nil {
+		panic(err)
+	}
 
 	processing.SortCurrencies(valCurs)
 
-	processing.SaveJSON(cfg.OutputFile, valCurs)
+	if err := processing.SaveJSON(cfg.OutputFile, valCurs); err != nil {
+		panic(err)
+	}
 }

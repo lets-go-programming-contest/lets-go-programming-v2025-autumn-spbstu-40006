@@ -2,6 +2,7 @@ package processing
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -10,24 +11,39 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
+type ValueFloat float64
+
+func (value *ValueFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var str string
+	if err := decoder.DecodeElement(&str, &start); err != nil {
+		return fmt.Errorf("decode value: %w", err)
+	}
+
+	str = strings.Replace(str, ",", ".", 1)
+	valueFloat, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return fmt.Errorf("parse float from: %w", err)
+	}
+
+	*value = ValueFloat(valueFloat)
+
+	return nil
+}
+
 type Currency struct {
-	NumCode  int     `json:"num_code"  xml:"NumCode"`
-	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     xml:"Value"`
+	NumCode  int        `json:"num_code"  xml:"NumCode"`
+	CharCode string     `json:"char_code" xml:"CharCode"`
+	Value    ValueFloat `json:"value"     xml:"Value"`
 }
 
-type RawCurrencies struct {
-	Items []struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
-	} `xml:"Valute"`
+type Currencies struct {
+	Items []Currency `xml:"Valute"`
 }
 
-func LoadXML(path string) []Currency {
+func LoadXML(path string) ([]Currency, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("open XML file: %w", err)
 	}
 
 	decoder := xml.NewDecoder(file)
@@ -40,30 +56,10 @@ func LoadXML(path string) []Currency {
 		}
 	}
 
-	var raw RawCurrencies
-	if err := decoder.Decode(&raw); err != nil {
-		panic(err)
+	var data Currencies
+	if err := decoder.Decode(&data); err != nil {
+		return nil, fmt.Errorf("decode XML: %w", err)
 	}
 
-	currencies := make([]Currency, 0, len(raw.Items))
-
-	for _, item := range raw.Items {
-		valueFloat := parseValue(item.Value)
-		currencies = append(currencies, Currency{
-			NumCode:  item.NumCode,
-			CharCode: item.CharCode,
-			Value:    valueFloat,
-		})
-	}
-
-	return currencies
-}
-
-func parseValue(s string) float64 {
-	valueFloat, err := strconv.ParseFloat(strings.Replace(s, ",", ".", 1), 64)
-	if err != nil {
-		panic(err)
-	}
-
-	return valueFloat
+	return data.Items, nil
 }
