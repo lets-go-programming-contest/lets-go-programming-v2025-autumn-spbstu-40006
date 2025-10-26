@@ -14,21 +14,22 @@ import (
 type FloatValue float64
 
 func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
+	var stringValue string
 
-	err := d.DecodeElement(&s, &start)
+	err := d.DecodeElement(&stringValue, &start)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode value: %w", err)
 	}
 
-	s = strings.ReplaceAll(s, ",", ".")
+	stringValue = strings.ReplaceAll(stringValue, ",", ".")
 
-	value, err := strconv.ParseFloat(s, 64)
+	value, err := strconv.ParseFloat(stringValue, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("parce float in value: %w", err)
 	}
 
 	*f = FloatValue(value)
+
 	return nil
 }
 
@@ -49,6 +50,7 @@ func ParseXML(path string) ([]Record, error) {
 	}
 
 	var raw RawRecords
+
 	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
 	decoder.CharsetReader = charset.NewReaderLabel
 
