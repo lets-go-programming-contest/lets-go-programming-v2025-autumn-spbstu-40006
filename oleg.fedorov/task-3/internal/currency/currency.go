@@ -7,38 +7,38 @@ import (
 	"strings"
 )
 
-type XMLCurrency struct {
-	XMLName  xml.Name `xml:"Valute"`
-	ID       string   `xml:"ID,attr"`
-	NumCode  int      `xml:"NumCode"`
-	CharCode string   `xml:"CharCode"`
-	Nominal  int      `xml:"Nominal"`
-	Name     string   `xml:"Name"`
-	Value    string   `xml:"Value"`
+type Currency struct {
+	XMLName  xml.Name `xml:"Valute" json:"-"`
+	ID       string   `xml:"ID,attr" json:"-"`
+	NumCode  int      `xml:"NumCode" json:"num_code"`
+	CharCode string   `xml:"CharCode" json:"char_code"`
+	Nominal  int      `xml:"Nominal" json:"-"`
+	Name     string   `xml:"Name" json:"-"`
+	Value    Float64  `xml:"Value" json:"value"`
 }
 
-type JSONCurrency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+type Float64 float64
+
+type Currencies struct {
+	XMLName    xml.Name   `xml:"ValCurs"`
+	Currencies []Currency `xml:"Valute"`
 }
 
-type XMLCurrencies struct {
-	XMLName    xml.Name      `xml:"ValCurs"`
-	Currencies []XMLCurrency `xml:"Valute"`
-}
+func (f *Float64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var s string
 
-func (c *XMLCurrency) ToJSONCurrency() (JSONCurrency, error) {
-	value := strings.ReplaceAll(c.Value, ",", ".")
-
-	parsedValue, err := strconv.ParseFloat(value, 64)
-	if err != nil {
-		return JSONCurrency{}, fmt.Errorf("failed to parse currency value '%s': %w", c.Value, err)
+	if err := d.DecodeElement(&s, &start); err != nil {
+		return err
 	}
 
-	return JSONCurrency{
-		NumCode:  c.NumCode,
-		CharCode: c.CharCode,
-		Value:    parsedValue,
-	}, nil
+	s = strings.Replace(s, ",", ".", -1)
+
+	val, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return fmt.Errorf("failed to parse currency value '%s': %w", s, err)
+	}
+
+	*f = Float64(val)
+
+	return nil
 }

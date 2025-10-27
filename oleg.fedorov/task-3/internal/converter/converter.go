@@ -37,7 +37,7 @@ func decode(data []byte, out interface{}) error {
 	return nil
 }
 
-func encode(path string, data []currency.JSONCurrency) error {
+func encode(path string, data []currency.Currency) error {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
@@ -69,27 +69,19 @@ func Process(cfg *config.Config) error {
 		return fmt.Errorf("failed to read input file '%s': %w", cfg.InputFile, err)
 	}
 
-	var xmlCurrencies currency.XMLCurrencies
+	var xmlCurrencies currency.Currencies
 	if err := decode(data, &xmlCurrencies); err != nil {
 		return fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	jsonCurrencies := make([]currency.JSONCurrency, 0, len(xmlCurrencies.Currencies))
+	currencies := make([]currency.Currency, len(xmlCurrencies.Currencies))
+	copy(currencies, xmlCurrencies.Currencies)
 
-	for _, xmlCurrency := range xmlCurrencies.Currencies {
-		jsonCurrency, err := xmlCurrency.ToJSONCurrency()
-		if err != nil {
-			return fmt.Errorf("failed to convert currency '%s': %w", xmlCurrency.CharCode, err)
-		}
-
-		jsonCurrencies = append(jsonCurrencies, jsonCurrency)
-	}
-
-	sort.Slice(jsonCurrencies, func(i, j int) bool {
-		return jsonCurrencies[i].Value > jsonCurrencies[j].Value
+	sort.Slice(currencies, func(i, j int) bool {
+		return float64(currencies[i].Value) > float64(currencies[j].Value)
 	})
 
-	if err := encode(cfg.OutputFile, jsonCurrencies); err != nil {
+	if err := encode(cfg.OutputFile, currencies); err != nil {
 		return err
 	}
 
