@@ -61,7 +61,7 @@ func ParseXMLFile(path string) ([]Valute, error) {
 
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
-			panic("failed to close file")
+			fmt.Fprintf(os.Stderr, "failed to close file %q: %v\n", path, cerr)
 		}
 	}()
 
@@ -89,7 +89,7 @@ func SaveToJSON(path string, valutes []Valute) error {
 
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
-			panic("failed to close file")
+			fmt.Fprintf(os.Stderr, "failed to close file %q: %v\n", path, cerr)
 		}
 	}()
 
