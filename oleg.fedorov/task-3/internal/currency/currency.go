@@ -8,11 +8,11 @@ import (
 )
 
 type Currency struct {
-	XMLName  xml.Name `xml:"Valute"  json:"-"`
-	ID       string   `xml:"ID,attr" json:"-"`
-	NumCode  int      `xml:"NumCode" json:"num_code"`
+	XMLName  xml.Name `xml:"Valute"   json:"-"`
+	ID       string   `xml:"ID,attr"  json:"-"`
+	NumCode  int      `xml:"NumCode"  json:"num_code"`
 	CharCode string   `xml:"CharCode" json:"char_code"`
-	Nominal  int      `xml:"Nominal" json:"-"`
+	Nominal  int      `xml:"Nominal"  json:"-"`
 	Name     string   `xml:"Name"     json:"-"`
 	Value    Float64  `xml:"Value"    json:"value"`
 }
@@ -33,6 +33,7 @@ func (f *Float64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	}
 
 	*f = Float64(val)
+
 	return nil
 }
 
