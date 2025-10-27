@@ -21,36 +21,31 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `json:"num_code"  xml:"NumCode"`
-	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     xml:"Value"`
+	NumCode  int          `json:"num_code"  xml:"NumCode"`
+	CharCode string       `json:"char_code" xml:"CharCode"`
+	Value    Float64Comma `json:"value"     xml:"Value"`
 }
 
-func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	type Alias Valute
+type Float64Comma float64
 
-	aux := struct {
-		Value string `xml:"Value"`
-		*Alias
-	}{
-		Value: "",
-		Alias: (*Alias)(v),
+func (f *Float64Comma) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var valueStr string
+	if err := decoder.DecodeElement(&valueStr, &start); err != nil {
+		return fmt.Errorf("failed to decode float value: %w", err)
 	}
 
-	if err := decoder.DecodeElement(&aux, &start); err != nil {
-		return fmt.Errorf("failed to decode XML element: %w", err)
-	}
-
-	str := strings.ReplaceAll(aux.Value, ",", ".")
-
-	var err error
-
-	v.Value, err = strconv.ParseFloat(str, 64)
+	valueStr = strings.ReplaceAll(valueStr, ",", ".")
+	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
-		return fmt.Errorf("invalid value %q: %w", aux.Value, err)
+		return fmt.Errorf("invalid float format %q: %w", valueStr, err)
 	}
 
+	*f = Float64Comma(value)
 	return nil
+}
+
+func (f Float64Comma) Float64() float64 {
+	return float64(f)
 }
 
 func ParseXMLFile(path string) ([]Valute, error) {
