@@ -36,16 +36,18 @@ func (f *Float64Comma) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 
 	valueStr = strings.ReplaceAll(valueStr, ",", ".")
 	value, err := strconv.ParseFloat(valueStr, 64)
+
 	if err != nil {
 		return fmt.Errorf("invalid float format %q: %w", valueStr, err)
 	}
 
 	*f = Float64Comma(value)
+
 	return nil
 }
 
-func (f Float64Comma) Float64() float64 {
-	return float64(f)
+func (f *Float64Comma) Float64() float64 {
+	return float64(*f)
 }
 
 func ParseXMLFile(path string) ([]Valute, error) {
