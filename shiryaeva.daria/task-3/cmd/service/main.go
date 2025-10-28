@@ -4,8 +4,8 @@ import (
     "flag"
     "log"
 
-    "github.com/shiryaeva.daria/task-3/internal/config"
-    "github.com/shiryaeva.daria/task-3/internal/converter"
+    "github.com/Dora-shi/task-3/internal/config"
+    "github.com/Dora-shi/task-3/internal/converter"
 )
 
 func main() {

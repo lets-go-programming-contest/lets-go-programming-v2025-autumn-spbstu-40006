@@ -10,8 +10,8 @@ import (
     "path/filepath"
     "sort"
 
-    "github.com/shiryaeva.daria/task-3/internal/config"
-    "github.com/shiryaeva.daria/task-3/internal/currency"
+    "github.com/Dora-shi/task-3/internal/config"
+    "github.com/Dora-shi/task-3/internal/currency"
     "golang.org/x/text/encoding/charmap"
 )
 
