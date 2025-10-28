@@ -45,7 +45,11 @@ func saveJSON(data []currency.JSONCurrency, path string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file '%s': %w", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			fmt.Printf("warning: failed to close file: %v\n", closeErr)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

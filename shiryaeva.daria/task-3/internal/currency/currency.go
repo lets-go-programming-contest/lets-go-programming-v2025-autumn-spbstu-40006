@@ -9,19 +9,20 @@ import (
 
 type CurrencyValue float64
 
-func (cv *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	if err := d.DecodeElement(&s, &start); err != nil {
-		return err
+func (cv *CurrencyValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var stringValue string
+	if decodeErr := decoder.DecodeElement(&stringValue, &start); decodeErr != nil {
+		return fmt.Errorf("failed to decode XML element: %w", decodeErr)
 	}
 
-	s = strings.Replace(s, ",", ".", 1)
-	value, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return fmt.Errorf("parse currency value '%s': %w", s, err)
+	stringValue = strings.Replace(stringValue, ",", ".", 1)
+	parsedValue, parseErr := strconv.ParseFloat(stringValue, 64)
+	if parseErr != nil {
+		return fmt.Errorf("parse currency value '%s': %w", stringValue, parseErr)
 	}
 
-	*cv = CurrencyValue(value)
+	*cv = CurrencyValue(parsedValue)
+
 	return nil
 }
 
