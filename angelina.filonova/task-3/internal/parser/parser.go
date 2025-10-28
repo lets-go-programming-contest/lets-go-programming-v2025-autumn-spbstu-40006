@@ -36,7 +36,6 @@ func (f *Float64Comma) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 
 	valueStr = strings.ReplaceAll(valueStr, ",", ".")
 	value, err := strconv.ParseFloat(valueStr, 64)
-
 	if err != nil {
 		return fmt.Errorf("invalid float format %q: %w", valueStr, err)
 	}
