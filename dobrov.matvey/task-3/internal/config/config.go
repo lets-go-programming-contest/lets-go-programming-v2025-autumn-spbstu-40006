@@ -20,15 +20,16 @@ func GetConfigPath() string {
 	return *configPathPtr
 }
 
-func Read(cfg *Config, path string) error {
+func Read(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("open %q: %w", path, err)
+		return Config{}, fmt.Errorf("read file %q: %w", path, err)
 	}
 
-	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return err
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return Config{}, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
-	return nil
+	return cfg, nil
 }

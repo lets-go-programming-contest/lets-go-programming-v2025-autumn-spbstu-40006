@@ -8,12 +8,9 @@ import (
 func main() {
 	configPath := config.GetConfigPath()
 
-	var (
-		cfg  config.Config
-		curs currency.ValCurs
-	)
+	var curs currency.ValCurs
 
-	err := config.Read(&cfg, configPath)
+	cfg, err := config.Read(configPath)
 	if err != nil {
 		panic(err)
 	}
