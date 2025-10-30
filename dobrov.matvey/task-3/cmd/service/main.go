@@ -13,11 +13,20 @@ func main() {
 		curs currency.ValCurs
 	)
 
-	config.Read(&cfg, configPath)
+	err := config.Read(&cfg, configPath)
+	if err != nil {
+		panic(err)
+	}
 
-	currency.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
+	err = currency.ReadDataFileNCanGetCurs(&curs, cfg.InputFile)
+	if err != nil {
+		panic(err)
+	}
 
 	rates := currency.FillNSortRates(&curs)
 
-	currency.FillOutputFile(rates, cfg.OutputFile)
+	err = currency.FillOutputFile(rates, cfg.OutputFile)
+	if err != nil {
+		panic(err)
+	}
 }
