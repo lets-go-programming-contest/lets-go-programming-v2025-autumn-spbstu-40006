@@ -41,6 +41,7 @@ func (cp *CurrencyProcessor) ParseXMLFile(path string) ([]Currency, error) {
 	for index, item := range raw.Items {
 		valueStr := strings.ReplaceAll(item.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
+		
 		if err != nil {
 			return nil, fmt.Errorf("parse float: %w", err)
 		}

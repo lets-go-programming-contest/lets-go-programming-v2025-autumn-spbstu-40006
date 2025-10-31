@@ -49,6 +49,6 @@ func (cp *CurrencyProcessor) LoadConfig() error {
 	}
 
 	cp.config = &config
-	
+
 	return nil
 }
