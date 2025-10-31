@@ -42,14 +42,14 @@ func (cp *CurrencyProcessor) ParseXMLFile(path string) ([]Currency, error) {
 		valueStr := strings.ReplaceAll(item.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
 
-		if err != nil {
-			return nil, fmt.Errorf("parse float: %w", err)
-		}
-
 		currencies[index] = Currency{
 			NumCode:  item.NumCode,
 			CharCode: item.CharCode,
 			Value:    value,
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("parse float: %w", err)
 		}
 	}
 
