@@ -39,4 +39,3 @@ func SaveToJson(path string, data []currency.Currency) error {
 
 	return nil
 }
-

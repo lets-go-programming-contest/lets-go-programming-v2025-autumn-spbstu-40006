@@ -36,4 +36,3 @@ func Process(cfg *config.Config) error {
 
 	return nil
 }
-

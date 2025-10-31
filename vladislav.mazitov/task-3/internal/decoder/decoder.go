@@ -29,4 +29,3 @@ func Decode(data []byte, out interface{}) error {
 
 	return nil
 }
-
