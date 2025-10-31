@@ -24,7 +24,7 @@ func Decode(data []byte, out interface{}) error {
 
 	err := decoder.Decode(out)
 	if err != nil {
-		return fmt.Errorf("fail to decode XML file")
+		return fmt.Errorf("decode XML file: %w", err)
 	}
 
 	return nil

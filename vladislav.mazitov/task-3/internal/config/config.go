@@ -15,7 +15,7 @@ type Config struct {
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("fail to read file-to-path")
+		return nil, fmt.Errorf("read file-to-path: %w", err)
 	}
 
 	var cfg Config

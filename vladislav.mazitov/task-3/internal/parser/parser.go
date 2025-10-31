@@ -21,7 +21,7 @@ func Process(cfg *config.Config) error {
 
 	err = decoder.Decode(data, &valCurs)
 	if err != nil {
-		return fmt.Errorf("fail to parsing xml file")
+		return fmt.Errorf("parsing xml file: %w", err)
 	}
 
 	valutes := valCurs.Valutes
@@ -29,9 +29,9 @@ func Process(cfg *config.Config) error {
 		return float64(valutes[i].Value) > float64(valutes[j].Value)
 	})
 
-	err = encoder.SaveToJson(cfg.OutputFile, valutes)
+	err = encoder.SaveToJSON(cfg.OutputFile, valutes)
 	if err != nil {
-		return fmt.Errorf("fail to saving to json file")
+		return fmt.Errorf("saving to json file: %w", err)
 	}
 
 	return nil

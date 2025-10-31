@@ -29,14 +29,14 @@ func (float *FloatType) UnmarshalXML(decoder *xml.Decoder, s xml.StartElement) e
 
 	err := decoder.DecodeElement(&value, &s)
 	if err != nil {
-		return fmt.Errorf("decoding fail")
+		return fmt.Errorf("decode currency: %w", err)
 	}
 
 	value = strings.ReplaceAll(value, ",", ".")
 
 	strToFloat, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return fmt.Errorf("fail to parse float")
+		return fmt.Errorf("parse float: %w", err)
 	}
 
 	*float = FloatType(strToFloat)

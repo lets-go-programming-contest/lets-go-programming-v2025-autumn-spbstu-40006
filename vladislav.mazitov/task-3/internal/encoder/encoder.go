@@ -9,17 +9,17 @@ import (
 	"github.com/identicalaffiliation/task-3/internal/currency"
 )
 
-func SaveToJson(path string, data []currency.Currency) error {
+func SaveToJSON(path string, data []currency.Currency) error {
 	dir := filepath.Dir(path)
 
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("fail to create directory")
+		return fmt.Errorf("create directory: %w", err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("fail to create output file")
+		return fmt.Errorf("create output file: %w", err)
 	}
 
 	defer func() {
@@ -34,7 +34,7 @@ func SaveToJson(path string, data []currency.Currency) error {
 
 	err = encoder.Encode(data)
 	if err != nil {
-		return fmt.Errorf("fail to encode JSON")
+		return fmt.Errorf("encode JSON: %w", err)
 	}
 
 	return nil
