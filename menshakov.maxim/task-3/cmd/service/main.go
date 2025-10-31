@@ -73,7 +73,6 @@ func parseXML(file *os.File) (Data, error) {
 	}
 
 	for _, val := range data.ValCurs.Valute {
-
 		if val.Value == "" {
 			return data, ErrEmptyValue
 		}
