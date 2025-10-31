@@ -46,12 +46,15 @@ func main() {
 	}
 
 	file, err := os.Open(inputFile)
+
 	if err != nil {
 		panic(fmt.Errorf("failed to open file: %w", err))
 	}
+
 	defer func() { _ = file.Close() }()
 
 	data, err := parseXML(file)
+
 	if err != nil {
 		panic(fmt.Errorf("failed to parse xml: %w", err))
 	}
@@ -66,27 +69,35 @@ func main() {
 func parseXML(file *os.File) (Data, error) {
 	var data Data
 	decoder := xml.NewDecoder(file)
+
 	if err := decoder.Decode(&data); err != nil {
 		return data, err
 	}
+
 	for _, val := range data.ValCurs.Valute {
+
 		if val.Value == "" {
 			return data, ErrEmptyValue
 		}
+
 		if val.Nominal == 0 {
 			return data, ErrZeroNominal
 		}
 	}
-	return data, nil
+
+	return data, fmt.Errorf("decode xml: %w", err)
 }
 
 func writeXML(filename string, data Data) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm)
+
 	if err != nil {
 		return err
 	}
+
 	defer func() { _ = file.Close() }()
 	encoder := xml.NewEncoder(file)
 	encoder.Indent("", "    ")
-	return encoder.Encode(data)
+
+	return fmt.Errorf("write file: %w", err)
 }
