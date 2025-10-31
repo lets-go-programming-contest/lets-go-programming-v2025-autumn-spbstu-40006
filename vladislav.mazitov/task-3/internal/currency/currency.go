@@ -40,5 +40,6 @@ func (float *FloatType) UnmarshalXML(decoder *xml.Decoder, s xml.StartElement) e
 	}
 
 	*float = FloatType(strToFloat)
+
 	return nil
 }
