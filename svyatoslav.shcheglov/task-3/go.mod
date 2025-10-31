@@ -1,4 +1,4 @@
-module github.com/SpeearIt/task-3
+module github.com/SpeaarIt/task-3
 
 go 1.22.7
 

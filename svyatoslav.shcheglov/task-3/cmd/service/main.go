@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/SpeearIt/task-3/internal/parser"
+	"github.com/SpeaarIt/task-3/internal/parser"
 )
 
 func main() {
