@@ -46,21 +46,18 @@ func main() {
 	}
 
 	file, err := os.Open(inputFile)
-
 	if err != nil {
 		panic(fmt.Errorf("failed to open file: %w", err))
 	}
-
 	defer func() { _ = file.Close() }()
 
 	data, err := parseXML(file)
-
 	if err != nil {
-		panic(fmt.Errorf("failed to parse xml: %w", err))
+		panic(fmt.Errorf("failed to parse XML: %w", err))
 	}
 
 	if err = writeXML(outputFile, data); err != nil {
-		panic(fmt.Errorf("failed to write xml: %w", err))
+		panic(fmt.Errorf("failed to write XML: %w", err))
 	}
 
 	fmt.Println("XML successfully processed.")
@@ -68,10 +65,11 @@ func main() {
 
 func parseXML(file *os.File) (Data, error) {
 	var data Data
+
 	decoder := xml.NewDecoder(file)
 
 	if err := decoder.Decode(&data); err != nil {
-		return data, err
+		return data, fmt.Errorf("decode XML: %w", err)
 	}
 
 	for _, val := range data.ValCurs.Valute {
@@ -90,14 +88,17 @@ func parseXML(file *os.File) (Data, error) {
 
 func writeXML(filename string, data Data) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("open file: %w", err)
 	}
-
 	defer func() { _ = file.Close() }()
+
 	encoder := xml.NewEncoder(file)
 	encoder.Indent("", "    ")
+
+	if err := encoder.Encode(data); err != nil {
+		return fmt.Errorf("encode XML: %w", err)
+	}
 
 	return fmt.Errorf("write file: %w", err)
 }
