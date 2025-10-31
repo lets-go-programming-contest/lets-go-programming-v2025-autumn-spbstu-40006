@@ -14,7 +14,7 @@ import (
 func Process(cfg *config.Config) error {
 	data, err := os.ReadFile(cfg.InputFile)
 	if err != nil {
-		return fmt.Errorf("fail to read xml file")
+		return fmt.Errorf("read xml file: %w", err)
 	}
 
 	var valCurs currency.ValCurs

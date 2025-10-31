@@ -22,7 +22,7 @@ func Load(path string) (*Config, error) {
 
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return nil, fmt.Errorf("fail to parse YAML config")
+		return nil, fmt.Errorf("parse YAML config: %w", err)
 	}
 
 	return &cfg, nil
