@@ -7,7 +7,9 @@ type CurrencyProcessor struct {
 }
 
 func NewCurrencyProcessor() *CurrencyProcessor {
-	return &CurrencyProcessor{}
+	return &CurrencyProcessor{
+		config: nil,
+	}
 }
 
 func (cp *CurrencyProcessor) Run() error {

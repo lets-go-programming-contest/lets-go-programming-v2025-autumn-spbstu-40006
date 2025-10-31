@@ -37,14 +37,14 @@ func (cp *CurrencyProcessor) ParseXMLFile(path string) ([]Currency, error) {
 	}
 
 	currencies := make([]Currency, len(raw.Items))
-	for i, item := range raw.Items {
+	for index, item := range raw.Items {
 		valueStr := strings.ReplaceAll(item.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse float: %w", err)
 		}
 
-		currencies[i] = Currency{
+		currencies[index] = Currency{
 			NumCode:  item.NumCode,
 			CharCode: item.CharCode,
 			Value:    value,

@@ -4,8 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"errors"
 
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrConfigNotFound  = errors.New("config file not found")
+	ErrInputFileEmpty  = errors.New("input-file cannot be empty")
+	ErrOutputFileEmpty = errors.New("output-file cannot be empty")
+	ErrReadConfig      = errors.New("failed to read config file")
+	ErrParseYAML       = errors.New("failed to parse YAML config")
 )
 
 type Config struct {
@@ -18,24 +27,25 @@ func (cp *CurrencyProcessor) LoadConfig() error {
 	flag.Parse()
 
 	if _, err := os.Stat(*configPath); os.IsNotExist(err) {
-		return fmt.Errorf("config file not found: %s", *configPath)
+		return fmt.Errorf("%w: %s", ErrConfigNotFound, *configPath)
 	}
 
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read config file: %w", err)
+		return fmt.Errorf("%w: %w", ErrReadConfig, err)
 	}
 
 	var config Config
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return fmt.Errorf("failed to parse YAML config: %w", err)
+		return fmt.Errorf("%w: %w", ErrParseYAML, err)
 	}
 
 	if config.InputFile == "" {
-		return fmt.Errorf("input-file cannot be empty")
+		return ErrInputFileEmpty
 	}
+
 	if config.OutputFile == "" {
-		return fmt.Errorf("output-file cannot be empty")
+		return ErrOutputFileEmpty
 	}
 
 	cp.config = &config

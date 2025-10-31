@@ -29,7 +29,7 @@ func (cp *CurrencyProcessor) SaveToJSON(currencies []Currency, outputPath string
 		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, jsonData, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, jsonData, 0o600); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 
