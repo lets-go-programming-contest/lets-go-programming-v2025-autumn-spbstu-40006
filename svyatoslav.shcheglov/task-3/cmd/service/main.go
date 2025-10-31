@@ -1,0 +1,22 @@
+package main
+
+import (
+	"github.com/SpeearIt/task-3/internal/parser"
+)
+
+func main() {
+	config, err := parser.LoadApplicationSettings()
+	if err != nil {
+		panic(err)
+	}
+
+	currencyData, err := parser.LoadCurrencyData(config.SourceFilePath)
+	if err != nil {
+		panic(err)
+	}
+
+	err = parser.ExportToJSON(currencyData, config.ResultFilePath)
+	if err != nil {
+		panic(err)
+	}
+}
