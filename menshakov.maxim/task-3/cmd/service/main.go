@@ -60,7 +60,7 @@ func main() {
 		panic(fmt.Errorf("failed to write XML: %w", err))
 	}
 
-	return data, nil
+	fmt.Println("XML successfully processed.")
 }
 
 func parseXML(file *os.File) (Data, error) {
@@ -83,7 +83,7 @@ func parseXML(file *os.File) (Data, error) {
 		}
 	}
 
-	return data, fmt.Errorf("decode xml: %w", err)
+	return data, nil
 }
 
 func writeXML(filename string, data Data) error {
