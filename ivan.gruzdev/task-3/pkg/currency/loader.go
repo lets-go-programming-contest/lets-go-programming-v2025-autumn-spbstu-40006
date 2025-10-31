@@ -2,23 +2,24 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
 )
 
-func LoadCurrencies(filePath string) ValCurs {
+func LoadCurrencies(filePath string) (ValCurs, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		return ValCurs{}, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	decoder := charmap.Windows1251.NewDecoder()
 
 	decodedData, err := decoder.Bytes(data)
 	if err != nil {
-		panic("Encoding conversion error: " + err.Error())
+		return ValCurs{}, fmt.Errorf("encoding conversion error: %w", err)
 	}
 
 	xmlStr := string(decodedData)
@@ -30,8 +31,8 @@ func LoadCurrencies(filePath string) ValCurs {
 
 	err = xml.Unmarshal([]byte(xmlStr), &valCurs)
 	if err != nil {
-		panic("Error: parsing XML: " + err.Error())
+		return ValCurs{}, fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	return valCurs
+	return valCurs, nil
 }

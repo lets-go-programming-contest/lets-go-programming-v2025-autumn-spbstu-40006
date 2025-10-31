@@ -2,6 +2,7 @@ package currency
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -18,32 +19,23 @@ func SortValues(currencies *ValCurs) {
 	})
 }
 
-func SaveToJSON(filePath string, currencies *ValCurs) {
+func SaveToJSON(filePath string, currencies *ValCurs) error {
 	dir := filepath.Dir(filePath)
 
 	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
-		panic("Ошибка создания директории: " + err.Error())
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	result := make([]Currency, 0, len(currencies.Currencies))
-
-	for _, currency := range currencies.Currencies {
-		object := Currency{
-			NumCode:  currency.NumCode,
-			CharCode: currency.CharCode,
-			Value:    currency.Value,
-		}
-		result = append(result, object)
-	}
-
-	data, err := json.MarshalIndent(result, "", " ")
+	data, err := json.MarshalIndent(currencies.Currencies, "", " ")
 	if err != nil {
-		panic(err.Error())
+		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
 	err = os.WriteFile(filePath, data, filePerm)
 	if err != nil {
-		panic(err.Error())
+		return fmt.Errorf("failed to write file: %w", err)
 	}
+
+	return nil
 }

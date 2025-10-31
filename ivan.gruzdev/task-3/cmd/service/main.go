@@ -12,11 +12,20 @@ func main() {
 
 	flag.Parse()
 
-	cfg := config.LoadConfig((*configPath))
+	cfg, err := config.LoadConfig((*configPath))
+	if err != nil {
+		panic(err)
+	}
 
-	currencies := currency.LoadCurrencies(cfg.InputFile)
+	currencies, err := currency.LoadCurrencies(cfg.InputFile)
+	if err != nil {
+		panic(err)
+	}
 
 	currency.SortValues(&currencies)
 
-	currency.SaveToJSON(cfg.OutputFile, &currencies)
+	err = currency.SaveToJSON(cfg.OutputFile, &currencies)
+	if err != nil {
+		panic(err)
+	}
 }
