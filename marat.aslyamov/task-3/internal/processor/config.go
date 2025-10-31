@@ -1,10 +1,10 @@
 package processor
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
-	"errors"
 
 	"gopkg.in/yaml.v3"
 )
@@ -49,5 +49,6 @@ func (cp *CurrencyProcessor) LoadConfig() error {
 	}
 
 	cp.config = &config
+	
 	return nil
 }

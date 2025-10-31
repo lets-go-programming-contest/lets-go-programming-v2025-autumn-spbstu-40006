@@ -8,10 +8,15 @@ import (
 	"sort"
 )
 
+const (
+	dirPerm  = 0o755
+	filePerm = 0o644
+)
+
 type Currency struct {
-	NumCode  int     `json:"num_code" xml:"NumCode"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" xml:"Value"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 func (cp *CurrencyProcessor) SaveToJSON(currencies []Currency, outputPath string) error {
@@ -20,7 +25,7 @@ func (cp *CurrencyProcessor) SaveToJSON(currencies []Currency, outputPath string
 	})
 
 	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return fmt.Errorf("create dir: %w", err)
 	}
 
@@ -29,7 +34,7 @@ func (cp *CurrencyProcessor) SaveToJSON(currencies []Currency, outputPath string
 		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, jsonData, 0o600); err != nil {
+	if err := os.WriteFile(outputPath, jsonData, filePerm); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 
