@@ -42,11 +42,15 @@ func Load(path string) ([]Currency, error) {
 
 	for idx := range curs.Valutes {
 		raw := strings.ReplaceAll(curs.Valutes[idx].Value, ",", ".")
+		raw = strings.TrimSpace(raw)
+
 		val, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse value %q: %w", curs.Valutes[idx].Value, err)
 		}
+
 		curs.Valutes[idx].ValueNum = val
 	}
+
 	return curs.Valutes, nil
 }

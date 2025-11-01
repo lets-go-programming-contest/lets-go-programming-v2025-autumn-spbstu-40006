@@ -22,16 +22,17 @@ func Load(path string) (Config, error) {
 		return Config{}, fmt.Errorf("read config file: %w", err)
 	}
 
-	var c Config
-	if err := yaml.Unmarshal(body, &c); err != nil {
+	var conf Config
+	if err := yaml.Unmarshal(body, &conf); err != nil {
 		return Config{}, fmt.Errorf("yaml decode: %w", err)
 	}
 
-	c.InputFile = strings.TrimSpace(c.InputFile)
-	c.OutputFile = strings.TrimSpace(c.OutputFile)
+	conf.InputFile = strings.TrimSpace(conf.InputFile)
+	conf.OutputFile = strings.TrimSpace(conf.OutputFile)
 
-	if c.InputFile == "" || c.OutputFile == "" {
+	if conf.InputFile == "" || conf.OutputFile == "" {
 		return Config{}, ErrConfigPathsEmpty
 	}
-	return c, nil
+
+	return conf, nil
 }
