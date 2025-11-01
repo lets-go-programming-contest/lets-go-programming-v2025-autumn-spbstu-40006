@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/Mishaa105/task-3/internal/config"
 	"github.com/Mishaa105/task-3/internal/decoding"
@@ -16,8 +15,7 @@ func main() {
 
 	cfg, err := config.CheckInput(*configPath)
 	if err != nil {
-		fmt.Println("Error in config:", err)
-		return
+		panic(err)
 	}
 
 	outputPath := *outputFlag
@@ -27,12 +25,10 @@ func main() {
 
 	valCurs, err := decoding.Decoding(*configPath)
 	if err != nil {
-		fmt.Println("Error while decoding:", err)
-		return
+		panic(err)
 	}
 
 	if err := saving.SaveToJSON(outputPath, valCurs.Valutes); err != nil {
-		fmt.Println("Error while saving JSON:", err)
-		return
+		panic(err)
 	}
 }

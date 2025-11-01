@@ -31,6 +31,7 @@ func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	}
 
 	valueStr = strings.Replace(valueStr, ",", ".", 1)
+
 	val, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		return fmt.Errorf("cannot parse Value: %w", err)
