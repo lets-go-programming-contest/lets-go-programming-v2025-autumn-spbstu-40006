@@ -25,30 +25,31 @@ type ValCurs struct {
 type FloatValue float64
 
 func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var v string
-	if err := d.DecodeElement(&v, &start); err != nil {
+	var valueStr string
+	if err := d.DecodeElement(&valueStr, &start); err != nil {
 		return fmt.Errorf("decode element failed: %w", err)
 	}
 
-	v = strings.Replace(v, ",", ".", 1)
-	val, err := strconv.ParseFloat(v, 64)
+	valueStr = strings.Replace(v, ",", ".", 1)
+	val, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		return fmt.Errorf("cannot parse Value: %w", err)
 	}
 
 	*f = FloatValue(val)
+
 	return nil
 }
 
 func Decoding(configPath string) (ValCurs, error) {
 	cfg, err := config.CheckInput(configPath)
 	if err != nil {
-		return ValCurs{}, err
+		return ValCurs{}, fmt.Errorf("checking config: %w", err)
 	}
 
 	xmlFile, err := os.Open(cfg.InputFile)
 	if err != nil {
-		return ValCurs{}, err
+		return ValCurs{}, fmt.Errorf("opening input file: %w", err)
 	}
 
 	defer func() {
@@ -64,7 +65,7 @@ func Decoding(configPath string) (ValCurs, error) {
 
 	err = decoder.Decode(&valCurs)
 	if err != nil {
-		return ValCurs{}, err
+		return ValCurs{}, fmt.Errorf("decoding XML failed: %w", err)
 	}
 
 	sort.Slice(valCurs.Valutes, func(i, j int) bool {

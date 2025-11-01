@@ -16,7 +16,8 @@ func main() {
 
 	cfg, err := config.CheckInput(*configPath)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error in config:", err)
+		return
 	}
 
 	outputPath := *outputFlag
@@ -30,5 +31,8 @@ func main() {
 		return
 	}
 
-	saving.SaveToJSON(outputPath, valCurs.Valutes)
+	if err := saving.SaveToJSON(outputPath, valCurs.Valutes); err != nil {
+		fmt.Println("Error while saving JSON:", err)
+		return
+	}
 }
