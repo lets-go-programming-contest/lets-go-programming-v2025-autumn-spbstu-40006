@@ -3,7 +3,6 @@ package rates
 import (
 	"encoding/xml"
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -12,10 +11,10 @@ import (
 )
 
 type Currency struct {
-	NumCode  int     `xml:"NumCode" json:"num_code"`
-	CharCode string  `xml:"CharCode" json:"char_code"`
-	Value    string  `xml:"Value" json:"-"`
-	ValueNum float64 `json:"value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    string  `json:"-"         xml:"Value"`
+	ValueNum float64 `json:"value"     xml:"-"`
 }
 
 type valCurs struct {
@@ -24,29 +23,30 @@ type valCurs struct {
 }
 
 func Load(path string) ([]Currency, error) {
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("open input xml %q: %w", path, err)
 	}
-	defer f.Close()
 
-	dec := xml.NewDecoder(f)
-	dec.CharsetReader = func(label string, r io.Reader) (io.Reader, error) {
-		return charset.NewReaderLabel(label, r)
-	}
+	defer func() {
+		_ = file.Close()
+	}()
 
-	var vc valCurs
-	if err := dec.Decode(&vc); err != nil {
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+
+	var curs valCurs
+	if err := decoder.Decode(&curs); err != nil {
 		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	for i := range vc.Valutes {
-		raw := strings.ReplaceAll(vc.Valutes[i].Value, ",", ".")
+	for idx := range curs.Valutes {
+		raw := strings.ReplaceAll(curs.Valutes[idx].Value, ",", ".")
 		val, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
 		if err != nil {
-			return nil, fmt.Errorf("parse value %q: %w", vc.Valutes[i].Value, err)
+			return nil, fmt.Errorf("parse value %q: %w", curs.Valutes[idx].Value, err)
 		}
-		vc.Valutes[i].ValueNum = val
+		curs.Valutes[idx].ValueNum = val
 	}
-	return vc.Valutes, nil
+	return curs.Valutes, nil
 }

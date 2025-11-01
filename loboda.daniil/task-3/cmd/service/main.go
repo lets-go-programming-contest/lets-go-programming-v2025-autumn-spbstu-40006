@@ -10,8 +10,10 @@ import (
 
 func parseFlags() string {
 	var cfgPath string
+
 	flag.StringVar(&cfgPath, "config", "", "path to YAML config")
 	flag.Parse()
+
 	return cfgPath
 }
 

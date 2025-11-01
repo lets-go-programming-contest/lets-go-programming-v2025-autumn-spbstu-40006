@@ -16,6 +16,7 @@ const (
 func SaveJSON(path string, list []Currency) error {
 	out := make([]Currency, len(list))
 	copy(out, list)
+
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].ValueNum > out[j].ValueNum
 	})
@@ -30,8 +31,12 @@ func SaveJSON(path string, list []Currency) error {
 	if err != nil {
 		return fmt.Errorf("json marshal: %w", err)
 	}
+
+	data = append(data, '\n')
+
 	if err := os.WriteFile(path, data, filePerm); err != nil {
 		return fmt.Errorf("write %s: %w", path, err)
 	}
+
 	return nil
 }
