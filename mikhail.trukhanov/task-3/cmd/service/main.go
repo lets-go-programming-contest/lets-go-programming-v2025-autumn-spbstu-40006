@@ -24,10 +24,11 @@ func main() {
 		outputPath = cfg.OutputFile
 	}
 
-	valCurs := decoding.Decoding(*configPath)
-	saving.SaveToJSON(outputPath, valCurs.Valutes)
-
-	for _, val := range valCurs.Valutes {
-		fmt.Printf("NumCode: %d, CharCode: %s, Value: %.2f\n", val.NumCode, val.CharCode, val.Value)
+	valCurs, err := decoding.Decoding(*configPath)
+	if err != nil {
+		fmt.Println("Error while decoding:", err)
+		return
 	}
+
+	saving.SaveToJSON(outputPath, valCurs.Valutes)
 }

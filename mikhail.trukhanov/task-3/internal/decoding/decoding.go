@@ -13,50 +13,42 @@ import (
 )
 
 type Valute struct {
-	NumCode  int     `json:"num_code"  xml:"NumCode"`
-	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     xml:"Value"`
+	NumCode  int        `json:"num_code"  xml:"NumCode"`
+	CharCode string     `json:"char_code" xml:"CharCode"`
+	Value    FloatValue `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
 	Valutes []Valute `xml:"Valute"`
 }
 
-func (v *Valute) UnmarshalXML(decode *xml.Decoder, start xml.StartElement) error {
-	var temp struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
-	}
+type FloatValue float64
 
-	if err := decode.DecodeElement(&temp, &start); err != nil {
+func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var v string
+	if err := d.DecodeElement(&v, &start); err != nil {
 		return fmt.Errorf("decode element failed: %w", err)
 	}
 
-	v.NumCode = temp.NumCode
-	v.CharCode = temp.CharCode
-
-	valueStr := strings.Replace(temp.Value, ",", ".", 1)
-
-	val, err := strconv.ParseFloat(valueStr, 64)
+	v = strings.Replace(v, ",", ".", 1)
+	val, err := strconv.ParseFloat(v, 64)
 	if err != nil {
 		return fmt.Errorf("cannot parse Value: %w", err)
 	}
 
-	v.Value = val
-
+	*f = FloatValue(val)
 	return nil
 }
 
-func Decoding(configPath string) ValCurs {
+func Decoding(configPath string) (ValCurs, error) {
 	cfg, err := config.CheckInput(configPath)
 	if err != nil {
-		panic(err)
+		return ValCurs{}, err
 	}
 
 	xmlFile, err := os.Open(cfg.InputFile)
 	if err != nil {
-		panic(err)
+		return ValCurs{}, err
 	}
 
 	defer func() {
@@ -72,12 +64,12 @@ func Decoding(configPath string) ValCurs {
 
 	err = decoder.Decode(&valCurs)
 	if err != nil {
-		panic(err)
+		return ValCurs{}, err
 	}
 
 	sort.Slice(valCurs.Valutes, func(i, j int) bool {
 		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
 	})
 
-	return valCurs
+	return valCurs, nil
 }
