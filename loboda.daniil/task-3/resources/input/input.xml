@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValCurs>
+  <Valute>
+    <NumCode>826</NumCode>
+    <CharCode>GBP</CharCode>
+    <Value>43,8254</Value>
+  </Valute>
+  <Valute>
+    <NumCode>840</NumCode>
+    <CharCode>USD</CharCode>
+    <Value>31,7553</Value>
+  </Valute>
+  <Valute>
+    <NumCode>978</NumCode>
+    <CharCode>EUR</CharCode>
+    <Value>28,1120</Value>
+  </Valute>
+  <Valute>
+    <NumCode>36</NumCode>
+    <CharCode>AUD</CharCode>
+    <Value>16,0102</Value>
+  </Valute>
+</ValCurs>
