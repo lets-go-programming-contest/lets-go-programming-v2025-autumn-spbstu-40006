@@ -40,14 +40,14 @@ func (c *Conveyer) makeChannels(names ...string) {
 
 func (c *Conveyer) RegisterDecorator(
 	handler func(ctx context.Context, input chan string, output chan string) error,
-	in string,
+	input string,
 	out string,
 ) {
-	c.makeChannels(in)
+	c.makeChannels(input)
 	c.makeChannels(out)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return handler(ctx, c.channels[in], c.channels[out])
+		return handler(ctx, c.channels[input], c.channels[out])
 	})
 }
 
@@ -71,10 +71,10 @@ func (c *Conveyer) RegisterMultiplexer(
 
 func (c *Conveyer) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
-	in string,
+	input string,
 	outNames []string,
 ) {
-	c.makeChannels(in)
+	c.makeChannels(input)
 	c.makeChannels(outNames...)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -83,7 +83,7 @@ func (c *Conveyer) RegisterSeparator(
 			outputChans = append(outputChans, c.channels[name])
 		}
 
-		return handler(ctx, c.channels[in], outputChans)
+		return handler(ctx, c.channels[input], outputChans)
 	})
 }
 
