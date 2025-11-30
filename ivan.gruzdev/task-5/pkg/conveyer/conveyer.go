@@ -111,6 +111,7 @@ func (c *Conveyer) Send(name string, msg string) error {
 	}
 
 	ch <- msg
+
 	return nil
 }
 
