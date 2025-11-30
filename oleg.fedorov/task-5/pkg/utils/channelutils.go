@@ -28,6 +28,7 @@ func ReadStringFromChannel(ctx context.Context, input <-chan string, results cha
 			return
 		case data, isChannelOpen := <-input:
 			SendChannelResult(ctx, results, ChannelResult{data, isChannelOpen})
+
 			if !isChannelOpen {
 				return
 			}
@@ -64,8 +65,9 @@ func ProcessChannelResults(
 	for activeInputs > 0 {
 		_, done, err := ReceiveAndProcessResult(ctx, results, output, processor)
 		if err != nil {
-			return err
+			return fmt.Errorf("process channel results: %w", err)
 		}
+
 		if done {
 			activeInputs--
 		}
@@ -93,7 +95,7 @@ func ReceiveAndProcessResult(
 		}
 
 		if err := SendStringToOutput(ctx, output, result.Data); err != nil {
-			return result, false, err
+			return result, false, fmt.Errorf("send to output: %w", err)
 		}
 
 		return result, false, nil

@@ -31,7 +31,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if err := utils.SendStringToOutput(ctx, output, data); err != nil {
-				return err
+				return fmt.Errorf("send to output in decorator: %w", err)
 			}
 		}
 	}
@@ -52,7 +52,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			index := atomic.AddUint64(&counter, 1) % uint64(len(outputs))
 
 			if err := utils.SendStringToOutput(ctx, outputs[index], data); err != nil {
-				return err
+				return fmt.Errorf("send to output in separator: %w", err)
 			}
 		}
 	}
@@ -67,5 +67,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return !strings.Contains(data, "no multiplexer")
 	}
 
-	return utils.ProcessChannelResults(ctx, results, output, len(inputs), processor)
+	if err := utils.ProcessChannelResults(ctx, results, output, len(inputs), processor); err != nil {
+		return fmt.Errorf("multiplexer processing: %w", err)
+	}
+
+	return nil
 }
