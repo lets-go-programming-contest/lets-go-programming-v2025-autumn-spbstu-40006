@@ -155,14 +155,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}()
 
 	select {
-	case err, ok := <-errorChannel:
-		if ok {
-			return err
-		}
-		return nil
-
+	case err := <-errorChannel:
+		return err
 	case <-ctx.Done():
 		waitGroup.Wait()
-		return ctx.Err()
+		return nil
 	}
 }
