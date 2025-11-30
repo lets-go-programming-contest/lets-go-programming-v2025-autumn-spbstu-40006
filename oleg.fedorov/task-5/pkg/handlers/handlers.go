@@ -3,17 +3,21 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+	"sync"
 	"sync/atomic"
 )
 
 var ErrCannotBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context error: %w", ctx.Err())
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -29,7 +33,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context error: %w", ctx.Err())
 			case output <- data:
 			}
 		}
@@ -37,12 +41,18 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, outputChannel := range outputs {
+			close(outputChannel)
+		}
+	}()
+
 	var counter uint64
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context error: %w", ctx.Err())
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -52,7 +62,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context error: %w", ctx.Err())
 			case outputs[index] <- data:
 			}
 		}
@@ -60,30 +70,59 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	defer close(output)
+
+	aggregateChannel := make(chan string, len(inputs))
+
+	var waitGroup sync.WaitGroup
+
+	for index := range inputs {
+		waitGroup.Add(1)
+
+		go func(inputIndex int) {
+			defer waitGroup.Done()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, isChannelOpen := <-inputs[inputIndex]:
+					if !isChannelOpen {
+						return
+					}
+
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case <-ctx.Done():
+						return
+					case aggregateChannel <- data:
+					}
+				}
+			}
+		}(index)
+	}
+
+	go func() {
+		waitGroup.Wait()
+		close(aggregateChannel)
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
+			return fmt.Errorf("context error: %w", ctx.Err())
+		case data, isChannelOpen := <-aggregateChannel:
+			if !isChannelOpen {
+				return nil
+			}
 
-		for index := range inputs {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case data, isChannelOpen := <-inputs[index]:
-				if !isChannelOpen {
-					continue
-				}
-
-				if !strings.Contains(data, "no multiplexer") {
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					case output <- data:
-					}
-				}
-			default:
+				return fmt.Errorf("context error: %w", ctx.Err())
+			case output <- data:
 			}
 		}
 	}

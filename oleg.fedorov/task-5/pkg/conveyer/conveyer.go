@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -123,7 +124,11 @@ func (conveyer *conveyerImpl) Run(ctx context.Context) error {
 		})
 	}
 
-	return errorGroup.Wait()
+	if err := errorGroup.Wait(); err != nil {
+		return fmt.Errorf("conveyer run: %w", err)
+	}
+
+	return nil
 }
 
 func (conveyer *conveyerImpl) Send(inputName string, data string) error {
@@ -136,6 +141,7 @@ func (conveyer *conveyerImpl) Send(inputName string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
