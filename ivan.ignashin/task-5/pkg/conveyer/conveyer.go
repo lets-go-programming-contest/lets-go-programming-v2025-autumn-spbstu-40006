@@ -6,9 +6,7 @@ import (
 	"sync"
 )
 
-var (
-	ErrChanNotFound = errors.New("chan not found")
-)
+var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
 	channels map[string]chan string
@@ -22,6 +20,7 @@ func New(size int) *Conveyer {
 		channels: make(map[string]chan string),
 		size:     size,
 		workers:  make([]func(ctx context.Context) error, 0),
+		mu:       sync.Mutex{},
 	}
 }
 
@@ -35,6 +34,7 @@ func (c *Conveyer) getOrCreateChan(name string) chan string {
 
 	channel := make(chan string, c.size)
 	c.channels[name] = channel
+
 	return channel
 }
 
@@ -46,70 +46,76 @@ func (c *Conveyer) getChan(name string) (chan string, error) {
 	if !exists {
 		return nil, ErrChanNotFound
 	}
+
 	return channel, nil
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	handlerFunc func(ctx context.Context, input chan string, output chan string) error,
 	inputName string,
 	outputName string,
 ) {
 	c.getOrCreateChan(inputName)
 	c.getOrCreateChan(outputName)
 
-	handler := func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		input := c.getOrCreateChan(inputName)
 		output := c.getOrCreateChan(outputName)
-		return fn(ctx, input, output)
+
+		return handlerFunc(ctx, input, output)
 	}
 
-	c.workers = append(c.workers, handler)
+	c.workers = append(c.workers, worker)
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	handlerFunc func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputNames []string,
 	outputName string,
 ) {
 	for _, name := range inputNames {
 		c.getOrCreateChan(name)
 	}
+
 	c.getOrCreateChan(outputName)
 
-	handler := func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		inputs := make([]chan string, len(inputNames))
 		for i, name := range inputNames {
 			inputs[i] = c.getOrCreateChan(name)
 		}
 
 		output := c.getOrCreateChan(outputName)
-		return fn(ctx, inputs, output)
+
+		return handlerFunc(ctx, inputs, output)
 	}
 
-	c.workers = append(c.workers, handler)
+	c.workers = append(c.workers, worker)
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	handlerFunc func(ctx context.Context, input chan string, outputs []chan string) error,
 	inputName string,
 	outputNames []string,
 ) {
 	c.getOrCreateChan(inputName)
+
 	for _, name := range outputNames {
 		c.getOrCreateChan(name)
 	}
 
-	handler := func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		input := c.getOrCreateChan(inputName)
 		outputs := make([]chan string, len(outputNames))
+
 		for i, name := range outputNames {
 			outputs[i] = c.getOrCreateChan(name)
 		}
 
-		return fn(ctx, input, outputs)
+		return handlerFunc(ctx, input, outputs)
 	}
 
-	c.workers = append(c.workers, handler)
+	c.workers = append(c.workers, worker)
 }
 
 func (c *Conveyer) Send(inputName string, data string) error {
@@ -119,6 +125,7 @@ func (c *Conveyer) Send(inputName string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
@@ -132,23 +139,24 @@ func (c *Conveyer) Recv(outputName string) (string, error) {
 	if !ok {
 		return "undefined", nil
 	}
+
 	return data, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	wg := sync.WaitGroup{}
-	errCh := make(chan error, len(c.workers))
+	waitGroup := sync.WaitGroup{}
+	errorChannel := make(chan error, len(c.workers))
 
-	for _, worker := range c.workers {
-		wg.Add(1)
+	for _, currentWorker := range c.workers {
+		waitGroup.Add(1)
 
-		currentWorker := worker
+		workerCopy := currentWorker
 		go func() {
-			defer wg.Done()
+			defer waitGroup.Done()
 
-			if err := currentWorker(ctx); err != nil {
+			if err := workerCopy(ctx); err != nil {
 				select {
-				case errCh <- err:
+				case errorChannel <- err:
 				default:
 				}
 			}
@@ -156,15 +164,15 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		wg.Wait()
-		close(errCh)
+		waitGroup.Wait()
+		close(errorChannel)
 	}()
 
 	select {
-	case err := <-errCh:
+	case err := <-errorChannel:
 		return err
 	case <-ctx.Done():
-		wg.Wait()
+		waitGroup.Wait()
 		return nil
 	}
 }
