@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-var ErrCannotDecorate = errors.New("unacceptable for decoration")
+var ErrNoDecorator = errors.New("can't be decorated")
 
 const (
-	noDecorateMark   = "no decorator"
-	decoratePrefix   = "decorated: "
-	muxSkipIndicator = "no multiplexer"
+	noDecoratorKeyword  = "no decorator"
+	decoratorPrefix     = "decorated: "
+	noMultiplexerFilter = "no multiplexer"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -27,12 +27,12 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				return nil
 			}
 
-			if strings.Contains(line, noDecorateMark) {
-				return ErrCannotDecorate
+			if strings.Contains(line, noDecoratorKeyword) {
+				return ErrNoDecorator
 			}
 
-			if !strings.HasPrefix(line, decoratePrefix) {
-				line = decoratePrefix + line
+			if !strings.HasPrefix(line, decoratorPrefix) {
+				line = decoratorPrefix + line
 			}
 
 			select {
@@ -46,8 +46,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
-		for _, o := range outputs {
-			close(o)
+		for _, out := range outputs {
+			close(out)
 		}
 	}()
 
@@ -55,7 +55,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	pos := 0
+	index := 0
 	for {
 		select {
 		case <-ctx.Done():
@@ -68,13 +68,14 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[pos%len(outputs)] <- msg:
-				pos++
+			case outputs[index%len(outputs)] <- msg:
+				index++
 			}
 		}
 	}
 }
 
+// MultiplexerFunc — объединяет данные из нескольких входных каналов в один
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
@@ -97,8 +98,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					if !ok {
 						return
 					}
-
-					if strings.Contains(msg, muxSkipIndicator) {
+					if strings.Contains(msg, noMultiplexerFilter) {
 						continue
 					}
 
