@@ -44,6 +44,7 @@ func (c *Conveyer) RegisterDecorator(
 	output string,
 ) {
 	c.createPipes(input, output)
+
 	c.processors = append(c.processors, func(ctx context.Context) error {
 		return handler(ctx, c.pipes[input], c.pipes[output])
 	})
@@ -56,6 +57,7 @@ func (c *Conveyer) RegisterMultiplexer(
 ) {
 	c.createPipes(inputs...)
 	c.createPipes(output)
+
 	c.processors = append(c.processors, func(ctx context.Context) error {
 		var inStreams []chan string
 		for _, id := range inputs {
@@ -73,6 +75,7 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	c.createPipes(input)
 	c.createPipes(outputs...)
+
 	c.processors = append(c.processors, func(ctx context.Context) error {
 		var outStreams []chan string
 		for _, id := range outputs {
@@ -88,6 +91,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, proc := range c.processors {
 		task := proc
+
 		group.Go(func() error {
 			return task(gCtx)
 		})

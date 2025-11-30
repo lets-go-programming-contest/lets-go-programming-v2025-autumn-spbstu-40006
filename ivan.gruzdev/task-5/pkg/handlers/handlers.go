@@ -87,6 +87,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, ch := range inputs {
 		local := ch
+
 		waitGroup.Add(1)
 
 		go func() {
@@ -116,5 +117,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	waitGroup.Wait()
+
 	return nil
 }
