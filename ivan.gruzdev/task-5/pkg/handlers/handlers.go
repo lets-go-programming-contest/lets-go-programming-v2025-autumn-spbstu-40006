@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-var ErrNoDecorator = errors.New("can't be decorated")
+var ErrCannotDecorate = errors.New("unacceptable for decoration")
 
 const (
-	noDecoratorKeyword  = "no decorator"
-	decoratorPrefix     = "decorated: "
-	noMultiplexerFilter = "no multiplexer"
+	noDecorateMark   = "no decorator"
+	decoratePrefix   = "decorated: "
+	muxSkipIndicator = "no multiplexer"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -22,24 +22,23 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return nil
-
-		case data, ok := <-input:
+		case line, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(data, noDecoratorKeyword) {
-				return ErrNoDecorator
+			if strings.Contains(line, noDecorateMark) {
+				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(data, decoratorPrefix) {
-				data = decoratorPrefix + data
+			if !strings.HasPrefix(line, decoratePrefix) {
+				line = decoratePrefix + line
 			}
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- data:
+			case output <- line:
 			}
 		}
 	}
@@ -47,8 +46,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
-		for _, out := range outputs {
-			close(out)
+		for _, o := range outputs {
+			close(o)
 		}
 	}()
 
@@ -56,13 +55,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	index := 0
+	pos := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-
-		case data, ok := <-input:
+		case msg, ok := <-input:
 			if !ok {
 				return nil
 			}
@@ -70,8 +68,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[index%len(outputs)] <- data:
-				index++
+			case outputs[pos%len(outputs)] <- msg:
+				pos++
 			}
 		}
 	}
@@ -86,32 +84,32 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	var wg sync.WaitGroup
 
-	for _, in := range inputs {
-		in := in
+	for _, ch := range inputs {
+		local := ch
 		wg.Add(1)
-		go func(ch chan string) {
+		go func() {
 			defer wg.Done()
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-ch:
+				case msg, ok := <-local:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(data, noMultiplexerFilter) {
+					if strings.Contains(msg, muxSkipIndicator) {
 						continue
 					}
 
 					select {
 					case <-ctx.Done():
 						return
-					case output <- data:
+					case output <- msg:
 					}
 				}
 			}
-		}(in)
+		}()
 	}
 
 	wg.Wait()

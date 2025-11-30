@@ -4,237 +4,124 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
-const undefinedData = "undefined"
+const UndefinedData = "undefined"
 
-var ErrChanNotFound = errors.New("chan not found")
+var ErrStreamMissing = errors.New("stream not found")
 
-type Conveyer interface {
-	RegisterDecorator(
-		fn func(ctx context.Context, input chan string, output chan string) error,
-		input string,
-		output string,
-	)
-
-	RegisterMultiplexer(
-		fn func(ctx context.Context, inputs []chan string, output chan string) error,
-		inputs []string,
-		output string,
-	)
-
-	RegisterSeparator(
-		fn func(ctx context.Context, input chan string, outputs []chan string) error,
-		input string,
-		outputs []string,
-	)
-
-	Run(ctx context.Context) error
-	Send(input string, data string) error
-	Recv(output string) (string, error)
+type Conveyer struct {
+	buffer     int
+	pipes      map[string]chan string
+	processors []func(context.Context) error
 }
 
-type decoratorReg struct {
-	fn     func(context.Context, chan string, chan string) error
-	input  string
-	output string
-}
-
-type multiplexerReg struct {
-	fn     func(context.Context, []chan string, chan string) error
-	inputs []string
-	output string
-}
-
-type separatorReg struct {
-	fn      func(context.Context, chan string, []chan string) error
-	input   string
-	outputs []string
-}
-
-type conveyer struct {
-	size         int
-	chans        map[string]chan string
-	decorators   []decoratorReg
-	multiplexers []multiplexerReg
-	separators   []separatorReg
-	mu           sync.RWMutex
-}
-
-func New(size int) Conveyer {
-	return &conveyer{
-		size:  size,
-		chans: make(map[string]chan string),
+func New(size int) *Conveyer {
+	return &Conveyer{
+		buffer:     size,
+		pipes:      make(map[string]chan string),
+		processors: make([]func(context.Context) error, 0),
 	}
 }
 
-func (c *conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+func (c *Conveyer) createPipe(name string) {
+	if _, ok := c.pipes[name]; !ok {
+		c.pipes[name] = make(chan string, c.buffer)
+	}
+}
+
+func (c *Conveyer) createPipes(names ...string) {
+	for _, n := range names {
+		c.createPipe(n)
+	}
+}
+
+func (c *Conveyer) RegisterDecorator(
+	handler func(context.Context, chan string, chan string) error,
 	input string,
 	output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if _, ok := c.chans[input]; !ok {
-		c.chans[input] = make(chan string, c.size)
-	}
-	if _, ok := c.chans[output]; !ok {
-		c.chans[output] = make(chan string, c.size)
-	}
-
-	c.decorators = append(c.decorators, decoratorReg{fn: fn, input: input, output: output})
+	c.createPipes(input, output)
+	c.processors = append(c.processors, func(ctx context.Context) error {
+		return handler(ctx, c.pipes[input], c.pipes[output])
+	})
 }
 
-func (c *conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+func (c *Conveyer) RegisterMultiplexer(
+	handler func(context.Context, []chan string, chan string) error,
 	inputs []string,
 	output string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.createPipes(inputs...)
+	c.createPipes(output)
 
-	for _, input := range inputs {
-		if _, ok := c.chans[input]; !ok {
-			c.chans[input] = make(chan string, c.size)
+	c.processors = append(c.processors, func(ctx context.Context) error {
+		var inStreams []chan string
+		for _, id := range inputs {
+			inStreams = append(inStreams, c.pipes[id])
 		}
-	}
-	if _, ok := c.chans[output]; !ok {
-		c.chans[output] = make(chan string, c.size)
-	}
-
-	c.multiplexers = append(c.multiplexers, multiplexerReg{fn: fn, inputs: inputs, output: output})
+		return handler(ctx, inStreams, c.pipes[output])
+	})
 }
 
-func (c *conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+func (c *Conveyer) RegisterSeparator(
+	handler func(context.Context, chan string, []chan string) error,
 	input string,
 	outputs []string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.createPipes(input)
+	c.createPipes(outputs...)
 
-	if _, ok := c.chans[input]; !ok {
-		c.chans[input] = make(chan string, c.size)
-	}
-	for _, output := range outputs {
-		if _, ok := c.chans[output]; !ok {
-			c.chans[output] = make(chan string, c.size)
+	c.processors = append(c.processors, func(ctx context.Context) error {
+		var outStreams []chan string
+		for _, id := range outputs {
+			outStreams = append(outStreams, c.pipes[id])
 		}
-	}
-
-	c.separators = append(c.separators, separatorReg{fn: fn, input: input, outputs: outputs})
+		return handler(ctx, c.pipes[input], outStreams)
+	})
 }
 
-func (c *conveyer) Send(input string, data string) error {
-	c.mu.RLock()
-	ch, ok := c.chans[input]
-	c.mu.RUnlock()
+func (c *Conveyer) Run(ctx context.Context) error {
+	group, gCtx := errgroup.WithContext(ctx)
 
-	if !ok {
-		return ErrChanNotFound
+	for _, p := range c.processors {
+		task := p
+		group.Go(func() error {
+			return task(gCtx)
+		})
 	}
-	ch <- data
+
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("conveyer error: %w", err)
+	}
+
+	for _, pipe := range c.pipes {
+		close(pipe)
+	}
+
 	return nil
 }
 
-func (c *conveyer) Recv(output string) (string, error) {
-	c.mu.RLock()
-	ch, ok := c.chans[output]
-	c.mu.RUnlock()
-
+func (c *Conveyer) Send(name string, msg string) error {
+	ch, ok := c.pipes[name]
 	if !ok {
-		return "", ErrChanNotFound
+		return ErrStreamMissing
+	}
+	ch <- msg
+	return nil
+}
+
+func (c *Conveyer) Recv(name string) (string, error) {
+	ch, ok := c.pipes[name]
+	if !ok {
+		return "", ErrStreamMissing
 	}
 
-	val, ok := <-ch
-	if !ok {
-		return undefinedData, nil
+	val, open := <-ch
+	if !open {
+		return UndefinedData, nil
 	}
 	return val, nil
-}
-
-func (c *conveyer) startDecorators(ctx context.Context, start func(fn func() error)) {
-	for _, d := range c.decorators {
-		in := c.chans[d.input]
-		out := c.chans[d.output]
-		start(func() error {
-			return d.fn(ctx, in, out)
-		})
-	}
-}
-
-func (c *conveyer) startMultiplexers(ctx context.Context, start func(fn func() error)) {
-	for _, m := range c.multiplexers {
-		var ins []chan string
-		for _, id := range m.inputs {
-			ins = append(ins, c.chans[id])
-		}
-		out := c.chans[m.output]
-		start(func() error {
-			return m.fn(ctx, ins, out)
-		})
-	}
-}
-
-func (c *conveyer) startSeparators(ctx context.Context, start func(fn func() error)) {
-	for _, s := range c.separators {
-		in := c.chans[s.input]
-		var outs []chan string
-		for _, id := range s.outputs {
-			outs = append(outs, c.chans[id])
-		}
-		start(func() error {
-			return s.fn(ctx, in, outs)
-		})
-	}
-}
-
-func (c *conveyer) Run(ctx context.Context) error {
-	var wg sync.WaitGroup
-	errCh := make(chan error, 1)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	start := func(fn func() error) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := fn(); err != nil {
-				select {
-				case errCh <- err:
-					cancel()
-				default:
-				}
-			}
-		}()
-	}
-
-	c.startDecorators(ctx, start)
-	c.startMultiplexers(ctx, start)
-	c.startSeparators(ctx, start)
-
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-ctx.Done():
-	case err := <-errCh:
-		if err != nil {
-			return fmt.Errorf("handler error: %w", err)
-		}
-	case <-done:
-	}
-
-	c.mu.Lock()
-	for _, ch := range c.chans {
-		close(ch)
-	}
-	c.mu.Unlock()
-
-	return nil
 }
