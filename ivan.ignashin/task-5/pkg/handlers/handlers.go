@@ -66,8 +66,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	var once sync.Once
 
 	for _, in := range inputs {
 		wg.Add(1)
@@ -96,9 +95,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	go func() {
 		wg.Wait()
-		close(output)
+		once.Do(func() {
+			close(output)
+		})
 	}()
 
 	<-ctx.Done()
+	once.Do(func() {
+		close(output)
+	})
 	return ctx.Err()
 }
