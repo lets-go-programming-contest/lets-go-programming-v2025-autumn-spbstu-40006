@@ -7,9 +7,7 @@ import (
 	"sync"
 )
 
-var (
-	ErrCannotBeDecorated = errors.New("can't be decorated")
-)
+var ErrCannotBeDecorated = errors.New("can't be decorated")
 
 const (
 	Prefix               = "decorated: "

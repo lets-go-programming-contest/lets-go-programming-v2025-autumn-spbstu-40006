@@ -6,9 +6,7 @@ import (
 	"sync"
 )
 
-var (
-	ErrChanNotFound = errors.New("chan not found")
-)
+var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
 	channels map[string]chan string
@@ -55,6 +53,7 @@ func (c *Conveyer) RegisterDecorator(
 	handler := func(ctx context.Context) error {
 		input := c.getOrCreateChannel(inputName)
 		output := c.getOrCreateChannel(outputName)
+
 		return decoratorFunc(ctx, input, output)
 	}
 
@@ -78,6 +77,7 @@ func (c *Conveyer) RegisterMultiplexer(
 		}
 
 		output := c.getOrCreateChannel(outputName)
+
 		return multiplexerFunc(ctx, inputs, output)
 	}
 
@@ -90,6 +90,7 @@ func (c *Conveyer) RegisterSeparator(
 	outputNames []string,
 ) {
 	c.getOrCreateChannel(inputName)
+
 	for _, name := range outputNames {
 		c.getOrCreateChannel(name)
 	}
@@ -97,6 +98,7 @@ func (c *Conveyer) RegisterSeparator(
 	handler := func(ctx context.Context) error {
 		input := c.getOrCreateChannel(inputName)
 		outputs := make([]chan string, len(outputNames))
+
 		for i, name := range outputNames {
 			outputs[i] = c.getOrCreateChannel(name)
 		}
@@ -114,6 +116,7 @@ func (c *Conveyer) Send(inputName string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
@@ -160,6 +163,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		waitGroup.Wait()
+
 		return nil
 	}
 }
