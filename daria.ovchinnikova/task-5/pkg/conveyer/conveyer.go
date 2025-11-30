@@ -68,6 +68,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, name := range inputNames {
 		c.getOrCreateChannel(name)
 	}
+
 	c.getOrCreateChannel(outputName)
 
 	handler := func(ctx context.Context) error {
@@ -130,6 +131,7 @@ func (c *Conveyer) Recv(outputName string) (string, error) {
 	if !ok {
 		return "undefined", nil
 	}
+
 	return data, nil
 }
 
