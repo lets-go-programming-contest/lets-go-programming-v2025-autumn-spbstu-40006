@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync/atomic"
 )
@@ -14,7 +13,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context error: %w", ctx.Err())
+			return ctx.Err()
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -30,7 +29,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
+				return ctx.Err()
 			case output <- data:
 			}
 		}
@@ -43,7 +42,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context error: %w", ctx.Err())
+			return ctx.Err()
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -53,7 +52,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
+				return ctx.Err()
 			case outputs[index] <- data:
 			}
 		}
@@ -64,15 +63,15 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context error: %w", ctx.Err())
+			return ctx.Err()
 		default:
 		}
 
-		for i := range inputs {
+		for index := range inputs {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
-			case data, isChannelOpen := <-inputs[i]:
+				return ctx.Err()
+			case data, isChannelOpen := <-inputs[index]:
 				if !isChannelOpen {
 					continue
 				}
@@ -80,7 +79,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				if !strings.Contains(data, "no multiplexer") {
 					select {
 					case <-ctx.Done():
-						return fmt.Errorf("context error: %w", ctx.Err())
+						return ctx.Err()
 					case output <- data:
 					}
 				}
