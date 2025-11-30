@@ -129,8 +129,12 @@ func (c *Conveyer) Send(id string, data string) error {
 	if err != nil {
 		return err
 	}
-	ch <- data
-	return nil
+	select {
+	case ch <- data:
+		return nil
+	default:
+		return errors.New("channel is full or closed")
+	}
 }
 
 func (c *Conveyer) Recv(id string) (string, error) {
@@ -138,11 +142,15 @@ func (c *Conveyer) Recv(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	v, ok := <-ch
-	if !ok {
-		return "undefined", nil
+	select {
+	case v, ok := <-ch:
+		if !ok {
+			return "undefined", nil
+		}
+		return v, nil
+	default:
+		return "", errors.New("no data available")
 	}
-	return v, nil
 }
 
 var _ conveyer = (*Conveyer)(nil)
