@@ -3,22 +3,25 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync/atomic"
 )
+
+var ErrCannotBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-input:
-			if !ok {
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case data, isChannelOpen := <-input:
+			if !isChannelOpen {
 				return nil
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCannotBeDecorated
 			}
 
 			if !strings.HasPrefix(data, "decorated: ") {
@@ -27,7 +30,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case output <- data:
 			}
 		}
@@ -40,9 +43,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-input:
-			if !ok {
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case data, isChannelOpen := <-input:
+			if !isChannelOpen {
 				return nil
 			}
 
@@ -50,7 +53,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case outputs[index] <- data:
 			}
 		}
@@ -58,51 +61,57 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	type result struct {
+	type channelResult struct {
 		data string
 		ok   bool
 	}
 
-	results := make(chan result, len(inputs))
+	results := make(chan channelResult, len(inputs))
 
-	for _, input := range inputs {
+	for _, inputChannel := range inputs {
 		go func(in chan string) {
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-in:
-					if !ok {
+				case data, isChannelOpen := <-in:
+					if !isChannelOpen {
 						return
 					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case results <- result{data, ok}:
+					case results <- channelResult{data, isChannelOpen}:
 					}
 				}
 			}
-		}(input)
+		}(inputChannel)
 	}
 
-	for {
+	activeInputs := len(inputs)
+
+	for activeInputs > 0 {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case res := <-results:
-			if !res.ok {
+			return fmt.Errorf("context canceled: %w", ctx.Err())
+		case result := <-results:
+			if !result.ok {
+				activeInputs--
 				continue
 			}
 
-			if strings.Contains(res.data, "no multiplexer") {
+			if strings.Contains(result.data, "no multiplexer") {
 				continue
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case output <- res.data:
+				return fmt.Errorf("context canceled: %w", ctx.Err())
+			case output <- result.data:
 			}
 		}
 	}
+
+	return nil
 }
