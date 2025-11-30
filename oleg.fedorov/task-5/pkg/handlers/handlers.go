@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"sync/atomic"
+
+	"github.com/dizey5k/task-5/pkg/utils"
 )
 
 var ErrCannotBeDecorated = errors.New("can't be decorated")
@@ -28,10 +30,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				data = "decorated: " + data
 			}
 
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context canceled: %w", ctx.Err())
-			case output <- data:
+			if err := utils.SendStringToOutput(ctx, output, data); err != nil {
+				return err
 			}
 		}
 	}
@@ -51,67 +51,21 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			index := atomic.AddUint64(&counter, 1) % uint64(len(outputs))
 
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context canceled: %w", ctx.Err())
-			case outputs[index] <- data:
+			if err := utils.SendStringToOutput(ctx, outputs[index], data); err != nil {
+				return err
 			}
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	type channelResult struct {
-		data string
-		ok   bool
+	results := make(chan utils.ChannelResult, len(inputs))
+
+	utils.StartChannelReaders(ctx, inputs, results, utils.ReadStringFromChannel)
+
+	processor := func(data string) bool {
+		return !strings.Contains(data, "no multiplexer")
 	}
 
-	results := make(chan channelResult, len(inputs))
-
-	for _, inputChannel := range inputs {
-		go func(in chan string) {
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case data, isChannelOpen := <-in:
-					if !isChannelOpen {
-						return
-					}
-
-					select {
-					case <-ctx.Done():
-						return
-					case results <- channelResult{data, isChannelOpen}:
-					}
-				}
-			}
-		}(inputChannel)
-	}
-
-	activeInputs := len(inputs)
-
-	for activeInputs > 0 {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case result := <-results:
-			if !result.ok {
-				activeInputs--
-				continue
-			}
-
-			if strings.Contains(result.data, "no multiplexer") {
-				continue
-			}
-
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context canceled: %w", ctx.Err())
-			case output <- result.data:
-			}
-		}
-	}
-
-	return nil
+	return utils.ProcessChannelResults(ctx, results, output, len(inputs), processor)
 }
