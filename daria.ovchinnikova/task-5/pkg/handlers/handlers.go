@@ -85,19 +85,17 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	var waitGroup sync.WaitGroup
-	done := make(chan struct{})
+	waitGroup := sync.WaitGroup{}
 
 	for _, inputChannel := range inputs {
 		waitGroup.Add(1)
 
-		go func(channel chan string) {
+		channel := inputChannel
+		readFunc := func() {
 			defer waitGroup.Done()
 
 			for {
 				select {
-				case <-done:
-					return
 				case <-ctx.Done():
 					return
 				case data, ok := <-channel:
@@ -105,32 +103,23 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						return
 					}
 
-					if strings.Contains(data, NoMultiplexerMessage) {
+					if strings.Contains(data, "no multiplexer") {
 						continue
 					}
 
 					select {
-					case output <- data:
 					case <-ctx.Done():
 						return
-					case <-done:
-						return
+					case output <- data:
 					}
 				}
 			}
-		}(inputChannel)
+		}
+
+		go readFunc()
 	}
 
-	go func() {
-		waitGroup.Wait()
-		close(done)
-	}()
+	waitGroup.Wait()
 
-	select {
-	case <-done:
-		return nil
-	case <-ctx.Done():
-		close(done)
-		return nil
-	}
+	return nil
 }
