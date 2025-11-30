@@ -22,7 +22,6 @@ type Conveyer struct {
 	chans   map[string]chan string
 	runners []func(context.Context) error
 	mu      sync.Mutex
-	closed  bool
 }
 
 func New(size int) *Conveyer {
@@ -35,11 +34,6 @@ func New(size int) *Conveyer {
 func (c *Conveyer) getOrCreate(id string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.closed {
-		ch := make(chan string, c.size)
-		c.chans[id] = ch
-		return ch
-	}
 	ch, ok := c.chans[id]
 	if !ok {
 		ch = make(chan string, c.size)
@@ -98,13 +92,6 @@ func (c *Conveyer) RegisterSeparator(fn func(context.Context, chan string, []cha
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	c.mu.Lock()
-	if c.closed {
-		c.mu.Unlock()
-		return errors.New("conveyer already closed")
-	}
-	c.mu.Unlock()
-
 	var wg sync.WaitGroup
 	errCh := make(chan error, len(c.runners))
 
@@ -124,37 +111,20 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		}(r)
 	}
 
-	done := make(chan struct{})
 	go func() {
 		wg.Wait()
-		close(done)
+		close(errCh)
 	}()
 
-	var err error
 	select {
-	case err = <-errCh:
-		cancel()
+	case err, ok := <-errCh:
+		if ok {
+			return err
+		}
+		return nil
 	case <-ctx.Done():
-		err = ctx.Err()
-		cancel()
-	case <-done:
+		return ctx.Err()
 	}
-
-	<-done
-	c.closeAll()
-	return err
-}
-
-func (c *Conveyer) closeAll() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.closed {
-		return
-	}
-	for _, ch := range c.chans {
-		close(ch)
-	}
-	c.closed = true
 }
 
 func (c *Conveyer) Send(id string, data string) error {
