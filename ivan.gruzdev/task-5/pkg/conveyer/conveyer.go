@@ -10,7 +10,7 @@ import (
 
 const UndefinedData = "undefined"
 
-var ErrStreamMissing = errors.New("stream not found")
+var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
 	buffer     int
@@ -86,8 +86,8 @@ func (c *Conveyer) RegisterSeparator(
 func (c *Conveyer) Run(ctx context.Context) error {
 	group, gCtx := errgroup.WithContext(ctx)
 
-	for _, p := range c.processors {
-		task := p
+	for _, proc := range c.processors {
+		task := proc
 		group.Go(func() error {
 			return task(gCtx)
 		})
@@ -97,17 +97,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return fmt.Errorf("conveyer error: %w", err)
 	}
 
-	for _, pipe := range c.pipes {
-		close(pipe)
-	}
-
 	return nil
 }
 
 func (c *Conveyer) Send(name string, msg string) error {
 	ch, ok := c.pipes[name]
 	if !ok {
-		return ErrStreamMissing
+		return ErrChanNotFound
 	}
 	ch <- msg
 	return nil
@@ -116,7 +112,7 @@ func (c *Conveyer) Send(name string, msg string) error {
 func (c *Conveyer) Recv(name string) (string, error) {
 	ch, ok := c.pipes[name]
 	if !ok {
-		return "", ErrStreamMissing
+		return "", ErrChanNotFound
 	}
 
 	val, open := <-ch
