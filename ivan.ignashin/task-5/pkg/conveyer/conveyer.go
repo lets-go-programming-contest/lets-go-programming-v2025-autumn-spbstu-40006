@@ -104,7 +104,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	done := make(chan struct{})
-	go func() { wg.Wait(); close(done) }()
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
 	select {
 	case err := <-errCh:
@@ -112,10 +115,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		<-done
 		c.closeAll()
 		return err
+
 	case <-ctx.Done():
+		cancel()
 		<-done
 		c.closeAll()
 		return ctx.Err()
+
 	case <-done:
 		c.closeAll()
 		return nil
