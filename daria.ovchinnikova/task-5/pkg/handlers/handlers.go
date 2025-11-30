@@ -79,7 +79,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	defer close(output)
+	// defer close(output)
 
 	if len(inputs) == 0 {
 		return nil
