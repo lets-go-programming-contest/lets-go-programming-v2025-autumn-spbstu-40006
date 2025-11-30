@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -11,25 +12,21 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case v, ok := <-input:
 			if !ok {
 				close(output)
 				return nil
 			}
-
 			if strings.Contains(v, "no decorator") {
 				return errors.New("can't be decorated")
 			}
-
 			if !strings.HasPrefix(v, "decorated: ") {
 				v = "decorated: " + v
 			}
-
 			select {
-			case output <- v:
 			case <-ctx.Done():
 				return ctx.Err()
+			case output <- v:
 			}
 		}
 	}
@@ -41,7 +38,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case v, ok := <-input:
 			if !ok {
 				for _, ch := range outputs {
@@ -49,50 +45,51 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				}
 				return nil
 			}
-
 			out := outputs[i%len(outputs)]
 			i++
-
 			select {
-			case out <- v:
 			case <-ctx.Done():
 				return ctx.Err()
+			case out <- v:
 			}
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	open := len(inputs)
+	var wg sync.WaitGroup
 
-	for open > 0 {
-		for _, ch := range inputs {
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-
-			case v, ok := <-ch:
-				if !ok {
-					open--
-					continue
-				}
-
-				if strings.Contains(v, "no multiplexer") {
-					continue
-				}
-
-				select {
-				case output <- v:
-				case <-ctx.Done():
-					return ctx.Err()
-				}
-
-			default:
-			}
-		}
+	if len(inputs) == 0 {
+		close(output)
+		return nil
 	}
 
+	for _, in := range inputs {
+		wg.Add(1)
+		go func(ch chan string) {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case v, ok := <-ch:
+					if !ok {
+						return
+					}
+					if strings.Contains(v, "no multiplexer") {
+						continue
+					}
+					select {
+					case <-ctx.Done():
+						return
+					case output <- v:
+					}
+				}
+			}
+		}(in)
+	}
+
+	wg.Wait()
 	close(output)
 	return nil
 }

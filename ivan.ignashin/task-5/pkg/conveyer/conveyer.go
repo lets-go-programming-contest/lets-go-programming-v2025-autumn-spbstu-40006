@@ -21,6 +21,7 @@ type Conveyer struct {
 	size    int
 	chans   map[string]chan string
 	runners []func(context.Context) error
+	mu      sync.Mutex
 }
 
 func New(size int) *Conveyer {
@@ -31,6 +32,8 @@ func New(size int) *Conveyer {
 }
 
 func (c *Conveyer) getOrCreate(id string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	ch, ok := c.chans[id]
 	if !ok {
 		ch = make(chan string, c.size)
@@ -40,7 +43,9 @@ func (c *Conveyer) getOrCreate(id string) chan string {
 }
 
 func (c *Conveyer) get(id string) (chan string, error) {
+	c.mu.Lock()
 	ch, ok := c.chans[id]
+	c.mu.Unlock()
 	if !ok {
 		return nil, ErrChanNotFound
 	}
@@ -98,7 +103,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		go func(run func(context.Context) error) {
 			defer wg.Done()
 			if err := run(ctx); err != nil {
-				errCh <- err
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
 		}(r)
 	}
@@ -115,13 +123,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		<-done
 		c.closeAll()
 		return err
-
 	case <-ctx.Done():
 		cancel()
 		<-done
 		c.closeAll()
 		return ctx.Err()
-
 	case <-done:
 		c.closeAll()
 		return nil
@@ -129,6 +135,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) closeAll() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for _, ch := range c.chans {
 		close(ch)
 	}
