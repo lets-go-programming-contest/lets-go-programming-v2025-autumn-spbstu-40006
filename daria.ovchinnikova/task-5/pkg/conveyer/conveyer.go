@@ -8,7 +8,6 @@ import (
 
 var (
 	ErrChanNotFound = errors.New("chan not found")
-	ErrUndefined    = "undefined"
 )
 
 type Conveyer struct {
@@ -32,6 +31,7 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 
 	channel := make(chan string, c.size)
 	c.channels[name] = channel
+
 	return channel
 }
 
@@ -40,11 +40,12 @@ func (c *Conveyer) getChannel(name string) (chan string, error) {
 	if !exists {
 		return nil, ErrChanNotFound
 	}
+
 	return channel, nil
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	decoratorFunc func(ctx context.Context, input chan string, output chan string) error,
 	inputName string,
 	outputName string,
 ) {
@@ -54,14 +55,14 @@ func (c *Conveyer) RegisterDecorator(
 	handler := func(ctx context.Context) error {
 		input := c.getOrCreateChannel(inputName)
 		output := c.getOrCreateChannel(outputName)
-		return fn(ctx, input, output)
+		return decoratorFunc(ctx, input, output)
 	}
 
 	c.handlers = append(c.handlers, handler)
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	multiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputNames []string,
 	outputName string,
 ) {
@@ -77,14 +78,14 @@ func (c *Conveyer) RegisterMultiplexer(
 		}
 
 		output := c.getOrCreateChannel(outputName)
-		return fn(ctx, inputs, output)
+		return multiplexerFunc(ctx, inputs, output)
 	}
 
 	c.handlers = append(c.handlers, handler)
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	separatorFunc func(ctx context.Context, input chan string, outputs []chan string) error,
 	inputName string,
 	outputNames []string,
 ) {
@@ -100,7 +101,7 @@ func (c *Conveyer) RegisterSeparator(
 			outputs[i] = c.getOrCreateChannel(name)
 		}
 
-		return fn(ctx, input, outputs)
+		return separatorFunc(ctx, input, outputs)
 	}
 
 	c.handlers = append(c.handlers, handler)
@@ -124,7 +125,7 @@ func (c *Conveyer) Recv(outputName string) (string, error) {
 
 	data, ok := <-channel
 	if !ok {
-		return ErrUndefined, nil
+		return "undefined", nil
 	}
 	return data, nil
 }

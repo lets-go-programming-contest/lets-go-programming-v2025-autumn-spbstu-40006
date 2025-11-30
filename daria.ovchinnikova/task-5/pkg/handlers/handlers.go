@@ -7,10 +7,13 @@ import (
 	"sync"
 )
 
+var (
+	ErrCannotBeDecorated = errors.New("can't be decorated")
+)
+
 const (
 	Prefix               = "decorated: "
 	NoDecoratorMessage   = "no decorator"
-	DecoratorError       = "can't be decorated"
 	NoMultiplexerMessage = "no multiplexer"
 	Undefined            = "undefined"
 )
@@ -28,7 +31,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(data, NoDecoratorMessage) {
-				return errors.New(DecoratorError)
+				return ErrCannotBeDecorated
 			}
 
 			if !strings.HasPrefix(data, Prefix) {
