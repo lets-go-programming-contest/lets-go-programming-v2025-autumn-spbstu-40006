@@ -48,6 +48,9 @@ func (c *Conveyer) RegisterDecorator(
 	inputName string,
 	outputName string,
 ) {
+	c.getOrCreateChannel(inputName)
+	c.getOrCreateChannel(outputName)
+
 	handler := func(ctx context.Context) error {
 		input := c.getOrCreateChannel(inputName)
 		output := c.getOrCreateChannel(outputName)
@@ -62,6 +65,11 @@ func (c *Conveyer) RegisterMultiplexer(
 	inputNames []string,
 	outputName string,
 ) {
+	for _, name := range inputNames {
+		c.getOrCreateChannel(name)
+	}
+	c.getOrCreateChannel(outputName)
+
 	handler := func(ctx context.Context) error {
 		inputs := make([]chan string, len(inputNames))
 		for i, name := range inputNames {
@@ -80,6 +88,11 @@ func (c *Conveyer) RegisterSeparator(
 	inputName string,
 	outputNames []string,
 ) {
+	c.getOrCreateChannel(inputName)
+	for _, name := range outputNames {
+		c.getOrCreateChannel(name)
+	}
+
 	handler := func(ctx context.Context) error {
 		input := c.getOrCreateChannel(inputName)
 		outputs := make([]chan string, len(outputNames))
