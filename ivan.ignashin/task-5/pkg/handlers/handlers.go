@@ -66,12 +66,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	open := len(inputs)
 
 	for open > 0 {
-		for _, in := range inputs {
+		for _, ch := range inputs {
+
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 
-			case v, ok := <-in:
+			case v, ok := <-ch:
 				if !ok {
 					open--
 					continue
@@ -86,6 +87,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				case <-ctx.Done():
 					return ctx.Err()
 				}
+
 			default:
 			}
 		}
