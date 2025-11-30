@@ -5,10 +5,17 @@ import (
 	"errors"
 	"strings"
 	"sync"
+	"sync/atomic"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer close(output)
+	defer func() {
+		select {
+		case <-output:
+		default:
+			close(output)
+		}
+	}()
 
 	for {
 		select {
@@ -36,7 +43,11 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
 		for _, ch := range outputs {
-			close(ch)
+			select {
+			case <-ch:
+			default:
+				close(ch)
+			}
 		}
 	}()
 
@@ -62,12 +73,16 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
-		close(output)
+		select {
+		case <-output:
+		default:
+			close(output)
+		}
 		return nil
 	}
 
 	var wg sync.WaitGroup
-	done := make(chan struct{})
+	var closed int32
 
 	for _, in := range inputs {
 		wg.Add(1)
@@ -75,8 +90,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			defer wg.Done()
 			for {
 				select {
-				case <-done:
-					return
 				case <-ctx.Done():
 					return
 				case v, ok := <-ch:
@@ -87,8 +100,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						continue
 					}
 					select {
-					case <-done:
-						return
 					case <-ctx.Done():
 						return
 					case output <- v:
@@ -100,15 +111,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	go func() {
 		wg.Wait()
-		close(done)
-		close(output)
+		if atomic.CompareAndSwapInt32(&closed, 0, 1) {
+			close(output)
+		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		close(done)
-		return ctx.Err()
-	case <-done:
-		return nil
-	}
+	<-ctx.Done()
+
+	atomic.StoreInt32(&closed, 1)
+	return ctx.Err()
 }
