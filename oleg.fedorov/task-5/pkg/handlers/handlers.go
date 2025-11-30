@@ -3,11 +3,8 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync/atomic"
-
-	"github.com/dizey5k/task-5/pkg/utils"
 )
 
 var ErrCannotBeDecorated = errors.New("can't be decorated")
@@ -16,7 +13,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			return ctx.Err()
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -30,8 +27,10 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				data = "decorated: " + data
 			}
 
-			if err := utils.SendStringToOutput(ctx, output, data); err != nil {
-				return fmt.Errorf("send to output in decorator: %w", err)
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case output <- data:
 			}
 		}
 	}
@@ -43,7 +42,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
+			return ctx.Err()
 		case data, isChannelOpen := <-input:
 			if !isChannelOpen {
 				return nil
@@ -51,25 +50,41 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			index := atomic.AddUint64(&counter, 1) % uint64(len(outputs))
 
-			if err := utils.SendStringToOutput(ctx, outputs[index], data); err != nil {
-				return fmt.Errorf("send to output in separator: %w", err)
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case outputs[index] <- data:
 			}
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	results := make(chan utils.ChannelResult, len(inputs))
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
 
-	utils.StartChannelReaders(ctx, inputs, results, utils.ReadStringFromChannel)
+		for index := range inputs {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case data, isChannelOpen := <-inputs[index]:
+				if !isChannelOpen {
+					continue
+				}
 
-	processor := func(data string) bool {
-		return !strings.Contains(data, "no multiplexer")
+				if !strings.Contains(data, "no multiplexer") {
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case output <- data:
+					}
+				}
+			default:
+			}
+		}
 	}
-
-	if err := utils.ProcessChannelResults(ctx, results, output, len(inputs), processor); err != nil {
-		return fmt.Errorf("multiplexer processing: %w", err)
-	}
-
-	return nil
 }

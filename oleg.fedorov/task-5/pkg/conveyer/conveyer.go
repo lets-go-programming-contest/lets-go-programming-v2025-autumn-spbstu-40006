@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -11,23 +13,38 @@ var (
 	ErrChanFull     = errors.New("channel is full")
 )
 
+const undefinedData = "undefined"
+
 type conveyerImpl struct {
 	size     int
 	channels map[string]chan string
-	handlers []handler
+	handlers []func(context.Context) error
 	mu       sync.RWMutex
-}
-
-type handler struct {
-	run func(ctx context.Context) error
 }
 
 func New(size int) *conveyerImpl {
 	return &conveyerImpl{
 		size:     size,
 		channels: make(map[string]chan string),
-		handlers: make([]handler, 0),
+		handlers: make([]func(context.Context) error, 0),
 		mu:       sync.RWMutex{},
+	}
+}
+
+func (conveyer *conveyerImpl) getOrCreateChannel(name string) chan string {
+	if existingChannel, exists := conveyer.channels[name]; exists {
+		return existingChannel
+	}
+
+	newChannel := make(chan string, conveyer.size)
+	conveyer.channels[name] = newChannel
+
+	return newChannel
+}
+
+func (conveyer *conveyerImpl) getOrCreateChannels(names ...string) {
+	for _, name := range names {
+		conveyer.getOrCreateChannel(name)
 	}
 }
 
@@ -39,13 +56,13 @@ func (conveyer *conveyerImpl) RegisterDecorator(
 	conveyer.mu.Lock()
 	defer conveyer.mu.Unlock()
 
-	inputChannel := conveyer.getOrCreateChannel(inputName)
-	outputChannel := conveyer.getOrCreateChannel(outputName)
+	conveyer.getOrCreateChannels(inputName, outputName)
 
-	conveyer.handlers = append(conveyer.handlers, handler{
-		run: func(ctx context.Context) error {
-			return decoratorFunc(ctx, inputChannel, outputChannel)
-		},
+	inputChannel := conveyer.channels[inputName]
+	outputChannel := conveyer.channels[outputName]
+
+	conveyer.handlers = append(conveyer.handlers, func(ctx context.Context) error {
+		return decoratorFunc(ctx, inputChannel, outputChannel)
 	})
 }
 
@@ -57,17 +74,18 @@ func (conveyer *conveyerImpl) RegisterMultiplexer(
 	conveyer.mu.Lock()
 	defer conveyer.mu.Unlock()
 
+	conveyer.getOrCreateChannels(inputNames...)
+	conveyer.getOrCreateChannel(outputName)
+
 	inputChannels := make([]chan string, len(inputNames))
 	for index, name := range inputNames {
-		inputChannels[index] = conveyer.getOrCreateChannel(name)
+		inputChannels[index] = conveyer.channels[name]
 	}
 
-	outputChannel := conveyer.getOrCreateChannel(outputName)
+	outputChannel := conveyer.channels[outputName]
 
-	conveyer.handlers = append(conveyer.handlers, handler{
-		run: func(ctx context.Context) error {
-			return multiplexerFunc(ctx, inputChannels, outputChannel)
-		},
+	conveyer.handlers = append(conveyer.handlers, func(ctx context.Context) error {
+		return multiplexerFunc(ctx, inputChannels, outputChannel)
 	})
 }
 
@@ -79,51 +97,31 @@ func (conveyer *conveyerImpl) RegisterSeparator(
 	conveyer.mu.Lock()
 	defer conveyer.mu.Unlock()
 
-	inputChannel := conveyer.getOrCreateChannel(inputName)
-	outputChannels := make([]chan string, len(outputNames))
+	conveyer.getOrCreateChannel(inputName)
+	conveyer.getOrCreateChannels(outputNames...)
 
+	inputChannel := conveyer.channels[inputName]
+	outputChannels := make([]chan string, len(outputNames))
 	for index, name := range outputNames {
-		outputChannels[index] = conveyer.getOrCreateChannel(name)
+		outputChannels[index] = conveyer.channels[name]
 	}
 
-	conveyer.handlers = append(conveyer.handlers, handler{
-		run: func(ctx context.Context) error {
-			return separatorFunc(ctx, inputChannel, outputChannels)
-		},
+	conveyer.handlers = append(conveyer.handlers, func(ctx context.Context) error {
+		return separatorFunc(ctx, inputChannel, outputChannels)
 	})
 }
 
 func (conveyer *conveyerImpl) Run(ctx context.Context) error {
-	var waitGroup sync.WaitGroup
+	errorGroup, groupContext := errgroup.WithContext(ctx)
 
-	errorChannel := make(chan error, len(conveyer.handlers))
-
-	for _, handlerItem := range conveyer.handlers {
-		waitGroup.Add(1)
-
-		currentHandler := handlerItem
-		go func() {
-			defer waitGroup.Done()
-
-			if err := currentHandler.run(ctx); err != nil {
-				errorChannel <- err
-			}
-		}()
+	for _, handlerFunc := range conveyer.handlers {
+		currentHandler := handlerFunc
+		errorGroup.Go(func() error {
+			return currentHandler(groupContext)
+		})
 	}
 
-	var runError error
-
-	select {
-	case <-ctx.Done():
-		runError = ctx.Err()
-	case runError = <-errorChannel:
-	}
-
-	conveyer.closeAllChannels()
-
-	waitGroup.Wait()
-
-	return runError
+	return errorGroup.Wait()
 }
 
 func (conveyer *conveyerImpl) Send(inputName string, data string) error {
@@ -154,29 +152,8 @@ func (conveyer *conveyerImpl) Recv(outputName string) (string, error) {
 
 	data, isOpen := <-channel
 	if !isOpen {
-		return "undefined", nil
+		return undefinedData, nil
 	}
 
 	return data, nil
-}
-
-func (conveyer *conveyerImpl) getOrCreateChannel(name string) chan string {
-	if existingChannel, exists := conveyer.channels[name]; exists {
-		return existingChannel
-	}
-
-	newChannel := make(chan string, conveyer.size)
-	conveyer.channels[name] = newChannel
-
-	return newChannel
-}
-
-func (conveyer *conveyerImpl) closeAllChannels() {
-	conveyer.mu.Lock()
-	defer conveyer.mu.Unlock()
-
-	for name, channel := range conveyer.channels {
-		close(channel)
-		delete(conveyer.channels, name)
-	}
 }
