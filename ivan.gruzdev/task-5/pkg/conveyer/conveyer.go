@@ -56,12 +56,12 @@ func (c *Conveyer) RegisterMultiplexer(
 ) {
 	c.createPipes(inputs...)
 	c.createPipes(output)
-
 	c.processors = append(c.processors, func(ctx context.Context) error {
 		var inStreams []chan string
 		for _, id := range inputs {
 			inStreams = append(inStreams, c.pipes[id])
 		}
+
 		return handler(ctx, inStreams, c.pipes[output])
 	})
 }
@@ -73,12 +73,12 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	c.createPipes(input)
 	c.createPipes(outputs...)
-
 	c.processors = append(c.processors, func(ctx context.Context) error {
 		var outStreams []chan string
 		for _, id := range outputs {
 			outStreams = append(outStreams, c.pipes[id])
 		}
+
 		return handler(ctx, c.pipes[input], outStreams)
 	})
 }
@@ -105,6 +105,7 @@ func (c *Conveyer) Send(name string, msg string) error {
 	if !ok {
 		return ErrChanNotFound
 	}
+
 	ch <- msg
 	return nil
 }
@@ -119,5 +120,6 @@ func (c *Conveyer) Recv(name string) (string, error) {
 	if !open {
 		return UndefinedData, nil
 	}
+
 	return val, nil
 }
