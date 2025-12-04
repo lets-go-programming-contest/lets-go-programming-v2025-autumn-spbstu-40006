@@ -9,7 +9,7 @@ import (
 
 const (
 	Prefix               = "decorated: "
-	NoDecoratorMessage   = "no decorator: "
+	NoDecoratorMessage   = "no decorator"
 	NoMultiplexerMessage = "no multiplexer"
 	Undefined            = "undefined"
 )
