@@ -121,13 +121,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(name string, msg string) error {
-	ch, ok := c.pipes[name]
+	pipe, ok := c.pipes[name]
 
 	if !ok {
 		return ErrChanNotFound
 	}
 
-	ch <- msg
+	pipe <- msg
 
 	return nil
 }
