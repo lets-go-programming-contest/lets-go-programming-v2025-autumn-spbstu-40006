@@ -91,17 +91,19 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	errCh := make(chan error, len(c.processors))
 
-	for _, p := range c.processors {
+	for _, processor := range c.processors {
 		waitGroup.Add(1)
-		proc := p
 
-		go func() {
+		go func(proc func(context.Context) error) {
 			defer waitGroup.Done()
 
 			if err := proc(ctx); err != nil {
-				errCh <- err
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
-		}()
+		}(processor)
 	}
 
 	go func() {
