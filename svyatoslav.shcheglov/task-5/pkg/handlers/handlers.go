@@ -1,123 +1,180 @@
-package handlers
+package conveyer
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 )
 
-var ErrCannotBeDecorated = errors.New("can't be decorated")
+var ErrChanNotFound = errors.New("chan not found")
 
-const (
-	DecoPrefix = "decorated: "
-	NoDecoMsg  = "no decorator"
-	NoMultiMsg = "no multiplexer"
-)
+type Conveyer struct {
+	chans map[string]chan string
+	cap   int
+	funcs []func(ctx context.Context) error
+	mu    sync.Mutex
+}
 
-func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) error {
-	defer close(dst)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("prefix decorator: %w", ctx.Err())
-		case msg, ok := <-src:
-			if !ok {
-				return nil
-			}
-
-			if strings.Contains(msg, NoDecoMsg) {
-				return ErrCannotBeDecorated
-			}
-
-			if !strings.HasPrefix(msg, DecoPrefix) {
-				msg = DecoPrefix + msg
-			}
-
-			select {
-			case dst <- msg:
-			case <-ctx.Done():
-				return fmt.Errorf("prefix decorator: %w", ctx.Err())
-			}
-		}
+func New(capacity int) *Conveyer {
+	return &Conveyer{
+		chans: make(map[string]chan string),
+		cap:   capacity,
+		funcs: make([]func(ctx context.Context) error, 0),
 	}
 }
 
-func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) error {
-	defer func() {
-		for _, d := range dsts {
-			close(d)
-		}
-	}()
+func (c *Conveyer) obtainChan(identifier string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	pos := 0
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("separator: %w", ctx.Err())
-		case msg, ok := <-src:
-			if !ok {
-				return nil
-			}
-
-			if len(dsts) == 0 {
-				continue
-			}
-
-			idx := pos % len(dsts)
-			pos++
-
-			select {
-			case dsts[idx] <- msg:
-			case <-ctx.Done():
-				return fmt.Errorf("separator: %w", ctx.Err())
-			}
-		}
+	if ch, ok := c.chans[identifier]; ok {
+		return ch
 	}
+
+	channel := make(chan string, c.cap)
+	c.chans[identifier] = channel
+
+	return channel
 }
 
-func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) error {
-	defer close(dst)
+func (c *Conveyer) fetchChan(identifier string) (chan string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	if len(srcs) == 0 {
-		return nil
+	channel, ok := c.chans[identifier]
+	if !ok {
+		return nil, ErrChanNotFound
 	}
 
+	return channel, nil
+}
+
+func (c *Conveyer) RegisterDecorator(
+	processor func(ctx context.Context, src chan string, dst chan string) error,
+	srcID string,
+	dstID string,
+) {
+	c.obtainChan(srcID)
+	c.obtainChan(dstID)
+
+	task := func(ctx context.Context) error {
+		src := c.obtainChan(srcID)
+		dst := c.obtainChan(dstID)
+
+		return processor(ctx, src, dst)
+	}
+
+	c.funcs = append(c.funcs, task)
+}
+
+func (c *Conveyer) RegisterMultiplexer(
+	merger func(ctx context.Context, srcs []chan string, dst chan string) error,
+	srcIDs []string,
+	dstID string,
+) {
+	for _, id := range srcIDs {
+		c.obtainChan(id)
+	}
+
+	c.obtainChan(dstID)
+
+	task := func(ctx context.Context) error {
+		srcs := make([]chan string, len(srcIDs))
+		for i, id := range srcIDs {
+			srcs[i] = c.obtainChan(id)
+		}
+
+		dst := c.obtainChan(dstID)
+
+		return merger(ctx, srcs, dst)
+	}
+
+	c.funcs = append(c.funcs, task)
+}
+
+func (c *Conveyer) RegisterSeparator(
+	splitter func(ctx context.Context, src chan string, dsts []chan string) error,
+	srcID string,
+	dstIDs []string,
+) {
+	c.obtainChan(srcID)
+
+	for _, id := range dstIDs {
+		c.obtainChan(id)
+	}
+
+	task := func(ctx context.Context) error {
+		src := c.obtainChan(srcID)
+		dsts := make([]chan string, len(dstIDs))
+
+		for i, id := range dstIDs {
+			dsts[i] = c.obtainChan(id)
+		}
+
+		return splitter(ctx, src, dsts)
+	}
+
+	c.funcs = append(c.funcs, task)
+}
+
+func (c *Conveyer) Send(id string, val string) error {
+	channel, err := c.fetchChan(id)
+	if err != nil {
+		return fmt.Errorf("send: %w", err)
+	}
+
+	channel <- val
+
+	return nil
+}
+
+func (c *Conveyer) Recv(id string) (string, error) {
+	channel, err := c.fetchChan(id)
+	if err != nil {
+		return "", fmt.Errorf("recv: %w", err)
+	}
+
+	value, ok := <-channel
+	if !ok {
+		return "", nil
+	}
+
+	return value, nil
+}
+
+func (c *Conveyer) Run(ctx context.Context) error {
 	waitGroup := &sync.WaitGroup{}
+	errChan := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
 
-	for _, srcChan := range srcs {
+	defer cancel()
+
+	for _, proc := range c.funcs {
 		waitGroup.Add(1)
 
-		go func(source chan string) {
+		go func(p func(ctx context.Context) error) {
 			defer waitGroup.Done()
 
-			for {
+			if err := p(ctx); err != nil {
 				select {
-				case <-ctx.Done():
-					return
-				case msg, ok := <-source:
-					if !ok {
-						return
-					}
-
-					if strings.Contains(msg, NoMultiMsg) {
-						continue
-					}
-
-					select {
-					case dst <- msg:
-					case <-ctx.Done():
-						return
-					}
+				case errChan <- err:
+					cancel()
+				default:
 				}
 			}
-		}(srcChan)
+		}(proc)
 	}
 
 	waitGroup.Wait()
+	close(errChan)
 
-	return nil
+	select {
+	case err := <-errChan:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }
