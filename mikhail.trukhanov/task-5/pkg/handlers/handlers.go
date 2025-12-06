@@ -7,18 +7,22 @@ import (
 	"sync"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+var ErrCannotBeDecorated = errors.New("can't be decorated")
+
+func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case val, ok := <-input:
 			if !ok {
 				return nil
 			}
 
 			if strings.Contains(val, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCannotBeDecorated
 			}
 
 			if !strings.HasPrefix(val, "decorated: ") {
@@ -26,39 +30,46 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
 			case output <- val:
+			case <-ctx.Done():
+				return nil
 			}
 		}
 	}
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	index := 0
+	defer func() {
+		for _, ch := range outputs {
+			close(ch)
+		}
+	}()
+
+	counter := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case val, ok := <-input:
 			if !ok {
 				return nil
 			}
+			idx := counter % len(outputs)
+			counter++
 
 			select {
+			case outputs[idx] <- val:
 			case <-ctx.Done():
-				return ctx.Err()
-			case outputs[index%len(outputs)] <- val:
-				index++
+				return nil
 			}
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
-	errCh := make(chan error, len(inputs))
+	defer close(output)
 
+	var wg sync.WaitGroup
 	for _, ch := range inputs {
 		wg.Add(1)
 		go func(c chan string) {
@@ -74,29 +85,16 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					if strings.Contains(val, "no multiplexer") {
 						continue
 					}
-
 					select {
+					case output <- val:
 					case <-ctx.Done():
 						return
-					case output <- val:
 					}
 				}
 			}
 		}(ch)
 	}
 
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-done:
-		return nil
-	case err := <-errCh:
-		return err
-	}
+	wg.Wait()
+	return nil
 }
