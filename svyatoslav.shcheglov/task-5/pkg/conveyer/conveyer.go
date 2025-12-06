@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -24,24 +25,22 @@ func New(capacity int) *Conveyer {
 
 func (c *Conveyer) obtainChan(identifier string) chan string {
 	if ch, ok := c.chans[identifier]; ok {
-
 		return ch
 	}
 
-	ch := make(chan string, c.cap)
-	c.chans[identifier] = ch
+	channel := make(chan string, c.cap)
+	c.chans[identifier] = channel
 
-	return ch
+	return channel
 }
 
 func (c *Conveyer) fetchChan(identifier string) (chan string, error) {
-	ch, ok := c.chans[identifier]
+	channel, ok := c.chans[identifier]
 	if !ok {
-
 		return nil, ErrChanNotFound
 	}
 
-	return ch, nil
+	return channel, nil
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -113,45 +112,42 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Send(id string, val string) error {
-	ch, err := c.fetchChan(id)
+	channel, err := c.fetchChan(id)
 	if err != nil {
-
-		return ErrChanNotFound
+		return fmt.Errorf("send: %w", ErrChanNotFound)
 	}
 
-	ch <- val
+	channel <- val
 
 	return nil
 }
 
 func (c *Conveyer) Recv(id string) (string, error) {
-	ch, err := c.fetchChan(id)
+	channel, err := c.fetchChan(id)
 	if err != nil {
-
-		return "", ErrChanNotFound
+		return "", fmt.Errorf("recv: %w", ErrChanNotFound)
 	}
 
-	v, ok := <-ch
+	value, ok := <-channel
 	if !ok {
-
 		return "", nil
-
 	}
 
-	return v, nil
+	return value, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	wg := &sync.WaitGroup{}
+	waitGroup := &sync.WaitGroup{}
 	errChan := make(chan error, len(c.funcs))
 	ctx, cancel := context.WithCancel(ctx)
+
 	defer cancel()
 
 	for _, proc := range c.funcs {
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(p func(ctx context.Context) error) {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			if err := p(ctx); err != nil {
 				select {
@@ -165,17 +161,19 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	done := make(chan struct{})
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(done)
 	}()
 
 	select {
 	case err := <-errChan:
 		<-done
+
 		return err
 	case <-ctx.Done():
 		<-done
-		return ctx.Err()
+
+		return fmt.Errorf("run: %w", ctx.Err())
 	case <-done:
 		return nil
 	}

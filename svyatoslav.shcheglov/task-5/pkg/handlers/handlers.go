@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -21,16 +22,13 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 	for {
 		select {
 		case <-ctx.Done():
-
-			return ctx.Err()
+			return fmt.Errorf("prefix decorator: %w", ctx.Err())
 		case msg, ok := <-src:
 			if !ok {
-
 				return nil
 			}
 
 			if strings.Contains(msg, NoDecoMsg) {
-
 				return ErrCannotBeDecorated
 			}
 
@@ -41,8 +39,7 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 			select {
 			case dst <- msg:
 			case <-ctx.Done():
-
-				return ctx.Err()
+				return fmt.Errorf("prefix decorator: %w", ctx.Err())
 			}
 		}
 	}
@@ -60,11 +57,9 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 	for {
 		select {
 		case <-ctx.Done():
-
-			return ctx.Err()
+			return fmt.Errorf("separator: %w", ctx.Err())
 		case msg, ok := <-src:
 			if !ok {
-
 				return nil
 			}
 
@@ -78,38 +73,35 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 			select {
 			case dsts[idx] <- msg:
 			case <-ctx.Done():
-
-				return ctx.Err()
+				return fmt.Errorf("separator: %w", ctx.Err())
 			}
 		}
 	}
 }
 
+// MultiplexerFunc обрабатывает несколько входных каналов и объединяет их в один
 func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) error {
 	defer close(dst)
 
 	if len(srcs) == 0 {
-
 		return nil
 	}
 
-	wg := &sync.WaitGroup{}
+	waitGroup := &sync.WaitGroup{}
 	errChan := make(chan error, 1)
 
-	for _, s := range srcs {
-		wg.Add(1)
+	for _, srcChan := range srcs {
+		waitGroup.Add(1)
 
-		go func(src chan string) {
-			defer wg.Done()
+		go func(source chan string) {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
-
 					return
-				case msg, ok := <-src:
+				case msg, ok := <-source:
 					if !ok {
-
 						return
 					}
 
@@ -120,29 +112,25 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 					select {
 					case dst <- msg:
 					case <-ctx.Done():
-
 						return
 					}
 				}
 			}
-		}(s)
+		}(srcChan)
 	}
 
 	done := make(chan struct{})
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(done)
 	}()
 
 	select {
 	case err := <-errChan:
-
 		return err
 	case <-ctx.Done():
-
-		return ctx.Err()
+		return fmt.Errorf("multiplexer: %w", ctx.Err())
 	case <-done:
-
 		return nil
 	}
 }
