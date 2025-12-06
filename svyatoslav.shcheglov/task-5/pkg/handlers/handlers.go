@@ -87,6 +87,7 @@ func MultiplexerFunc(ctx context.Context, srcList []chan string, dst chan string
 	}
 
 	var sourceGroup sync.WaitGroup
+
 	sourceGroup.Add(len(srcList))
 
 	for _, source := range srcList {
