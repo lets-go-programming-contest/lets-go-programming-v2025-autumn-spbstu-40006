@@ -72,7 +72,7 @@ func SeparatorFunc(
 			}
 
 			targetIndex := currentPosition % len(outputChannelSlice)
-			currentPosition = currentPosition + 1
+			currentPosition++
 
 			targetChannel := outputChannelSlice[targetIndex]
 
