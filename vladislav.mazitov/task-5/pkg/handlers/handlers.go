@@ -14,7 +14,7 @@ const (
 	noMultiplexerData = "no multiplexer"
 )
 
-func PrefixDecoratorFunction(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	defer close(output)
 
 	for {
@@ -43,7 +43,7 @@ func PrefixDecoratorFunction(ctx context.Context, input chan string, output chan
 	}
 }
 
-func MultiplexerFunction(ctx context.Context, inputs []chan string, output chan string) error {
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
 	if len(inputs) == 0 {
@@ -82,7 +82,7 @@ func MultiplexerFunction(ctx context.Context, inputs []chan string, output chan 
 	return nil
 }
 
-func SeparatorFunction(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
 		for _, output := range outputs {
 			close(output)
