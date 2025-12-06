@@ -7,6 +7,7 @@ import (
 )
 
 var ErrChanNotFound = errors.New("channel not found")
+var defaultChannelBufferSize = 16
 
 type Conveyer struct {
 	channels map[string]chan string
@@ -26,8 +27,9 @@ func (c *Conveyer) obtainChannel(channelIdentifier string) chan string {
 	c.mutex.Lock()
 	channel, exists := c.channels[channelIdentifier]
 	c.mutex.Unlock()
+
 	if !exists {
-		channel = make(chan string, 16)
+		channel = make(chan string, defaultChannelBufferSize)
 		c.mutex.Lock()
 		c.channels[channelIdentifier] = channel
 		c.mutex.Unlock()
@@ -44,10 +46,8 @@ func (c *Conveyer) RegisterDecorator(
 	task := func(ctx context.Context) error {
 		sourceChannel := c.obtainChannel(sourceChannelID)
 		destinationChannel := c.obtainChannel(destinationChannelID)
-
 		return processor(ctx, sourceChannel, destinationChannel)
 	}
-
 	c.tasks = append(c.tasks, task)
 }
 
@@ -66,10 +66,8 @@ func (c *Conveyer) RegisterSeparator(
 		inputChannel := c.obtainChannel(inputChannelID)
 		outputTrueChannel := c.obtainChannel(outputTrueChannelID)
 		outputFalseChannel := c.obtainChannel(outputFalseChannelID)
-
 		return processor(ctx, inputChannel, outputTrueChannel, outputFalseChannel)
 	}
-
 	c.tasks = append(c.tasks, task)
 }
 
@@ -88,48 +86,39 @@ func (c *Conveyer) RegisterMultiplexer(
 		leftInputChannel := c.obtainChannel(leftInputChannelID)
 		rightInputChannel := c.obtainChannel(rightInputChannelID)
 		outputChannel := c.obtainChannel(outputChannelID)
-
 		return processor(ctx, leftInputChannel, rightInputChannel, outputChannel)
 	}
-
 	c.tasks = append(c.tasks, task)
 }
 
 func (c *Conveyer) Send(channelID string, value string) error {
 	targetChannel := c.obtainChannel(channelID)
-
 	targetChannel <- value
-
 	return nil
 }
 
 func (c *Conveyer) Recv(channelID string) (string, error) {
 	targetChannel := c.obtainChannel(channelID)
 	value, ok := <-targetChannel
-
 	if !ok {
 		return "", nil
 	}
-
 	return value, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	var taskGroup sync.WaitGroup
 	errorsChannel := make(chan error, len(c.tasks))
+	var taskGroup sync.WaitGroup
 
 	for _, task := range c.tasks {
 		taskGroup.Add(1)
-		currentTask := task
-
 		go func(taskFunc func(ctx context.Context) error) {
 			defer taskGroup.Done()
-
 			err := taskFunc(ctx)
 			if err != nil {
 				errorsChannel <- err
 			}
-		}(currentTask)
+		}(task)
 	}
 
 	taskGroup.Wait()
