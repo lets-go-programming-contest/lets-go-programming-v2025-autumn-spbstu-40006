@@ -13,7 +13,6 @@ const (
 	DecoPrefix = "decorated: "
 	NoDecoMsg  = "no decorator"
 	NoMultiMsg = "no multiplexer"
-	Undef      = "undefined"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) error {
@@ -22,13 +21,16 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+
+			return ctx.Err()
 		case msg, ok := <-src:
 			if !ok {
+
 				return nil
 			}
 
 			if strings.Contains(msg, NoDecoMsg) {
+
 				return ErrCannotBeDecorated
 			}
 
@@ -39,7 +41,8 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 			select {
 			case dst <- msg:
 			case <-ctx.Done():
-				return nil
+
+				return ctx.Err()
 			}
 		}
 	}
@@ -52,19 +55,21 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 		}
 	}()
 
-	if len(dsts) == 0 {
-		return nil
-	}
-
 	pos := 0
 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+
+			return ctx.Err()
 		case msg, ok := <-src:
 			if !ok {
+
 				return nil
+			}
+
+			if len(dsts) == 0 {
+				continue
 			}
 
 			idx := pos % len(dsts)
@@ -73,7 +78,8 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 			select {
 			case dsts[idx] <- msg:
 			case <-ctx.Done():
-				return nil
+
+				return ctx.Err()
 			}
 		}
 	}
@@ -83,25 +89,27 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 	defer close(dst)
 
 	if len(srcs) == 0 {
+
 		return nil
 	}
 
-	waitGroup := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
+	errChan := make(chan error, 1)
 
 	for _, s := range srcs {
-		waitGroup.Add(1)
+		wg.Add(1)
 
-		srcCopy := s
-
-		reader := func() {
-			defer waitGroup.Done()
+		go func(src chan string) {
+			defer wg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
+
 					return
-				case msg, ok := <-srcCopy:
+				case msg, ok := <-src:
 					if !ok {
+
 						return
 					}
 
@@ -110,18 +118,31 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 					}
 
 					select {
-					case <-ctx.Done():
-						return
 					case dst <- msg:
+					case <-ctx.Done():
+
+						return
 					}
 				}
 			}
-		}
-
-		go reader()
+		}(s)
 	}
 
-	waitGroup.Wait()
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
-	return nil
+	select {
+	case err := <-errChan:
+
+		return err
+	case <-ctx.Done():
+
+		return ctx.Err()
+	case <-done:
+
+		return nil
+	}
 }

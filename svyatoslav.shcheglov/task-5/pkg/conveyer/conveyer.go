@@ -24,6 +24,7 @@ func New(capacity int) *Conveyer {
 
 func (c *Conveyer) obtainChan(identifier string) chan string {
 	if ch, ok := c.chans[identifier]; ok {
+
 		return ch
 	}
 
@@ -36,6 +37,7 @@ func (c *Conveyer) obtainChan(identifier string) chan string {
 func (c *Conveyer) fetchChan(identifier string) (chan string, error) {
 	ch, ok := c.chans[identifier]
 	if !ok {
+
 		return nil, ErrChanNotFound
 	}
 
@@ -113,6 +115,7 @@ func (c *Conveyer) RegisterSeparator(
 func (c *Conveyer) Send(id string, val string) error {
 	ch, err := c.fetchChan(id)
 	if err != nil {
+
 		return ErrChanNotFound
 	}
 
@@ -124,49 +127,56 @@ func (c *Conveyer) Send(id string, val string) error {
 func (c *Conveyer) Recv(id string) (string, error) {
 	ch, err := c.fetchChan(id)
 	if err != nil {
+
 		return "", ErrChanNotFound
 	}
 
 	v, ok := <-ch
 	if !ok {
-		return "undefined", nil
+
+		return "", nil
+
 	}
 
 	return v, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	waitGroup := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	errChan := make(chan error, len(c.funcs))
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	for _, proc := range c.funcs {
-		waitGroup.Add(1)
+		wg.Add(1)
 
-		procCopy := proc
+		go func(p func(ctx context.Context) error) {
+			defer wg.Done()
 
-		go func() {
-			defer waitGroup.Done()
-
-			if e := procCopy(ctx); e != nil {
+			if err := p(ctx); err != nil {
 				select {
-				case errChan <- e:
+				case errChan <- err:
+					cancel()
 				default:
 				}
 			}
-		}()
+		}(proc)
 	}
 
+	done := make(chan struct{})
 	go func() {
-		waitGroup.Wait()
-		close(errChan)
+		wg.Wait()
+		close(done)
 	}()
 
 	select {
-	case e := <-errChan:
-		return e
+	case err := <-errChan:
+		<-done
+		return err
 	case <-ctx.Done():
-		waitGroup.Wait()
-
+		<-done
+		return ctx.Err()
+	case <-done:
 		return nil
 	}
 }
