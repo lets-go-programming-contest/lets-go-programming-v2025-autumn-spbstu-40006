@@ -107,33 +107,28 @@ func (c *Conveyer) RegisterMultiplexer(
 	c.workers = append(c.workers, worker)
 }
 
-func (c *Conveyer) Send(ctx context.Context, inputName string, data string) error {
+func (c *Conveyer) Send(inputName string, data string) error {
 	ch, err := c.getChan(inputName)
 	if err != nil {
 		return ErrChanNotFound
 	}
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case ch <- data:
-		return nil
-	}
+
+	ch <- data
+	return nil
 }
 
-func (c *Conveyer) Recv(ctx context.Context, outputName string) (string, error) {
+func (c *Conveyer) Recv(outputName string) (string, error) {
 	ch, err := c.getChan(outputName)
 	if err != nil {
 		return "", ErrChanNotFound
 	}
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	case val, ok := <-ch:
-		if !ok {
-			return "undefined", nil
-		}
-		return val, nil
+
+	data, ok := <-ch
+	if !ok {
+		return "undefined", nil
 	}
+
+	return data, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
@@ -156,26 +151,14 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	go func() {
 		wg.Wait()
-		c.mu.Lock()
-		for _, ch := range c.channels {
-			close(ch)
-		}
-		c.mu.Unlock()
 		close(errCh)
 	}()
 
-	for {
-		select {
-		case err, ok := <-errCh:
-			if !ok {
-				return nil
-			}
-			if err != nil {
-				return err
-			}
-		case <-ctx.Done():
-			wg.Wait()
-			return ctx.Err()
-		}
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+		wg.Wait()
+		return nil
 	}
 }
