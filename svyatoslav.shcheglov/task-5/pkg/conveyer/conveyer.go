@@ -54,7 +54,12 @@ func (c *Conveyer) RegisterDecorator(
 }
 
 func (c *Conveyer) RegisterSeparator(
-	processor func(ctx context.Context, inputChannel chan string, outputTrueChannel chan string, outputFalseChannel chan string) error,
+	processor func(
+		ctx context.Context,
+		inputChannel chan string,
+		outputTrueChannel chan string,
+		outputFalseChannel chan string,
+	) error,
 	inputChannelID string,
 	outputTrueChannelID string,
 	outputFalseChannelID string,
@@ -71,7 +76,12 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	processor func(ctx context.Context, inputLeftChannel chan string, inputRightChannel chan string, outputChannel chan string) error,
+	processor func(
+		ctx context.Context,
+		inputLeftChannel chan string,
+		inputRightChannel chan string,
+		outputChannel chan string,
+	) error,
 	leftInputChannelID string,
 	rightInputChannelID string,
 	outputChannelID string,
