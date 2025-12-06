@@ -164,6 +164,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		handlerWaitGroup.Wait()
+
 		return nil
 	}
 }
