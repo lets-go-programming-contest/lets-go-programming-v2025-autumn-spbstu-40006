@@ -8,111 +8,126 @@ import (
 	"sync"
 )
 
-var ErrCannotBeDecorated = errors.New("can't be decorated")
+var ErrCannotBeDecorated = errors.New("cant_be_decorated")
 
-func PrefixDecoratorFunc(ctx context.Context, inputChannel chan string, outputChannel chan string) error {
+func PrefixDecoratorFunc(
+	applicationContext context.Context,
+	inputChannel chan string,
+	outputChannel chan string,
+) error {
 	defer close(outputChannel)
 
 	for {
 		select {
-		case <-ctx.Done():
-			return fmt.Errorf("prefix decorator: %w", ctx.Err())
-		case message, ok := <-inputChannel:
-			if !ok {
+		case <-applicationContext.Done():
+			return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
+
+		case receivedMessage, channelOpen := <-inputChannel:
+			if !channelOpen {
 				return nil
 			}
 
-			if strings.Contains(message, "no decorator") {
+			if strings.Contains(receivedMessage, "no decorator") {
 				return ErrCannotBeDecorated
 			}
 
-			if !strings.HasPrefix(message, "decorated: ") {
-				message = "decorated: " + message
+			if !strings.HasPrefix(receivedMessage, "decorated: ") {
+				receivedMessage = "decorated: " + receivedMessage
 			}
 
 			select {
-			case outputChannel <- message:
-			case <-ctx.Done():
-				return fmt.Errorf("prefix decorator: %w", ctx.Err())
+			case outputChannel <- receivedMessage:
+			case <-applicationContext.Done():
+				return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
 			}
 		}
 	}
 }
 
-func SeparatorFunc(ctx context.Context, inputChannel chan string, outputChannels []chan string) error {
+func SeparatorFunc(
+	applicationContext context.Context,
+	inputChannel chan string,
+	outputChannelList []chan string,
+) error {
 	defer func() {
-		for _, outputChannel := range outputChannels {
+		for _, outputChannel := range outputChannelList {
 			close(outputChannel)
 		}
 	}()
 
-	positionCounter := 0
+	currentPositionIndex := 0
 
 	for {
 		select {
-		case <-ctx.Done():
-			return fmt.Errorf("separator: %w", ctx.Err())
-		case message, ok := <-inputChannel:
-			if !ok {
+		case <-applicationContext.Done():
+			return fmt.Errorf("separator: %w", applicationContext.Err())
+
+		case receivedMessage, channelOpen := <-inputChannel:
+			if !channelOpen {
 				return nil
 			}
 
-			if len(outputChannels) == 0 {
+			if len(outputChannelList) == 0 {
 				continue
 			}
 
-			index := positionCounter % len(outputChannels)
-			positionCounter++
+			targetIndex := currentPositionIndex % len(outputChannelList)
+			currentPositionIndex++
 
 			select {
-			case outputChannels[index] <- message:
-			case <-ctx.Done():
-				return fmt.Errorf("separator: %w", ctx.Err())
+			case outputChannelList[targetIndex] <- receivedMessage:
+			case <-applicationContext.Done():
+				return fmt.Errorf("separator: %w", applicationContext.Err())
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputChannel chan string) error {
+func MultiplexerFunc(
+	applicationContext context.Context,
+	inputChannelList []chan string,
+	outputChannel chan string,
+) error {
 	defer close(outputChannel)
 
-	if len(inputChannels) == 0 {
+	if len(inputChannelList) == 0 {
 		return nil
 	}
 
-	var sourceGroup sync.WaitGroup
-	sourceGroup.Add(len(inputChannels))
+	var readerGroup sync.WaitGroup
+	readerGroup.Add(len(inputChannelList))
 
-	for i := range inputChannels {
-		currentChannel := inputChannels[i]
+	for _, sourceChannel := range inputChannelList {
+		currentSourceChannel := sourceChannel
 
 		go func(channelToRead chan string) {
-			defer sourceGroup.Done()
+			defer readerGroup.Done()
 
 			for {
 				select {
-				case <-ctx.Done():
+				case <-applicationContext.Done():
 					return
-				case message, ok := <-channelToRead:
-					if !ok {
+
+				case receivedMessage, channelOpen := <-channelToRead:
+					if !channelOpen {
 						return
 					}
 
-					if strings.Contains(message, "no multiplexer") {
+					if strings.Contains(receivedMessage, "no multiplexer") {
 						continue
 					}
 
 					select {
-					case outputChannel <- message:
-					case <-ctx.Done():
+					case outputChannel <- receivedMessage:
+					case <-applicationContext.Done():
 						return
 					}
 				}
 			}
-		}(currentChannel)
+		}(currentSourceChannel)
 	}
 
-	sourceGroup.Wait()
+	readerGroup.Wait()
 
 	return nil
 }

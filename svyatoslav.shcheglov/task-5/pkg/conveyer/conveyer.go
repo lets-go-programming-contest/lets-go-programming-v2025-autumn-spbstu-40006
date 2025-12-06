@@ -9,121 +9,126 @@ import (
 var ErrChannelNotFound = errors.New("channel not found")
 
 type Conveyer struct {
-	channels map[string]chan string
-	tasks    []func(ctx context.Context) error
-	mutex    sync.Mutex
+	channelMap map[string]chan string
+	taskList   []func(context.Context) error
+	mutex      sync.Mutex
+	bufferSize int
 }
 
-func NewConveyer() *Conveyer {
+func NewConveyer(bufferSize int) *Conveyer {
 	return &Conveyer{
-		channels: make(map[string]chan string),
-		tasks:    make([]func(ctx context.Context) error, 0),
+		channelMap: make(map[string]chan string),
+		taskList:   make([]func(context.Context) error, 0),
+		bufferSize: bufferSize,
 	}
 }
 
-func (c *Conveyer) obtainChannel(channelID string) chan string {
-	c.mutex.Lock()
-	channel, exists := c.channels[channelID]
+func New(bufferSize int) *Conveyer {
+	return NewConveyer(bufferSize)
+}
+
+func (conveyer *Conveyer) obtainChannel(channelIdentifier string) chan string {
+	conveyer.mutex.Lock()
+	channelObject, exists := conveyer.channelMap[channelIdentifier]
 	if !exists {
-		channel = make(chan string, 32)
-		c.channels[channelID] = channel
+		channelObject = make(chan string, conveyer.bufferSize)
+		conveyer.channelMap[channelIdentifier] = channelObject
 	}
-	c.mutex.Unlock()
-	return channel
+	conveyer.mutex.Unlock()
+	return channelObject
 }
 
-func (c *Conveyer) fetchChannel(channelID string) (chan string, error) {
-	c.mutex.Lock()
-	channel, exists := c.channels[channelID]
-	c.mutex.Unlock()
+func (conveyer *Conveyer) fetchChannel(channelIdentifier string) (chan string, error) {
+	conveyer.mutex.Lock()
+	channelObject, exists := conveyer.channelMap[channelIdentifier]
+	conveyer.mutex.Unlock()
 	if !exists {
 		return nil, ErrChannelNotFound
 	}
-	return channel, nil
+	return channelObject, nil
 }
 
-func (c *Conveyer) RegisterDecorator(
-	processor func(ctx context.Context, src chan string, dst chan string) error,
-	srcID string,
-	dstID string,
+func (conveyer *Conveyer) RegisterDecorator(
+	processor func(context.Context, chan string, chan string) error,
+	sourceIdentifier string,
+	destinationIdentifier string,
 ) {
-	task := func(ctx context.Context) error {
-		sourceChannel := c.obtainChannel(srcID)
-		destinationChannel := c.obtainChannel(dstID)
-		return processor(ctx, sourceChannel, destinationChannel)
+	task := func(applicationContext context.Context) error {
+		sourceChannel := conveyer.obtainChannel(sourceIdentifier)
+		destinationChannel := conveyer.obtainChannel(destinationIdentifier)
+		return processor(applicationContext, sourceChannel, destinationChannel)
 	}
-	c.tasks = append(c.tasks, task)
+	conveyer.taskList = append(conveyer.taskList, task)
 }
 
-func (c *Conveyer) RegisterSeparator(
-	processor func(ctx context.Context, inputChannel chan string, outputTrueChannel chan string, outputFalseChannel chan string) error,
-	inputID string,
-	outputTrueID string,
-	outputFalseID string,
+func (conveyer *Conveyer) RegisterSeparator(
+	processor func(context.Context, chan string, chan string, chan string) error,
+	inputIdentifier string,
+	trueIdentifier string,
+	falseIdentifier string,
 ) {
-	task := func(ctx context.Context) error {
-		inputChannel := c.obtainChannel(inputID)
-		outputTrueChannel := c.obtainChannel(outputTrueID)
-		outputFalseChannel := c.obtainChannel(outputFalseID)
-		return processor(ctx, inputChannel, outputTrueChannel, outputFalseChannel)
+	task := func(applicationContext context.Context) error {
+		inputChannel := conveyer.obtainChannel(inputIdentifier)
+		trueChannel := conveyer.obtainChannel(trueIdentifier)
+		falseChannel := conveyer.obtainChannel(falseIdentifier)
+		return processor(applicationContext, inputChannel, trueChannel, falseChannel)
 	}
-	c.tasks = append(c.tasks, task)
+	conveyer.taskList = append(conveyer.taskList, task)
 }
 
-func (c *Conveyer) RegisterMultiplexer(
-	processor func(ctx context.Context, leftInputChannel chan string, rightInputChannel chan string, outputChannel chan string) error,
-	leftID string,
-	rightID string,
-	outputID string,
+func (conveyer *Conveyer) RegisterMultiplexer(
+	processor func(context.Context, chan string, chan string, chan string) error,
+	leftIdentifier string,
+	rightIdentifier string,
+	outputIdentifier string,
 ) {
-	task := func(ctx context.Context) error {
-		leftInputChannel := c.obtainChannel(leftID)
-		rightInputChannel := c.obtainChannel(rightID)
-		outputChannel := c.obtainChannel(outputID)
-		return processor(ctx, leftInputChannel, rightInputChannel, outputChannel)
+	task := func(applicationContext context.Context) error {
+		leftChannel := conveyer.obtainChannel(leftIdentifier)
+		rightChannel := conveyer.obtainChannel(rightIdentifier)
+		outputChannel := conveyer.obtainChannel(outputIdentifier)
+		return processor(applicationContext, leftChannel, rightChannel, outputChannel)
 	}
-	c.tasks = append(c.tasks, task)
+	conveyer.taskList = append(conveyer.taskList, task)
 }
 
-func (c *Conveyer) Send(channelID string, value string) error {
-	channel := c.obtainChannel(channelID)
-	channel <- value
+func (conveyer *Conveyer) Send(channelIdentifier string, value string) error {
+	channelObject := conveyer.obtainChannel(channelIdentifier)
+	channelObject <- value
 	return nil
 }
 
-func (c *Conveyer) Recv(channelID string) (string, error) {
-	channel, err := c.fetchChannel(channelID)
-	if err != nil {
-		return "", err
+func (conveyer *Conveyer) Recv(channelIdentifier string) (string, error) {
+	channelObject, errorValue := conveyer.fetchChannel(channelIdentifier)
+	if errorValue != nil {
+		return "", errorValue
 	}
-	value, ok := <-channel
-	if !ok {
+	value, isOpen := <-channelObject
+	if !isOpen {
 		return "", nil
 	}
 	return value, nil
 }
 
-func (c *Conveyer) Run(ctx context.Context) error {
-	var taskGroup sync.WaitGroup
-	errorsChannel := make(chan error, len(c.tasks))
+func (conveyer *Conveyer) Run(applicationContext context.Context) error {
+	var waitGroup sync.WaitGroup
+	errorChannel := make(chan error, len(conveyer.taskList))
 
-	for _, task := range c.tasks {
-		taskGroup.Add(1)
-		currentTask := task
-		go func(taskFunc func(ctx context.Context) error) {
-			defer taskGroup.Done()
-			err := taskFunc(ctx)
-			if err != nil {
-				errorsChannel <- err
+	for _, task := range conveyer.taskList {
+		waitGroup.Add(1)
+		go func(taskFunction func(context.Context) error) {
+			defer waitGroup.Done()
+			errorValue := taskFunction(applicationContext)
+			if errorValue != nil {
+				errorChannel <- errorValue
 			}
-		}(currentTask)
+		}(task)
 	}
 
-	taskGroup.Wait()
-	close(errorsChannel)
+	waitGroup.Wait()
+	close(errorChannel)
 
-	for err := range errorsChannel {
-		return err
+	for errorValue := range errorChannel {
+		return errorValue
 	}
 
 	return nil
