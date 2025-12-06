@@ -87,7 +87,6 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 	}
 
 	waitGroup := &sync.WaitGroup{}
-	errChan := make(chan error, 1)
 
 	for _, srcChan := range srcs {
 		waitGroup.Add(1)
@@ -118,18 +117,6 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 		}(srcChan)
 	}
 
-	done := make(chan struct{})
-	go func() {
-		waitGroup.Wait()
-		close(done)
-	}()
-
-	select {
-	case err := <-errChan:
-		return err
-	case <-ctx.Done():
-		return fmt.Errorf("multiplexer: %w", ctx.Err())
-	case <-done:
-		return nil
-	}
+	waitGroup.Wait()
+	return nil
 }
