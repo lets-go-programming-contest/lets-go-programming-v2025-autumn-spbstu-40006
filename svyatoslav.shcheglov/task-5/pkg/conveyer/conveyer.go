@@ -168,9 +168,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	select {
 	case err := <-errChan:
 		<-done
+
 		return err
 	case <-ctx.Done():
 		<-done
+
 		return fmt.Errorf("run: %w", ctx.Err())
 	case <-done:
 		return nil
