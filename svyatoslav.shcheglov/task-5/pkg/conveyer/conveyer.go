@@ -6,159 +6,164 @@ import (
 	"sync"
 )
 
-var ErrChannelNotFound = errors.New("chan not found")
-var ErrCannotBeDecorated = errors.New("can't be decorated")
+var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
-	channelMap map[string]chan string
-	taskSlice  []func(context.Context) error
-	mutex      sync.Mutex
+	channels   map[string]chan string
 	bufferSize int
+	handlers   []func(ctx context.Context) error
 }
 
-func NewConveyer(size int) *Conveyer {
+func New(bufferSize int) *Conveyer {
 	return &Conveyer{
-		channelMap: make(map[string]chan string),
-		taskSlice:  make([]func(context.Context) error, 0),
-		mutex:      sync.Mutex{},
-		bufferSize: size,
+		channels:   make(map[string]chan string),
+		bufferSize: bufferSize,
+		handlers:   make([]func(ctx context.Context) error, 0),
 	}
 }
 
-func New(size int) *Conveyer {
-	return NewConveyer(size)
-}
-
-func (c *Conveyer) obtainChannel(identifier string) chan string {
-	c.mutex.Lock()
-	channel, exists := c.channelMap[identifier]
-	if !exists {
-		channel = make(chan string, c.bufferSize)
-		c.channelMap[identifier] = channel
+func (c *Conveyer) getOrCreateChannel(name string) chan string {
+	if channel, exists := c.channels[name]; exists {
+		return channel
 	}
-	c.mutex.Unlock()
+
+	channel := make(chan string, c.bufferSize)
+	c.channels[name] = channel
 
 	return channel
 }
 
-func (c *Conveyer) fetchChannel(identifier string) (chan string, error) {
-	c.mutex.Lock()
-	channel, exists := c.channelMap[identifier]
-	c.mutex.Unlock()
-
+func (c *Conveyer) getChannel(name string) (chan string, error) {
+	channel, exists := c.channels[name]
 	if !exists {
-		return nil, ErrChannelNotFound
+		return nil, ErrChanNotFound
 	}
 
 	return channel, nil
 }
 
 func (c *Conveyer) RegisterDecorator(
-	processor func(context.Context, chan string, chan string) error,
-	sourceID string,
-	targetID string,
+	decoratorFunc func(ctx context.Context, input chan string, output chan string) error,
+	inputName string,
+	outputName string,
 ) {
-	task := func(ctx context.Context) error {
-		sourceChannel := c.obtainChannel(sourceID)
-		targetChannel := c.obtainChannel(targetID)
+	c.getOrCreateChannel(inputName)
+	c.getOrCreateChannel(outputName)
 
-		return processor(ctx, sourceChannel, targetChannel)
+	handler := func(ctx context.Context) error {
+		input := c.getOrCreateChannel(inputName)
+		output := c.getOrCreateChannel(outputName)
+
+		return decoratorFunc(ctx, input, output)
 	}
 
-	c.taskSlice = append(c.taskSlice, task)
-}
-
-func (c *Conveyer) RegisterSeparator(
-	processor func(context.Context, chan string, []chan string) error,
-	inputID string,
-	outputIDs []string,
-) {
-	task := func(ctx context.Context) error {
-		inputChannel := c.obtainChannel(inputID)
-
-		outputChannels := make([]chan string, 0, len(outputIDs))
-		for _, id := range outputIDs {
-			outputChannels = append(outputChannels, c.obtainChannel(id))
-		}
-
-		return processor(ctx, inputChannel, outputChannels)
-	}
-
-	c.taskSlice = append(c.taskSlice, task)
+	c.handlers = append(c.handlers, handler)
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	processor func(context.Context, []chan string, chan string) error,
-	inputIDs []string,
-	outputID string,
+	multiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputNames []string,
+	outputName string,
 ) {
-	task := func(ctx context.Context) error {
-		inputChannels := make([]chan string, 0, len(inputIDs))
-		for _, id := range inputIDs {
-			inputChannels = append(inputChannels, c.obtainChannel(id))
+	for _, name := range inputNames {
+		c.getOrCreateChannel(name)
+	}
+
+	c.getOrCreateChannel(outputName)
+
+	handler := func(ctx context.Context) error {
+		inputs := make([]chan string, len(inputNames))
+		for i, name := range inputNames {
+			inputs[i] = c.getOrCreateChannel(name)
 		}
 
-		outputChannel := c.obtainChannel(outputID)
+		output := c.getOrCreateChannel(outputName)
 
-		return processor(ctx, inputChannels, outputChannel)
+		return multiplexerFunc(ctx, inputs, output)
 	}
 
-	c.taskSlice = append(c.taskSlice, task)
+	c.handlers = append(c.handlers, handler)
 }
 
-func (c *Conveyer) Send(ctx context.Context, identifier string, value string) error {
-	channel := c.obtainChannel(identifier)
+func (c *Conveyer) RegisterSeparator(
+	separatorFunc func(ctx context.Context, input chan string, outputs []chan string) error,
+	inputName string,
+	outputNames []string,
+) {
+	c.getOrCreateChannel(inputName)
 
-	select {
-	case channel <- value:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
+	for _, name := range outputNames {
+		c.getOrCreateChannel(name)
 	}
+
+	handler := func(ctx context.Context) error {
+		input := c.getOrCreateChannel(inputName)
+		outputs := make([]chan string, len(outputNames))
+
+		for i, name := range outputNames {
+			outputs[i] = c.getOrCreateChannel(name)
+		}
+
+		return separatorFunc(ctx, input, outputs)
+	}
+
+	c.handlers = append(c.handlers, handler)
 }
 
-func (c *Conveyer) Recv(ctx context.Context, identifier string) (string, error) {
-	channel, err := c.fetchChannel(identifier)
+func (c *Conveyer) Send(inputName string, data string) error {
+	channel, err := c.getChannel(inputName)
 	if err != nil {
-		return "", err
+		return ErrChanNotFound
 	}
 
-	select {
-	case val, open := <-channel:
-		if !open {
-			return "", nil
-		}
-		return val, nil
-	case <-ctx.Done():
-		return "", ctx.Err()
+	channel <- data
+
+	return nil
+}
+
+func (c *Conveyer) Recv(outputName string) (string, error) {
+	channel, err := c.getChannel(outputName)
+	if err != nil {
+		return "", ErrChanNotFound
 	}
+
+	data, ok := <-channel
+	if !ok {
+		return "undefined", nil
+	}
+
+	return data, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	var waitGroup sync.WaitGroup
-	errorChannel := make(chan error, len(c.taskSlice))
+	handlerWaitGroup := sync.WaitGroup{}
+	errorChannel := make(chan error, len(c.handlers))
 
-	for _, task := range c.taskSlice {
-		waitGroup.Add(1)
-		currentTask := task
+	for _, handler := range c.handlers {
+		handlerWaitGroup.Add(1)
 
-		go func() {
-			defer waitGroup.Done()
-			if err := currentTask(ctx); err != nil {
+		go func(currentHandler func(ctx context.Context) error) {
+			defer handlerWaitGroup.Done()
+
+			if err := currentHandler(ctx); err != nil {
 				select {
 				case errorChannel <- err:
-				case <-ctx.Done():
+				default:
 				}
 			}
-		}()
+		}(handler)
 	}
 
-	waitGroup.Wait()
-	close(errorChannel)
+	go func() {
+		handlerWaitGroup.Wait()
+		close(errorChannel)
+	}()
 
-	for err := range errorChannel {
+	select {
+	case err := <-errorChannel:
 		return err
+	case <-ctx.Done():
+		handlerWaitGroup.Wait()
+		return nil
 	}
-
-	return nil
 }

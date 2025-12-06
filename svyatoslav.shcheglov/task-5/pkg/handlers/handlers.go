@@ -3,134 +3,121 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 )
 
-var ErrCannotBeDecorated = errors.New("cannot_be_decorated")
+var ErrCannotBeDecorated = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc(
-	applicationContext context.Context,
-	inputChannel chan string,
-	outputChannel chan string,
-) error {
-	defer close(outputChannel)
+const (
+	Prefix               = "decorated: "
+	NoDecoratorMessage   = "no decorator"
+	NoMultiplexerMessage = "no multiplexer"
+	Undefined            = "undefined"
+)
+
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
 
 	for {
 		select {
-		case <-applicationContext.Done():
-			return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
-
-		case message, opened := <-inputChannel:
-			if !opened {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
 				return nil
 			}
 
-			if strings.Contains(message, "no decorator") {
+			if strings.Contains(data, NoDecoratorMessage) {
 				return ErrCannotBeDecorated
 			}
 
-			if !strings.HasPrefix(message, "decorated: ") {
-				message = "decorated: " + message
+			if !strings.HasPrefix(data, Prefix) {
+				data = Prefix + data
 			}
 
 			select {
-			case outputChannel <- message:
-			case <-applicationContext.Done():
-				return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
+			case output <- data:
+			case <-ctx.Done():
+				return nil
 			}
 		}
 	}
 }
 
-func SeparatorFunc(
-	applicationContext context.Context,
-	inputChannel chan string,
-	outputChannelSlice []chan string,
-) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
-		for _, out := range outputChannelSlice {
-			close(out)
+		for _, outputChannel := range outputs {
+			close(outputChannel)
 		}
 	}()
 
-	currentPosition := 0
+	if len(outputs) == 0 {
+		return nil
+	}
+
+	outputIndex := 0
 
 	for {
 		select {
-		case <-applicationContext.Done():
-			return fmt.Errorf("separator: %w", applicationContext.Err())
-
-		case message, opened := <-inputChannel:
-			if !opened {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
 				return nil
 			}
 
-			if len(outputChannelSlice) == 0 {
-				continue
-			}
-
-			targetIndex := currentPosition % len(outputChannelSlice)
-			currentPosition++
-
-			targetChannel := outputChannelSlice[targetIndex]
+			currentOutput := outputs[outputIndex%len(outputs)]
+			outputIndex++
 
 			select {
-			case targetChannel <- message:
-			case <-applicationContext.Done():
-				return fmt.Errorf("separator: %w", applicationContext.Err())
+			case currentOutput <- data:
+			case <-ctx.Done():
+				return nil
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(
-	applicationContext context.Context,
-	inputChannelSlice []chan string,
-	outputChannel chan string,
-) error {
-	defer close(outputChannel)
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	defer close(output)
 
-	if len(inputChannelSlice) == 0 {
+	if len(inputs) == 0 {
 		return nil
 	}
 
-	var waitGroup sync.WaitGroup
+	inputWaitGroup := sync.WaitGroup{}
 
-	waitGroup.Add(len(inputChannelSlice))
+	for _, inputChannel := range inputs {
+		inputWaitGroup.Add(1)
 
-	for _, source := range inputChannelSlice {
-		sourceChannel := source
-
-		go func() {
-			defer waitGroup.Done()
+		go func(currentInput chan string) {
+			defer inputWaitGroup.Done()
 
 			for {
 				select {
-				case <-applicationContext.Done():
+				case <-ctx.Done():
 					return
-
-				case message, opened := <-sourceChannel:
-					if !opened {
+				case data, ok := <-currentInput:
+					if !ok {
 						return
 					}
 
-					if strings.Contains(message, "no multiplexer") {
+					if strings.Contains(data, NoMultiplexerMessage) {
 						continue
 					}
 
 					select {
-					case outputChannel <- message:
-					case <-applicationContext.Done():
+					case <-ctx.Done():
 						return
+					case output <- data:
 					}
 				}
 			}
-		}()
+		}(inputChannel)
 	}
 
-	waitGroup.Wait()
+	inputWaitGroup.Wait()
 
 	return nil
 }
