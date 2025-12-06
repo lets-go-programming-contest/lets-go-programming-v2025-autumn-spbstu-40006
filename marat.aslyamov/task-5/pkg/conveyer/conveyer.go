@@ -162,8 +162,8 @@ func (pipe *Pipeline) Recv(output string) (string, error) {
 
 	data, status := <-channel
 	if !status {
-        return undefined, nil
-    }
+		return undefined, nil
+	}
 
 	return data, nil
 }
