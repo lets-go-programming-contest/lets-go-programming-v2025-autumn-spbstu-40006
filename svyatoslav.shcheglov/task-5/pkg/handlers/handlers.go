@@ -90,6 +90,7 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 
 	for _, s := range srcs {
 		waitGroup.Add(1)
+
 		srcCopy := s
 
 		reader := func() {
@@ -121,5 +122,6 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 	}
 
 	waitGroup.Wait()
+
 	return nil
 }

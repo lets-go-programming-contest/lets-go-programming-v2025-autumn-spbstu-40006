@@ -22,19 +22,19 @@ func New(capacity int) *Conveyer {
 	}
 }
 
-func (c *Conveyer) obtainChan(id string) chan string {
-	if ch, ok := c.chans[id]; ok {
+func (c *Conveyer) obtainChan(identifier string) chan string {
+	if ch, ok := c.chans[identifier]; ok {
 		return ch
 	}
 
 	ch := make(chan string, c.cap)
-	c.chans[id] = ch
+	c.chans[identifier] = ch
 
 	return ch
 }
 
-func (c *Conveyer) fetchChan(id string) (chan string, error) {
-	ch, ok := c.chans[id]
+func (c *Conveyer) fetchChan(identifier string) (chan string, error) {
+	ch, ok := c.chans[identifier]
 	if !ok {
 		return nil, ErrChanNotFound
 	}
@@ -117,6 +117,7 @@ func (c *Conveyer) Send(id string, val string) error {
 	}
 
 	ch <- val
+
 	return nil
 }
 
@@ -140,6 +141,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, proc := range c.funcs {
 		waitGroup.Add(1)
+
 		procCopy := proc
 
 		go func() {
@@ -164,6 +166,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return e
 	case <-ctx.Done():
 		waitGroup.Wait()
+
 		return nil
 	}
 }
