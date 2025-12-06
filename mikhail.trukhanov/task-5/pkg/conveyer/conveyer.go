@@ -106,10 +106,10 @@ func (c *Conveyer) Send(ctx context.Context, inputName string, data string) erro
 	}
 
 	select {
-	case ch <- data:
-		return nil
 	case <-ctx.Done():
 		return ctx.Err()
+	case ch <- data:
+		return nil
 	}
 }
 
@@ -120,13 +120,13 @@ func (c *Conveyer) Recv(ctx context.Context, outputName string) (string, error) 
 	}
 
 	select {
-	case data, ok := <-ch:
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case val, ok := <-ch:
 		if !ok {
 			return "undefined", nil
 		}
-		return data, nil
-	case <-ctx.Done():
-		return "", ctx.Err()
+		return val, nil
 	}
 }
 
