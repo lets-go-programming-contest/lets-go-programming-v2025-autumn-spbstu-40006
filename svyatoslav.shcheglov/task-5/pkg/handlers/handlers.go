@@ -11,9 +11,9 @@ import (
 var ErrCannotBeDecorated = errors.New("can't be decorated")
 
 const (
-	DecoPrefix = "decorated: "
-	NoDecoMsg  = "no decorator"
-	NoMultiMsg = "no multiplexer"
+	DecoratorPrefix = "decorated: "
+	NoDecoratorMsg  = "no decorator"
+	NoMultiplexMsg  = "no multiplexer"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) error {
@@ -23,21 +23,21 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("prefix decorator: %w", ctx.Err())
-		case msg, ok := <-src:
+		case message, ok := <-src:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(msg, NoDecoMsg) {
+			if strings.Contains(message, NoDecoratorMsg) {
 				return ErrCannotBeDecorated
 			}
 
-			if !strings.HasPrefix(msg, DecoPrefix) {
-				msg = DecoPrefix + msg
+			if !strings.HasPrefix(message, DecoratorPrefix) {
+				message = DecoratorPrefix + message
 			}
 
 			select {
-			case dst <- msg:
+			case dst <- message:
 			case <-ctx.Done():
 				return fmt.Errorf("prefix decorator: %w", ctx.Err())
 			}
@@ -45,10 +45,10 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 	}
 }
 
-func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) error {
+func SeparatorFunc(ctx context.Context, src chan string, dstList []chan string) error {
 	defer func() {
-		for _, d := range dsts {
-			close(d)
+		for _, dst := range dstList {
+			close(dst)
 		}
 	}()
 
@@ -58,20 +58,20 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("separator: %w", ctx.Err())
-		case msg, ok := <-src:
+		case message, ok := <-src:
 			if !ok {
 				return nil
 			}
 
-			if len(dsts) == 0 {
+			if len(dstList) == 0 {
 				continue
 			}
 
-			idx := position % len(dsts)
+			index := position % len(dstList)
 			position++
 
 			select {
-			case dsts[idx] <- msg:
+			case dstList[index] <- message:
 			case <-ctx.Done():
 				return fmt.Errorf("separator: %w", ctx.Err())
 			}
@@ -79,45 +79,46 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) error {
+func MultiplexerFunc(ctx context.Context, srcList []chan string, dst chan string) error {
 	defer close(dst)
 
-	if len(srcs) == 0 {
+	if len(srcList) == 0 {
 		return nil
 	}
 
-	waitGroup := &sync.WaitGroup{}
+	var sourceGroup sync.WaitGroup
+	sourceGroup.Add(len(srcList))
 
-	for _, srcChan := range srcs {
-		waitGroup.Add(1)
+	for _, source := range srcList {
+		currentSource := source
 
-		go func(source chan string) {
-			defer waitGroup.Done()
+		go func() {
+			defer sourceGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case msg, ok := <-source:
+				case message, ok := <-currentSource:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(msg, NoMultiMsg) {
+					if strings.Contains(message, NoMultiplexMsg) {
 						continue
 					}
 
 					select {
-					case dst <- msg:
+					case dst <- message:
 					case <-ctx.Done():
 						return
 					}
 				}
 			}
-		}(srcChan)
+		}()
 	}
 
-	waitGroup.Wait()
+	sourceGroup.Wait()
 
 	return nil
 }
