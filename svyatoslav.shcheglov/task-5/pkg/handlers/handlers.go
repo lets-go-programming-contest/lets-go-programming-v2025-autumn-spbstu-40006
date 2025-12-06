@@ -52,7 +52,7 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 		}
 	}()
 
-	pos := 0
+	position := 0
 
 	for {
 		select {
@@ -67,8 +67,8 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 				continue
 			}
 
-			idx := pos % len(dsts)
-			pos++
+			idx := position % len(dsts)
+			position++
 
 			select {
 			case dsts[idx] <- msg:
@@ -86,13 +86,13 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 		return nil
 	}
 
-	var wg sync.WaitGroup
+	waitGroup := &sync.WaitGroup{}
 
 	for _, srcChan := range srcs {
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(source chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			for {
 				select {
@@ -117,7 +117,7 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 		}(srcChan)
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 
 	return nil
 }
