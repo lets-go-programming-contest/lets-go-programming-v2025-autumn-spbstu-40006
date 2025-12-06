@@ -52,8 +52,6 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 		}
 	}()
 
-	pos := 0
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -63,17 +61,12 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 				return nil
 			}
 
-			if len(dsts) == 0 {
-				continue
-			}
-
-			idx := pos % len(dsts)
-			pos++
-
-			select {
-			case dsts[idx] <- msg:
-			case <-ctx.Done():
-				return fmt.Errorf("separator: %w", ctx.Err())
+			for _, dst := range dsts {
+				select {
+				case dst <- msg:
+				case <-ctx.Done():
+					return fmt.Errorf("separator: %w", ctx.Err())
+				}
 			}
 		}
 	}
