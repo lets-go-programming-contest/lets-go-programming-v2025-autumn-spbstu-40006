@@ -92,7 +92,8 @@ func (pipe *Pipeline) RegisterMultiplexer(
 
 	pipe.handlers = append(pipe.handlers, func(ctx context.Context) error {
 		return function(ctx, inStrings, out)
-	})}
+	})
+}
 
 func (pipe *Pipeline) RegisterSeparator(
 	function func(context.Context, chan string, []chan string) error,
