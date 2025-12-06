@@ -16,148 +16,120 @@ type Conveyer struct {
 }
 
 func NewConveyer(size int) *Conveyer {
-	newConveyer := &Conveyer{
+	return &Conveyer{
 		channelMap: make(map[string]chan string),
 		taskSlice:  make([]func(context.Context) error, 0),
 		mutex:      sync.Mutex{},
 		bufferSize: size,
 	}
-
-	return newConveyer
 }
 
 func New(size int) *Conveyer {
 	return NewConveyer(size)
 }
 
-func (conveyer *Conveyer) obtainChannel(identifier string) chan string {
-	conveyer.mutex.Lock()
+func (c *Conveyer) obtainChannel(identifier string) chan string {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	channelObject, exists := conveyer.channelMap[identifier]
+	ch, exists := c.channelMap[identifier]
 	if !exists {
-		createdChannel := make(chan string, conveyer.bufferSize)
-		channelObject = createdChannel
-		conveyer.channelMap[identifier] = createdChannel
+		ch = make(chan string, c.bufferSize)
+		c.channelMap[identifier] = ch
 	}
-
-	conveyer.mutex.Unlock()
-
-	return channelObject
+	return ch
 }
 
-func (conveyer *Conveyer) fetchChannel(identifier string) (chan string, error) {
-	conveyer.mutex.Lock()
-
-	channelObject, exists := conveyer.channelMap[identifier]
-
-	conveyer.mutex.Unlock()
+func (c *Conveyer) fetchChannel(identifier string) (chan string, error) {
+	c.mutex.Lock()
+	ch, exists := c.channelMap[identifier]
+	c.mutex.Unlock()
 
 	if !exists {
 		return nil, ErrChannelNotFound
 	}
-
-	return channelObject, nil
+	return ch, nil
 }
 
-func (conveyer *Conveyer) RegisterDecorator(
+func (c *Conveyer) RegisterDecorator(
 	processor func(context.Context, chan string, chan string) error,
 	sourceID string,
 	targetID string,
 ) {
-	newTask := func(ctx context.Context) error {
-		sourceChannel := conveyer.obtainChannel(sourceID)
-		targetChannel := conveyer.obtainChannel(targetID)
-
-		err := processor(ctx, sourceChannel, targetChannel)
-
-		return err
+	task := func(ctx context.Context) error {
+		sourceChannel := c.obtainChannel(sourceID)
+		targetChannel := c.obtainChannel(targetID)
+		return processor(ctx, sourceChannel, targetChannel)
 	}
-
-	conveyer.taskSlice = append(conveyer.taskSlice, newTask)
+	c.taskSlice = append(c.taskSlice, task)
 }
 
-func (conveyer *Conveyer) RegisterSeparator(
-	processor func(context.Context, chan string, chan string, chan string) error,
+func (c *Conveyer) RegisterSeparator(
+	processor func(context.Context, chan string, []chan string) error,
 	inputID string,
-	trueID string,
-	falseID string,
+	outputIDs []string,
 ) {
-	newTask := func(ctx context.Context) error {
-		inputChannel := conveyer.obtainChannel(inputID)
-		trueChannel := conveyer.obtainChannel(trueID)
-		falseChannel := conveyer.obtainChannel(falseID)
-
-		err := processor(ctx, inputChannel, trueChannel, falseChannel)
-
-		return err
+	task := func(ctx context.Context) error {
+		inputChannel := c.obtainChannel(inputID)
+		outputChannels := make([]chan string, 0, len(outputIDs))
+		for _, id := range outputIDs {
+			outputChannels = append(outputChannels, c.obtainChannel(id))
+		}
+		return processor(ctx, inputChannel, outputChannels)
 	}
-
-	conveyer.taskSlice = append(conveyer.taskSlice, newTask)
+	c.taskSlice = append(c.taskSlice, task)
 }
 
-func (conveyer *Conveyer) RegisterMultiplexer(
-	processor func(context.Context, chan string, chan string, chan string) error,
-	leftID string,
-	rightID string,
+func (c *Conveyer) RegisterMultiplexer(
+	processor func(context.Context, []chan string, chan string) error,
+	inputIDs []string,
 	outputID string,
 ) {
-	newTask := func(ctx context.Context) error {
-		leftChannel := conveyer.obtainChannel(leftID)
-		rightChannel := conveyer.obtainChannel(rightID)
-		outputChannel := conveyer.obtainChannel(outputID)
-
-		err := processor(ctx, leftChannel, rightChannel, outputChannel)
-
-		return err
+	task := func(ctx context.Context) error {
+		inputChannels := make([]chan string, 0, len(inputIDs))
+		for _, id := range inputIDs {
+			inputChannels = append(inputChannels, c.obtainChannel(id))
+		}
+		outputChannel := c.obtainChannel(outputID)
+		return processor(ctx, inputChannels, outputChannel)
 	}
-
-	conveyer.taskSlice = append(conveyer.taskSlice, newTask)
+	c.taskSlice = append(c.taskSlice, task)
 }
 
-func (conveyer *Conveyer) Send(identifier string, value string) error {
-	channelObject := conveyer.obtainChannel(identifier)
-
-	channelObject <- value
-
+func (c *Conveyer) Send(identifier string, value string) error {
+	ch := c.obtainChannel(identifier)
+	ch <- value
 	return nil
 }
 
-func (conveyer *Conveyer) Recv(identifier string) (string, error) {
-	channelObject, fetchError := conveyer.fetchChannel(identifier)
-	if fetchError != nil {
-		return "", fetchError
+func (c *Conveyer) Recv(identifier string) (string, error) {
+	ch, err := c.fetchChannel(identifier)
+	if err != nil {
+		return "", err
 	}
-
-	value, open := <-channelObject
+	val, open := <-ch
 	if !open {
 		return "", nil
 	}
-
-	return value, nil
+	return val, nil
 }
 
-func (conveyer *Conveyer) Run(ctx context.Context) error {
-	var waitGroup sync.WaitGroup
+func (c *Conveyer) Run(ctx context.Context) error {
+	var wg sync.WaitGroup
+	errorChannel := make(chan error, len(c.taskSlice))
 
-	errorChannel := make(chan error, len(conveyer.taskSlice))
-
-	for _, task := range conveyer.taskSlice {
-		taskFunction := task
-
-		waitGroup.Add(1)
-
+	for _, task := range c.taskSlice {
+		wg.Add(1)
+		t := task
 		go func() {
-			defer waitGroup.Done()
-
-			err := taskFunction(ctx)
-			if err != nil {
+			defer wg.Done()
+			if err := t(ctx); err != nil {
 				errorChannel <- err
 			}
 		}()
 	}
 
-	waitGroup.Wait()
-
+	wg.Wait()
 	close(errorChannel)
 
 	for err := range errorChannel {
