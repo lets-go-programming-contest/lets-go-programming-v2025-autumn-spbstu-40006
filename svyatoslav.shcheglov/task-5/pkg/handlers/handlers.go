@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -21,7 +22,7 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("prefix decorator: %w", ctx.Err())
 		case msg, ok := <-src:
 			if !ok {
 				return nil
@@ -38,7 +39,7 @@ func PrefixDecoratorFunc(ctx context.Context, src chan string, dst chan string) 
 			select {
 			case dst <- msg:
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("prefix decorator: %w", ctx.Err())
 			}
 		}
 	}
@@ -56,7 +57,7 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("separator: %w", ctx.Err())
 		case msg, ok := <-src:
 			if !ok {
 				return nil
@@ -72,7 +73,7 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 			select {
 			case dsts[idx] <- msg:
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("separator: %w", ctx.Err())
 			}
 		}
 	}
