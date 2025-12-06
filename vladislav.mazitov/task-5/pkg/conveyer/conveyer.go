@@ -100,8 +100,8 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	channel, ok := c.channels[output]
-	if !ok {
+	channel, found := c.channels[output]
+	if !found {
 		return "", ErrChanNotFound
 	}
 
@@ -114,15 +114,15 @@ func (c *Conveyer) Recv(output string) (string, error) {
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	wg := sync.WaitGroup{}
+	waitGroup := sync.WaitGroup{}
 	errorsChannel := make(chan error, len(c.handlers))
 
 	for _, handler := range c.handlers {
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		tempHandler := handler
 		go func() {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			if err := tempHandler(ctx); err != nil {
 				select {
@@ -134,7 +134,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(errorsChannel)
 	}()
 
@@ -142,7 +142,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case err := <-errorsChannel:
 		return err
 	case <-ctx.Done():
-		wg.Wait()
+		waitGroup.Wait()
 
 		return nil
 	}
