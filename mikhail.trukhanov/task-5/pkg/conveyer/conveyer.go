@@ -19,7 +19,7 @@ func New(size int) *Conveyer {
 	return &Conveyer{
 		channels: make(map[string]chan string),
 		size:     size,
-		workers:  make([]func(ctx context.Context) error, 0),
+		workers:  []func(ctx context.Context) error{},
 	}
 }
 
@@ -54,52 +54,60 @@ func (c *Conveyer) RegisterDecorator(
 	c.getOrCreateChan(inputName)
 	c.getOrCreateChan(outputName)
 
-	c.workers = append(c.workers, func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		input := c.getOrCreateChan(inputName)
 		output := c.getOrCreateChan(outputName)
 		return handler(ctx, input, output)
-	})
+	}
+
+	c.workers = append(c.workers, worker)
 }
 
 func (c *Conveyer) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
-	inputName string, outputNames []string,
+	inputName string,
+	outputNames []string,
 ) {
 	c.getOrCreateChan(inputName)
 	for _, name := range outputNames {
 		c.getOrCreateChan(name)
 	}
 
-	c.workers = append(c.workers, func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		input := c.getOrCreateChan(inputName)
 		outputs := make([]chan string, len(outputNames))
 		for i, name := range outputNames {
 			outputs[i] = c.getOrCreateChan(name)
 		}
 		return handler(ctx, input, outputs)
-	})
+	}
+
+	c.workers = append(c.workers, worker)
 }
 
 func (c *Conveyer) RegisterMultiplexer(
 	handler func(ctx context.Context, inputs []chan string, output chan string) error,
-	inputNames []string, outputName string,
+	inputNames []string,
+	outputName string,
 ) {
 	for _, name := range inputNames {
 		c.getOrCreateChan(name)
 	}
 	c.getOrCreateChan(outputName)
 
-	c.workers = append(c.workers, func(ctx context.Context) error {
+	worker := func(ctx context.Context) error {
 		inputs := make([]chan string, len(inputNames))
 		for i, name := range inputNames {
 			inputs[i] = c.getOrCreateChan(name)
 		}
 		output := c.getOrCreateChan(outputName)
 		return handler(ctx, inputs, output)
-	})
+	}
+
+	c.workers = append(c.workers, worker)
 }
 
-func (c *Conveyer) Send(ctx context.Context, inputName string, data string) error {
+func (c *Conveyer) Send(ctx context.Context, inputName, data string) error {
 	ch, err := c.getChan(inputName)
 	if err != nil {
 		return ErrChanNotFound
