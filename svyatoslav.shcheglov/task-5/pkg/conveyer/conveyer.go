@@ -14,10 +14,10 @@ type Conveyer struct {
 	funcs []func(ctx context.Context) error
 }
 
-func New(cap int) *Conveyer {
+func New(capacity int) *Conveyer {
 	return &Conveyer{
 		chans: make(map[string]chan string),
-		cap:   cap,
+		cap:   capacity,
 		funcs: make([]func(ctx context.Context) error, 0),
 	}
 }
@@ -29,6 +29,7 @@ func (c *Conveyer) obtainChan(id string) chan string {
 
 	ch := make(chan string, c.cap)
 	c.chans[id] = ch
+
 	return ch
 }
 
@@ -37,6 +38,7 @@ func (c *Conveyer) fetchChan(id string) (chan string, error) {
 	if !ok {
 		return nil, ErrChanNotFound
 	}
+
 	return ch, nil
 }
 
@@ -51,6 +53,7 @@ func (c *Conveyer) RegisterDecorator(
 	task := func(ctx context.Context) error {
 		src := c.obtainChan(srcID)
 		dst := c.obtainChan(dstID)
+
 		return processor(ctx, src, dst)
 	}
 
@@ -65,6 +68,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, id := range srcIDs {
 		c.obtainChan(id)
 	}
+
 	c.obtainChan(dstID)
 
 	task := func(ctx context.Context) error {
@@ -72,7 +76,9 @@ func (c *Conveyer) RegisterMultiplexer(
 		for i, id := range srcIDs {
 			srcs[i] = c.obtainChan(id)
 		}
+
 		dst := c.obtainChan(dstID)
+
 		return merger(ctx, srcs, dst)
 	}
 
@@ -85,6 +91,7 @@ func (c *Conveyer) RegisterSeparator(
 	dstIDs []string,
 ) {
 	c.obtainChan(srcID)
+
 	for _, id := range dstIDs {
 		c.obtainChan(id)
 	}
@@ -92,9 +99,11 @@ func (c *Conveyer) RegisterSeparator(
 	task := func(ctx context.Context) error {
 		src := c.obtainChan(srcID)
 		dsts := make([]chan string, len(dstIDs))
+
 		for i, id := range dstIDs {
 			dsts[i] = c.obtainChan(id)
 		}
+
 		return splitter(ctx, src, dsts)
 	}
 
@@ -106,6 +115,7 @@ func (c *Conveyer) Send(id string, val string) error {
 	if err != nil {
 		return ErrChanNotFound
 	}
+
 	ch <- val
 	return nil
 }
@@ -120,18 +130,21 @@ func (c *Conveyer) Recv(id string) (string, error) {
 	if !ok {
 		return "undefined", nil
 	}
+
 	return v, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	wg := sync.WaitGroup{}
+	waitGroup := sync.WaitGroup{}
 	errChan := make(chan error, len(c.funcs))
 
 	for _, proc := range c.funcs {
-		wg.Add(1)
+		waitGroup.Add(1)
 		procCopy := proc
+
 		go func() {
-			defer wg.Done()
+			defer waitGroup.Done()
+
 			if e := procCopy(ctx); e != nil {
 				select {
 				case errChan <- e:
@@ -142,7 +155,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(errChan)
 	}()
 
@@ -150,7 +163,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case e := <-errChan:
 		return e
 	case <-ctx.Done():
-		wg.Wait()
+		waitGroup.Wait()
 		return nil
 	}
 }

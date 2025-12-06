@@ -86,14 +86,15 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 		return nil
 	}
 
-	wg := sync.WaitGroup{}
+	waitGroup := sync.WaitGroup{}
 
 	for _, s := range srcs {
-		wg.Add(1)
+		waitGroup.Add(1)
 		srcCopy := s
 
 		reader := func() {
-			defer wg.Done()
+			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -119,6 +120,6 @@ func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) e
 		go reader()
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 	return nil
 }
