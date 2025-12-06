@@ -107,35 +107,27 @@ func (c *Conveyer) RegisterMultiplexer(
 	c.workers = append(c.workers, worker)
 }
 
-func (c *Conveyer) Send(ctx context.Context, inputName, data string) error {
+func (c *Conveyer) Send(inputName, data string) error {
 	ch, err := c.getChan(inputName)
 	if err != nil {
 		return ErrChanNotFound
 	}
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case ch <- data:
-		return nil
-	}
+	ch <- data
+	return nil
 }
 
-func (c *Conveyer) Recv(ctx context.Context, outputName string) (string, error) {
+func (c *Conveyer) Recv(outputName string) (string, error) {
 	ch, err := c.getChan(outputName)
 	if err != nil {
 		return "", ErrChanNotFound
 	}
 
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	case val, ok := <-ch:
-		if !ok {
-			return "undefined", nil
-		}
-		return val, nil
+	val, ok := <-ch
+	if !ok {
+		return "undefined", nil
 	}
+	return val, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
@@ -171,6 +163,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		wg.Wait()
-		return ctx.Err()
+		return nil
 	}
 }
