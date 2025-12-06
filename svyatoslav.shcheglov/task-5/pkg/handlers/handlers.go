@@ -79,7 +79,6 @@ func SeparatorFunc(ctx context.Context, src chan string, dsts []chan string) err
 	}
 }
 
-// MultiplexerFunc обрабатывает несколько входных каналов и объединяет их в один
 func MultiplexerFunc(ctx context.Context, srcs []chan string, dst chan string) error {
 	defer close(dst)
 
