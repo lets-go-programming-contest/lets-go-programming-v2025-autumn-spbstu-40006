@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-var ErrCannotBeDecorated = errors.New("cant_be_decorated")
+var ErrCannotBeDecorated = errors.New("cannot_be_decorated")
 
 func PrefixDecoratorFunc(
 	applicationContext context.Context,
@@ -22,21 +22,21 @@ func PrefixDecoratorFunc(
 		case <-applicationContext.Done():
 			return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
 
-		case receivedMessage, channelOpen := <-inputChannel:
-			if !channelOpen {
+		case message, opened := <-inputChannel:
+			if !opened {
 				return nil
 			}
 
-			if strings.Contains(receivedMessage, "no decorator") {
+			if strings.Contains(message, "no decorator") {
 				return ErrCannotBeDecorated
 			}
 
-			if !strings.HasPrefix(receivedMessage, "decorated: ") {
-				receivedMessage = "decorated: " + receivedMessage
+			if !strings.HasPrefix(message, "decorated: ") {
+				message = "decorated: " + message
 			}
 
 			select {
-			case outputChannel <- receivedMessage:
+			case outputChannel <- message:
 			case <-applicationContext.Done():
 				return fmt.Errorf("prefix_decorator: %w", applicationContext.Err())
 			}
@@ -47,35 +47,37 @@ func PrefixDecoratorFunc(
 func SeparatorFunc(
 	applicationContext context.Context,
 	inputChannel chan string,
-	outputChannelList []chan string,
+	outputChannelSlice []chan string,
 ) error {
 	defer func() {
-		for _, outputChannel := range outputChannelList {
-			close(outputChannel)
+		for _, out := range outputChannelSlice {
+			close(out)
 		}
 	}()
 
-	currentPositionIndex := 0
+	currentPosition := 0
 
 	for {
 		select {
 		case <-applicationContext.Done():
 			return fmt.Errorf("separator: %w", applicationContext.Err())
 
-		case receivedMessage, channelOpen := <-inputChannel:
-			if !channelOpen {
+		case message, opened := <-inputChannel:
+			if !opened {
 				return nil
 			}
 
-			if len(outputChannelList) == 0 {
+			if len(outputChannelSlice) == 0 {
 				continue
 			}
 
-			targetIndex := currentPositionIndex % len(outputChannelList)
-			currentPositionIndex++
+			targetIndex := currentPosition % len(outputChannelSlice)
+			currentPosition = currentPosition + 1
+
+			targetChannel := outputChannelSlice[targetIndex]
 
 			select {
-			case outputChannelList[targetIndex] <- receivedMessage:
+			case targetChannel <- message:
 			case <-applicationContext.Done():
 				return fmt.Errorf("separator: %w", applicationContext.Err())
 			}
@@ -85,49 +87,50 @@ func SeparatorFunc(
 
 func MultiplexerFunc(
 	applicationContext context.Context,
-	inputChannelList []chan string,
+	inputChannelSlice []chan string,
 	outputChannel chan string,
 ) error {
 	defer close(outputChannel)
 
-	if len(inputChannelList) == 0 {
+	if len(inputChannelSlice) == 0 {
 		return nil
 	}
 
-	var readerGroup sync.WaitGroup
-	readerGroup.Add(len(inputChannelList))
+	var waitGroup sync.WaitGroup
 
-	for _, sourceChannel := range inputChannelList {
-		currentSourceChannel := sourceChannel
+	waitGroup.Add(len(inputChannelSlice))
 
-		go func(channelToRead chan string) {
-			defer readerGroup.Done()
+	for _, source := range inputChannelSlice {
+		sourceChannel := source
+
+		go func() {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-applicationContext.Done():
 					return
 
-				case receivedMessage, channelOpen := <-channelToRead:
-					if !channelOpen {
+				case message, opened := <-sourceChannel:
+					if !opened {
 						return
 					}
 
-					if strings.Contains(receivedMessage, "no multiplexer") {
+					if strings.Contains(message, "no multiplexer") {
 						continue
 					}
 
 					select {
-					case outputChannel <- receivedMessage:
+					case outputChannel <- message:
 					case <-applicationContext.Done():
 						return
 					}
 				}
 			}
-		}(currentSourceChannel)
+		}()
 	}
 
-	readerGroup.Wait()
+	waitGroup.Wait()
 
 	return nil
 }
