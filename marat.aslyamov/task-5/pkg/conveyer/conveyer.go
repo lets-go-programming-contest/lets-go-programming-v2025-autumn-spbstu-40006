@@ -134,6 +134,7 @@ func (pipe *Pipeline) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("conveyer run failed: %w", err)
 	}
+
 	return nil
 }
 
@@ -146,6 +147,7 @@ func (pipe *Pipeline) Send(input string, data string) error {
 		return ErrChanNotFound
 	}
 	channel <- data
+
 	return nil
 }
 
@@ -162,5 +164,6 @@ func (pipe *Pipeline) Recv(output string) (string, error) {
 	if !status {
 		return undefined, nil
 	}
+	
 	return data, nil
 }
