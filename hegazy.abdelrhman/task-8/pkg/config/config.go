@@ -1,19 +1,14 @@
 package config
 
-import (
-	yaml "github.com/goccy/go-yaml"
-)
-
+// Config structure for YAML configuration
 type Config struct {
-	Environment string
+	Environment string `yaml:"environment"`
 	LogLevel    string `yaml:"log_level"`
 }
 
-func New() *Config {
-	config := &Config{} //nolint:exhaustruct
-	if err := yaml.Unmarshal([]byte(configContents), config); err != nil {
-		panic(err)
-	}
+var cfg Config
 
-	return config
+// Get returns the loaded configuration
+func Get() Config {
+	return cfg
 }

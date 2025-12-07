@@ -1,14 +1,12 @@
 package main
 
-//nolint:gofumpt
 import (
 	"fmt"
 
-	"task-8/pkg/config"
+	"github.com/abdelrhmanbaha/task-8/pkg/config"
 )
 
 func main() {
-	config := config.New()
-
-	fmt.Print(config.Environment, " ", config.LogLevel)
+	cfg := config.Get()
+	fmt.Printf("Environment: %s, Log Level: %s\n", cfg.Environment, cfg.LogLevel)
 }

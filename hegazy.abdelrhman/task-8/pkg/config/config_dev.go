@@ -2,8 +2,19 @@
 
 package config
 
-import _ "embed"
+import (
+	_ "embed"
+	"log"
+
+	"gopkg.in/yaml.v3"
+)
 
 //go:embed dev.yaml
-var configContents string
- 8 changes: 8 additions & 0 deletions8  
+var devConfig []byte
+
+func init() {
+	err := yaml.Unmarshal(devConfig, &cfg)
+	if err != nil {
+		log.Fatalf("failed to parse dev.yaml: %v", err)
+	}
+}

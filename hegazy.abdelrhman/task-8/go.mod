@@ -1,5 +1,5 @@
-module task-8
+module github.com/abdelrhmanbaha/task-8
 
-go 1.22.7
+go 1.21
 
-require github.com/goccy/go-yaml v1.19.0
+require gopkg.in/yaml.v3 v3.0.1
