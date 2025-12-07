@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"golang.org/x/sync/errgroup"
 	"sync"
 )
 
@@ -11,10 +12,10 @@ var ErrChanNotFound = errors.New("chan not found")
 const UndefinedData = "undefined"
 
 type Conveyer struct {
-	size      int
-	channels  map[string]chan string
-	workers   []func(ctx context.Context) error
-	mu        sync.Mutex
+	size     int
+	channels map[string]chan string
+	workers  []func(ctx context.Context) error
+	mu       sync.Mutex
 }
 
 func New(size int) *Conveyer {

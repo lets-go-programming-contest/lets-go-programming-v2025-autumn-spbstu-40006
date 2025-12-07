@@ -10,9 +10,9 @@ import (
 var ErrCannotBeDecorated = errors.New("can't be decorated")
 
 const (
-	prefix             = "decorated: "
-	noDecoratorText    = "no decorator"
-	noMultiplexerText  = "no multiplexer"
+	prefix            = "decorated: "
+	noDecoratorText   = "no decorator"
+	noMultiplexerText = "no multiplexer"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
