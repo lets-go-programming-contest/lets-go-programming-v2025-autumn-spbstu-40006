@@ -146,14 +146,14 @@ func (c *Conveyer) Recv(outputName string) (string, error) {
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	wg := sync.WaitGroup{}
+	waitGroup := sync.WaitGroup{}
 	errCh := make(chan error, len(c.workers))
 
 	for _, worker := range c.workers {
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(w func(ctx context.Context) error) {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			if err := w(ctx); err != nil {
 				select {
@@ -165,7 +165,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(errCh)
 	}()
 
@@ -173,7 +173,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case err := <-errCh:
 		return err
 	case <-ctx.Done():
-		wg.Wait()
+		waitGroup.Wait()
+
 		return nil
 	}
 }
