@@ -33,4 +33,3 @@ func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	return r0, r1
 }
-

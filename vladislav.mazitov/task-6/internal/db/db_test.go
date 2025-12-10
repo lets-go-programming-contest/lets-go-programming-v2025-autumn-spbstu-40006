@@ -182,4 +182,3 @@ func TestGetUniqueNames(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 }
-

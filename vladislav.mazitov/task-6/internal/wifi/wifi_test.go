@@ -104,4 +104,3 @@ func TestGetNames(t *testing.T) {
 		mockWiFiHandle.AssertExpectations(t)
 	})
 }
-

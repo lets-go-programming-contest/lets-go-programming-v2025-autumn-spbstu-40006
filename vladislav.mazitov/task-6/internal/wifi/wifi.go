@@ -48,4 +48,3 @@ func (service WiFiService) GetNames() ([]string, error) {
 
 	return names, nil
 }
-

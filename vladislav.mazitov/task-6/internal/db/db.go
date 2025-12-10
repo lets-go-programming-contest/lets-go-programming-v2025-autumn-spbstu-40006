@@ -72,4 +72,3 @@ func (service DBService) GetUniqueNames() ([]string, error) {
 
 	return values, nil
 }
-
