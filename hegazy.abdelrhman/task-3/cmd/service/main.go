@@ -15,12 +15,12 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		log.Panicf("failed to load config: path not provided")
+		log.Fatalf("failed to load config: path not provided")
 	}
 
 	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		log.Panicf("failed to load config: %v", err)
+		log.Fatalf("failed to load config: %v", err)
 	}
 
 	data, err := os.ReadFile(cfg.InputFile)

@@ -1,4 +1,5 @@
 module github.com/abdelrhmanbaha/task-3
+
 go 1.22.7
 
 require (

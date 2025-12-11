@@ -71,9 +71,12 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
 
+	// Declare a named return variable to capture the close error
+    var retErr error
 	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			fmt.Println("close error:", cerr)
+		if cerr := file.Close(); cerr != nil && retErr == nil {
+			// Only assign the close error if no prior error occurred (retErr is nil)
+            retErr = fmt.Errorf("close error: %w", cerr)
 		}
 	}()
 
@@ -81,8 +84,9 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	enc.SetIndent("", "  ")
 
 	if err := enc.Encode(list); err != nil {
-		return fmt.Errorf("failed to encode json: %w", err)
+        retErr = fmt.Errorf("failed to encode json: %w", err)
+        return retErr // Return immediately on encode failure
 	}
 
-	return nil
+	return retErr // Returns nil on success, or the captured close error
 }
