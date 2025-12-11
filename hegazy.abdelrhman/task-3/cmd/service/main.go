@@ -3,43 +3,43 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
+	"sort"
 
 	"github.com/abdelrhmanbaha/task-3/internal/config"
-	"github.com/abdelrhmanbaha/task-3/internal/currencies"
+	"github.com/abdelrhmanbaha/task-3/internal/parser"
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to config file")
+	configPath := flag.String("config", "", "path to YAML config file")
 	flag.Parse()
 
 	if *configPath == "" {
-		log.Fatalf("failed to load config: path not provided")
+		fmt.Fprintln(os.Stderr, "missing required flag: --config")
+		os.Exit(1)
 	}
 
 	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
+		os.Exit(1)
 	}
 
-	data, err := os.ReadFile(cfg.InputFile)
+	valutes, err := parser.ParseXMLFile(cfg.InputFile)
 	if err != nil {
-		log.Fatalf("failed to read xml %v", err)
+		fmt.Fprintf(os.Stderr, "failed to parse XML: %v\n", err)
+		os.Exit(1)
 	}
 
-	svc := currencies.NewCurrencyService()
+	sort.Slice(valutes, func(i, j int) bool {
+		if valutes[i].Value == valutes[j].Value {
+			return valutes[i].CharCode < valutes[j].CharCode
+		}
+		return valutes[i].Value > valutes[j].Value
+	})
 
-	list, err := svc.ParseXML(data)
-	if err != nil {
-		log.Fatalf("failed to parse xml %v", err)
+	if err := parser.SaveToJSON(cfg.OutputFile, valutes); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to save JSON: %v\n", err)
+		os.Exit(1)
 	}
-
-	svc.SortByValue(list)
-
-	if err := svc.SaveToJSON(cfg.OutputFile, list); err != nil {
-		log.Fatalf("failed to save json %v", err)
-	}
-
-	fmt.Printf("done output %s\n", cfg.OutputFile)
 }
