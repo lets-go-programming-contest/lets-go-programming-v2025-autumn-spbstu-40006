@@ -1,46 +1,43 @@
 package main
 
+//nolint:gofumpt
 import (
 	"flag"
 	"fmt"
 	"os"
 	"sort"
 
-	"github.com/abdelrhmanbaha/task-3/internal/config"
-	"github.com/abdelrhmanbaha/task-3/internal/parser"
+	"task-3/internal/config"
+	"task-3/internal/currencies"
 )
 
 func main() {
-	configPath := flag.String("config", "", "path to YAML config file")
+	configPath := flag.String("config", "", "Path to config")
 	flag.Parse()
 
 	if *configPath == "" {
-		fmt.Fprintln(os.Stderr, "missing required flag: --config")
+		fmt.Fprintln(os.Stderr, "Error: config path is required")
 		os.Exit(1)
 	}
 
-	cfg, err := config.LoadConfig(*configPath)
+	config, err := config.New(*configPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: failed to load config: %v\n", err)  // Fixed: use fmt.Fprintf with %v
 		os.Exit(1)
 	}
 
-	valutes, err := parser.ParseXMLFile(cfg.InputFile)
+	currencies, err := currencies.New(config.InputFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to parse XML: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: failed to load currencies: %v\n", err)  // Fixed: use fmt.Fprintf with %v
 		os.Exit(1)
 	}
 
-	// Sorting logic: Value (desc), then CharCode (asc)
-	sort.Slice(valutes, func(i, j int) bool {
-		if valutes[i].Value == valutes[j].Value {
-			return valutes[i].CharCode < valutes[j].CharCode
-		}
-		return valutes[i].Value > valutes[j].Value
+	sort.Slice(currencies.Currencies, func(i, j int) bool {
+		return currencies.Currencies[i].Value > currencies.Currencies[j].Value
 	})
 
-	if err := parser.SaveToJSON(cfg.OutputFile, valutes); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to save JSON: %v\n", err)
+	if err := currencies.SaveToOutputFile(config.OutputFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to save to output file: %v\n", err)  // Fixed: use fmt.Fprintf with %v
 		os.Exit(1)
 	}
 }
