@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	mdlayherWifi "github.com/mdlayher/wifi"
-	"github.com/slendycs/go-lab-6/internal/wifi"
+	"github.com/sp3c7r/go-lab-6/internal/wifi"
 	"github.com/stretchr/testify/require"
 )
 
