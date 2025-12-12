@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/slendycs/go-lab-6/internal/db"
+	"github.com/sp3c7r/go-lab-6/internal/db"
 	"github.com/stretchr/testify/require"
 )
 
