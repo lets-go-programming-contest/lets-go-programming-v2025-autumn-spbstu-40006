@@ -31,6 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Sorting logic: Value (desc), then CharCode (asc)
 	sort.Slice(valutes, func(i, j int) bool {
 		if valutes[i].Value == valutes[j].Value {
 			return valutes[i].CharCode < valutes[j].CharCode

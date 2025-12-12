@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 const dirPerm = 0750
@@ -32,13 +35,13 @@ func (f *Float64Comma) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement
 		return fmt.Errorf("failed to decode float value: %w", err)
 	}
 
+	// Replace comma with dot for float parsing
 	value, err := strconv.ParseFloat(strings.ReplaceAll(valueStr, ",", "."), 64)
 	if err != nil {
 		return fmt.Errorf("invalid float format %q: %w", valueStr, err)
 	}
 
 	*f = Float64Comma(value)
-
 	return nil
 }
 
@@ -59,6 +62,16 @@ func ParseXMLFile(path string) ([]Valute, error) {
 	}()
 
 	decoder := xml.NewDecoder(file)
+
+	// FIX: Handle windows-1251 encoding
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch strings.ToLower(charset) {
+		case "windows-1251":
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		default:
+			return nil, fmt.Errorf("unknown charset: %s", charset)
+		}
+	}
 
 	var valCurs ValCurs
 	if err := decoder.Decode(&valCurs); err != nil {
@@ -94,4 +107,3 @@ func SaveToJSON(path string, valutes []Valute) error {
 
 	return nil
 }
-//////////////////////////////////////////////////////
