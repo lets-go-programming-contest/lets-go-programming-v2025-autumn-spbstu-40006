@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var errorCantBeDecorated = errors.New("can't decorate")
+var ErrNoDecorator = errors.New("can't decorate")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
@@ -26,7 +26,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(line, "no decorator") {
-				return errorCantBeDecorated
+				return ErrNoDecorator
 			}
 
 			if !strings.HasPrefix(line, "decorated: ") {
