@@ -6,13 +6,15 @@ import (
 	"strings"
 )
 
-var ErrNoDecorator = errors.New("can't decorate")
+var ErrNoDecorator = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error {
+const (
+	noDecoratorData        = "no decorator"
+	textForDecoratorString = "decorated: "
+	noMultiplexerData      = "no multiplexer"
+)
+
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	defer close(output)
 
 	for {
@@ -25,12 +27,12 @@ func PrefixDecoratorFunc(
 				return nil
 			}
 
-			if strings.Contains(line, "no decorator") {
+			if strings.Contains(line, noDecoratorData) {
 				return ErrNoDecorator
 			}
 
-			if !strings.HasPrefix(line, "decorated: ") {
-				line = "decorated: " + line
+			if !strings.HasPrefix(line, textForDecoratorString) {
+				line = textForDecoratorString + line
 			}
 
 			select {
@@ -42,11 +44,7 @@ func PrefixDecoratorFunc(
 	}
 }
 
-func MultiplexerFunc(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error {
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
 	if len(inputs) == 0 {
@@ -67,7 +65,7 @@ func MultiplexerFunc(
 						return
 					}
 
-					if strings.Contains(line, "no multiplexer") {
+					if strings.Contains(line, noMultiplexerData) {
 						continue
 					}
 
@@ -86,11 +84,7 @@ func MultiplexerFunc(
 	return nil
 }
 
-func SeparatorFunc(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
 		for _, outCh := range outputs {
 			close(outCh)
