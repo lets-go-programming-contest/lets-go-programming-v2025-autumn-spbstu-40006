@@ -10,13 +10,13 @@ func main() {
 
 	_, err := fmt.Scan(&a)
 	if err != nil {
-		fmt.Println("Invalid 1st operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
 	_, err = fmt.Scan(&b)
 	if err != nil {
-		fmt.Println("Invalid 2nd operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
