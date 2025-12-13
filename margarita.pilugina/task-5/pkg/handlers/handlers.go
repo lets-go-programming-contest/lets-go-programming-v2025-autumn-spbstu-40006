@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 )
+
+var errorCantBeDecorated = errors.New("can't decorate")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
@@ -24,7 +26,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(line, "no decorator") {
-				return fmt.Errorf("can't be decorated")
+				return errorCantBeDecorated
 			}
 
 			if !strings.HasPrefix(line, "decorated: ") {
