@@ -3,9 +3,12 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
+
+const undefinedData = "undefined"
 
 var ErrChanNotFound = errors.New("chan not found")
 
@@ -20,6 +23,18 @@ func New(channelSize int) *Conveyer {
 		channelSize: channelSize,
 		channels:    make(map[string]chan string),
 		handlers:    make([]func(context.Context) error, 0),
+	}
+}
+
+func (c *Conveyer) makeChannel(name string) {
+	if _, ok := c.channels[name]; !ok {
+		c.channels[name] = make(chan string, c.channelSize)
+	}
+}
+
+func (c *Conveyer) makeChannels(names ...string) {
+	for _, n := range names {
+		c.makeChannel(n)
 	}
 }
 
@@ -84,7 +99,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	if err := errGroup.Wait(); err != nil {
-		return ErrChanNotFound
+		return fmt.Errorf("conveyer handlers: %w", err)
 	}
 
 	return nil
@@ -110,20 +125,8 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	value, open := <-ch
 
 	if !open {
-		return "undefinedData", nil
+		return undefinedData, nil
 	}
 
 	return value, nil
-}
-
-func (c *Conveyer) makeChannel(name string) {
-	if _, ok := c.channels[name]; !ok {
-		c.channels[name] = make(chan string, c.channelSize)
-	}
-}
-
-func (c *Conveyer) makeChannels(names ...string) {
-	for _, n := range names {
-		c.makeChannel(n)
-	}
 }
