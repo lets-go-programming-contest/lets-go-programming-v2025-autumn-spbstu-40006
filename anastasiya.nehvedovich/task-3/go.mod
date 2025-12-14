@@ -1,4 +1,4 @@
-module "github.com/arcoirius/lets-go-programming-v2025-autumn-spbstu-40006/anastasiya.nehvedovich/task-3"
+module github.com/arcoirius/lets-go-programming-v2025-autumn-spbstu-40006/anastasiya.nehvedovich/task-3
 
 go 1.22.7
 
