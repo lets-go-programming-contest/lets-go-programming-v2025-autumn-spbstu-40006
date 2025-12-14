@@ -1,3 +1,3 @@
-module github.com/arcoirius/task-2-2
+module github.com/anastasiya-nehvedovich/task-2-2
 
 go 1.22.7

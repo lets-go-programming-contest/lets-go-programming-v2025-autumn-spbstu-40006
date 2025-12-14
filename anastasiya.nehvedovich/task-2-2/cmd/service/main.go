@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/arcoirius/task-2-2/intheap"
+	"github.com/anastasiya-nehvedovich/task-2-2/intheap"
 )
 
 var errInvalidArgument = errors.New("invalid argument")
