@@ -15,14 +15,14 @@ import (
 type Float float32
 
 func (f *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	if err := d.DecodeElement(&s, &start); err != nil {
+	var valueString string
+	if err := d.DecodeElement(&valueString, &start); err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
 
-	s = strings.ReplaceAll(s, ",", ".")
+	valueString = strings.ReplaceAll(valueString, ",", ".")
 
-	val, err := strconv.ParseFloat(s, 32)
+	val, err := strconv.ParseFloat(valueString, 32)
 	if err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
@@ -35,7 +35,7 @@ func (f *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 type Currency struct {
 	NumCode  int    `json:"num_code" xml:"NumCode"`
 	CharCode string `json:"char_code" xml:"CharCode"`
-	Value    Float  `json:"value" xml:"Value"`
+	Value    Float  `json:"value"    xml:"Value"`
 }
 
 type Currencies struct {
@@ -51,28 +51,34 @@ func New(path string) (*Currencies, error) {
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	c := &Currencies{
+	currencyData := &Currencies{
 		Currencies: []Currency{},
 	}
-	if err = decoder.Decode(c); err != nil {
+	if err = decoder.Decode(currencyData); err != nil {
 		return nil, fmt.Errorf("currencies: %w", err)
 	}
 
-	return c, nil
+	return currencyData, nil
 }
 
 func (c *Currencies) SaveToOutputFile(path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	const directoryPermissions = 0o755
+	if err := os.MkdirAll(filepath.Dir(path), directoryPermissions); err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
 
-	f, err := os.Create(path)
+	outputFile, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := outputFile.Close(); closeErr != nil {
+			// Log the error but don't return it since we're in a defer
+			fmt.Printf("warning: failed to close file: %v\n", closeErr)
+		}
+	}()
 
-	encoder := json.NewEncoder(f)
+	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", "  ")
 
 	if err = encoder.Encode(c.Currencies); err != nil {

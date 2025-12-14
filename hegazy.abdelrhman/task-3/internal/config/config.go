@@ -18,7 +18,10 @@ func New(path string) (*Config, error) {
 		return nil, fmt.Errorf("config: %w", err)
 	}
 
-	cfg := &Config{}
+	cfg := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
 	if err = yaml.Unmarshal(data, cfg); err != nil {
 		return nil, fmt.Errorf("config: %w", err)
 	}

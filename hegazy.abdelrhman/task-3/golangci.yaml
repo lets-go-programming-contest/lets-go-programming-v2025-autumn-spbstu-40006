@@ -1,0 +1,22 @@
+linters-settings:
+  tagalign:
+    align: true
+  varnamelen:
+    min-name-length: 2
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - staticcheck
+    - gofmt
+    - tagalign
+    - varnamelen
+    - constructor
+
+run:
+  skip-dirs:
+    - vendor
+    - testdata
