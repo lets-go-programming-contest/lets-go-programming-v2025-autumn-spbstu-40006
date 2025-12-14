@@ -13,15 +13,15 @@ type Config struct {
 }
 
 func New(path string) (*Config, error) {
-	configContent, err := os.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("config: %w", err)
 	}
 
-	config := &Config{}
-	if err = yaml.Unmarshal(configContent, config); err != nil {
+	cfg := &Config{}
+	if err = yaml.Unmarshal(data, cfg); err != nil {
 		return nil, fmt.Errorf("config: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }

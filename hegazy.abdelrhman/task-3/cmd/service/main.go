@@ -1,6 +1,5 @@
 package main
 
-//nolint:gofumpt
 import (
 	"flag"
 	"fmt"
@@ -20,24 +19,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	config, err := config.New(*configPath)
+	cfg, err := config.New(*configPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to load config: %v\n", err)  // Fixed: use fmt.Fprintf with %v
+		fmt.Fprintf(os.Stderr, "Error: failed to load config: %v\n", err)
 		os.Exit(1)
 	}
 
-	currencies, err := currencies.New(config.InputFile)
+	curr, err := currencies.New(cfg.InputFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to load currencies: %v\n", err)  // Fixed: use fmt.Fprintf with %v
+		fmt.Fprintf(os.Stderr, "Error: failed to load currencies: %v\n", err)
 		os.Exit(1)
 	}
 
-	sort.Slice(currencies.Currencies, func(i, j int) bool {
-		return currencies.Currencies[i].Value > currencies.Currencies[j].Value
+	sort.Slice(curr.Currencies, func(i, j int) bool {
+		return curr.Currencies[i].Value > curr.Currencies[j].Value
 	})
 
-	if err := currencies.SaveToOutputFile(config.OutputFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to save to output file: %v\n", err)  // Fixed: use fmt.Fprintf with %v
+	if err := curr.SaveToOutputFile(cfg.OutputFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to save to output file: %v\n", err)
 		os.Exit(1)
 	}
 }
