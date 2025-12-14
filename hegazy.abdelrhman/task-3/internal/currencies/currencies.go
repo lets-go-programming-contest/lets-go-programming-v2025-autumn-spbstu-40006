@@ -33,9 +33,9 @@ func (f *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 type Currency struct {
-	NumCode  int    `json:"num_code" xml:"NumCode"`
-	CharCode string `json:"char_code" xml:"CharCode"`
-	Value    Float  `json:"value"    xml:"Value"`
+	Name  string  `json:"name"      xml:"Name"`
+	Code  int     `json:"curr_code" xml:"CurrencyCode"`
+	Value float64 `json:"value"     xml:"Value"`
 }
 
 type Currencies struct {
@@ -71,6 +71,7 @@ func (c *Currencies) SaveToOutputFile(path string) error {
 	if err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
+
 	defer func() {
 		if closeErr := outputFile.Close(); closeErr != nil {
 			// Log the error but don't return it since we're in a defer
