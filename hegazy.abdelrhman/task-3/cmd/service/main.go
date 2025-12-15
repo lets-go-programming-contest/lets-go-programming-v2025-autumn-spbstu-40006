@@ -2,41 +2,26 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
-	"sort"
 
-	"task-3/internal/config"
-	"task-3/internal/currencies"
+	"abdelrhmanbaha/task-3/internal/config"
+	"abdelrhmanbaha/task-3/internal/processor"
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to config")
+	configPath := flag.String("config", "", "path to YAML config file")
 	flag.Parse()
 
 	if *configPath == "" {
-		fmt.Fprintln(os.Stderr, "Error: config path is required")
-		os.Exit(1)
+		panic("--config flag is required")
 	}
 
-	cfg, err := config.New(*configPath)
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to load config: %v\n", err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	curr, err := currencies.New(cfg.InputFile)
+	err = processor.Run(cfg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to load currencies: %v\n", err)
-		os.Exit(1)
-	}
-
-	sort.Slice(curr.Currencies, func(i, j int) bool {
-		return curr.Currencies[i].Value > curr.Currencies[j].Value
-	})
-
-	if err := curr.SaveToOutputFile(cfg.OutputFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to save to output file: %v\n", err)
-		os.Exit(1)
+		panic(err)
 	}
 }
