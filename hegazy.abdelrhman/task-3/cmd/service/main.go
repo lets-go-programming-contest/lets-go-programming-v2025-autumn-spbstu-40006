@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"abdelrhmanbaha/task-3/internal/config"
-	"abdelrhmanbaha/task-3/internal/processor"
+"hegazy.abdelrhman/task-3/internal/config"
+"hegazy.abdelrhman/task-3/internal/processor"
 )
 
 func main() {

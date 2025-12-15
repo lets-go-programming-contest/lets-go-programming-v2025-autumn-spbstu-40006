@@ -9,8 +9,8 @@ import (
 	"sort"
 
 	"golang.org/x/net/html/charset"
-	"abdelrhmanbaha/task-3/internal/config"
-	"abdelrhmanbaha/task-3/internal/models"
+"hegazy.abdelrhman/task-3/internal/config"
+"hegazy.abdelrhman/task-3/internal/models"
 )
 
 const (
