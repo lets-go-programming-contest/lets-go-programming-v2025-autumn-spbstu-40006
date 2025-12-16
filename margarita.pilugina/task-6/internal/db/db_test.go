@@ -91,7 +91,7 @@ func TestDBService_GetNames_RowsErr(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
 		AddRow("Bob").
-		RowError(1, errors.New("row iteration error")) // error occurs during iteration
+		RowError(1, errors.New("row iteration error"))
 
 	mock.ExpectQuery(`SELECT name FROM users`).
 		WillReturnRows(rows)
