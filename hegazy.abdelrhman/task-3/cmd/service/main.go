@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/abdelrhmanbaha/task-3/internal/config"
-	"github.com/abdelrhmanbaha/task-3/internal/currencies"
+	"github.com/hegazy.abdelrhman/task-3/internal/config"
+	"github.com/hegazy.abdelrhman/task-3/internal/currencies"
 )
 
 func main() {
