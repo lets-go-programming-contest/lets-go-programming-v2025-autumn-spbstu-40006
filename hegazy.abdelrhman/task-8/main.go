@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abdelrhmanbaha/task-8/package/config"
-)
+ "hegazy.abdelrhman/task-8/config")
 
 func main() {
 	cfg, err := config.Load(config.ConfigFile)
