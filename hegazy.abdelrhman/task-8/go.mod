@@ -1,4 +1,4 @@
-module hegazy.abdelrhman/task-8
+module github.com/abdelrhmanbaha/task-8
 
 go 1.22.7
 
