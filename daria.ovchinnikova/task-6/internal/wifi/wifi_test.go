@@ -109,7 +109,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 func TestWiFiService_GetNames(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success - multiple names", func(t *testing.T) {
+	t.Run("success -multiple names", func(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := &MockWiFiHandle{}
