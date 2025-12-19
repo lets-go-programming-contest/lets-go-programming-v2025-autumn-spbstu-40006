@@ -7,15 +7,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type WiFiHandle struct {
+type WiFiHandleMock struct {
 	mock.Mock
 }
 
-func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	ret := _m.Called()
+func (m *WiFiHandleMock) Interfaces() ([]*wifi.Interface, error) {
+	ret := m.Called()
 
 	var r0 []*wifi.Interface
-
 	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
 		r0 = rf()
 	} else if v, ok := ret.Get(0).([]*wifi.Interface); ok {
@@ -23,7 +22,6 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	}
 
 	var r1 error
-
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
 	} else {
@@ -35,11 +33,10 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	return r0, r1
 }
 
-func (_m *WiFiHandle) Close() error {
-	ret := _m.Called()
+func (m *WiFiHandleMock) Close() error {
+	ret := m.Called()
 
 	var r0 error
-
 	if rf, ok := ret.Get(0).(func() error); ok {
 		r0 = rf()
 	} else {
@@ -51,11 +48,11 @@ func (_m *WiFiHandle) Close() error {
 	return r0
 }
 
-func NewWiFiHandle(t interface {
+func NewWiFiHandleMock(t interface {
 	mock.TestingT
 	Cleanup(f func())
-}) *WiFiHandle {
-	m := &WiFiHandle{}
+}) *WiFiHandleMock {
+	m := &WiFiHandleMock{}
 	m.Mock.Test(t)
 
 	t.Cleanup(func() {
@@ -64,3 +61,5 @@ func NewWiFiHandle(t interface {
 
 	return m
 }
+
+var _ WiFiHandle = (*WiFiHandleMock)(nil)
