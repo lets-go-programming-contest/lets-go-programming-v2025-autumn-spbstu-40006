@@ -6,11 +6,9 @@ import (
 	"testing"
 
 	"github.com/mdlayher/wifi"
-	myWiFi "github.com/netwite/task-6/internal/wifi"
+	myWiFi "github.com/HorekProgrammer/task-6/internal/wifi"
 	"github.com/stretchr/testify/suite"
 )
-
-//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
 
 type mockWiFiHandle struct {
 	interfaces []*wifi.Interface
