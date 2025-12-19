@@ -20,37 +20,35 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		panic("no return value specified for Interfaces")
 	}
 
-	var r0 []*wifi.Interface
-
-	var r1 error
-
+	// First return value.
 	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
 		return rf()
 	}
 
-	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
+	var r0 []*wifi.Interface
+	v0 := ret.Get(0)
+
+	if rf, ok := v0.(func() []*wifi.Interface); ok {
 		r0 = rf()
-	} else {
-		v := ret.Get(0)
-		if v != nil {
-			if vv, ok := v.([]*wifi.Interface); ok {
-				r0 = vv
-			} else {
-				panic("invalid type for Interfaces return value")
-			}
+	} else if v0 != nil {
+		var ok bool
+		r0, ok = v0.([]*wifi.Interface)
+		if !ok {
+			panic("invalid type for Interfaces return value")
 		}
 	}
 
+	// Second return value.
 	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		err := ret.Error(1)
-		if err != nil {
-			r1 = fmt.Errorf("ret.Error(1): %w", err)
-		}
+		return r0, rf()
 	}
 
-	return r0, r1
+	err := ret.Error(1)
+	if err != nil {
+		err = fmt.Errorf("ret.Error(1): %w", err)
+	}
+
+	return r0, err
 }
 
 // NewWiFiHandle creates a new instance of WiFiHandle.
@@ -59,7 +57,8 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 func NewWiFiHandle(t interface {
 	mock.TestingT
 	Cleanup(fn func())
-}) *WiFiHandle {
+},
+) *WiFiHandle {
 	m := &WiFiHandle{}
 	m.Mock.Test(t)
 
