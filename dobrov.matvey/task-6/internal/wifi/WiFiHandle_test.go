@@ -1,8 +1,9 @@
-package wifi
+package wifi_test
 
 import (
 	"fmt"
 
+	myWiFi "github.com/HorekProgrammer/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
@@ -50,7 +51,7 @@ func (m *WiFiHandleMock) Close() error {
 
 func NewWiFiHandleMock(t interface {
 	mock.TestingT
-	Cleanup(f func())
+	Cleanup(func())
 }) *WiFiHandleMock {
 	m := &WiFiHandleMock{}
 	m.Mock.Test(t)
@@ -62,4 +63,4 @@ func NewWiFiHandleMock(t interface {
 	return m
 }
 
-var _ WiFiHandle = (*WiFiHandleMock)(nil)
+var _ myWiFi.WiFiHandle = (*WiFiHandleMock)(nil)
