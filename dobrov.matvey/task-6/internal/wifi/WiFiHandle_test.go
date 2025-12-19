@@ -51,8 +51,9 @@ func (m *WiFiHandleMock) Close() error {
 
 func NewWiFiHandleMock(t interface {
 	mock.TestingT
-	Cleanup(func())
-}) *WiFiHandleMock {
+	Cleanup(f func())
+},
+) *WiFiHandleMock {
 	m := &WiFiHandleMock{}
 	m.Mock.Test(t)
 
