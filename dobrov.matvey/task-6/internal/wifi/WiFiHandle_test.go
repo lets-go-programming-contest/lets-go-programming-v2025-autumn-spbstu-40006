@@ -21,6 +21,7 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	}
 
 	var r0 []*wifi.Interface
+
 	var r1 error
 
 	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
@@ -32,9 +33,9 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	} else {
 		v := ret.Get(0)
 		if v != nil {
-			var ok bool
-			r0, ok = v.([]*wifi.Interface)
-			if !ok {
+			if vv, ok := v.([]*wifi.Interface); ok {
+				r0 = vv
+			} else {
 				panic("invalid type for Interfaces return value")
 			}
 		}
