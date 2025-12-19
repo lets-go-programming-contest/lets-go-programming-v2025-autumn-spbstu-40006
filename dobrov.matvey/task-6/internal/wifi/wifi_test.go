@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
+
 type mockWiFiHandle struct {
 	interfaces []*wifi.Interface
 	err        error

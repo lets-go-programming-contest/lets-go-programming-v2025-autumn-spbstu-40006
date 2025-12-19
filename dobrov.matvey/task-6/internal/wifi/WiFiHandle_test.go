@@ -40,6 +40,8 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	return r0, r1
 }
 
+// NewWiFiHandle creates a new instance of WiFiHandle. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
 func NewWiFiHandle(t interface {
 	mock.TestingT
 	Cleanup(func())
