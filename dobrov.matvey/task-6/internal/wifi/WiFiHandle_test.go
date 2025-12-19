@@ -16,39 +16,40 @@ type WiFiHandle struct {
 func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	ret := _m.Called()
 
-	if len(ret) == 0 {
-		panic("no return value specified for Interfaces")
-	}
-
-	// First return value.
-	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
-		return rf()
-	}
-
 	var r0 []*wifi.Interface
-	v0 := ret.Get(0)
 
-	if rf, ok := v0.(func() []*wifi.Interface); ok {
+	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
 		r0 = rf()
-	} else if v0 != nil {
-		var ok bool
-		r0, ok = v0.([]*wifi.Interface)
-		if !ok {
-			panic("invalid type for Interfaces return value")
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*wifi.Interface)
 		}
 	}
 
-	// Second return value.
+	var r1 error
+
 	if rf, ok := ret.Get(1).(func() error); ok {
-		return r0, rf()
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
 	}
 
-	err := ret.Error(1)
-	if err != nil {
-		err = fmt.Errorf("ret.Error(1): %w", err)
+	return r0, r1
+}
+
+// Close provides a mock function with no fields.
+func (_m *WiFiHandle) Close() error {
+	ret := _m.Called()
+
+	var r0 error
+
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
 	}
 
-	return r0, err
+	return r0
 }
 
 // NewWiFiHandle creates a new instance of WiFiHandle.
@@ -56,13 +57,18 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 // The first argument is typically a *testing.T value.
 func NewWiFiHandle(t interface {
 	mock.TestingT
-	Cleanup(fn func())
-},
-) *WiFiHandle {
+	Cleanup(func())
+}) *WiFiHandle {
 	m := &WiFiHandle{}
+
 	m.Mock.Test(t)
 
-	t.Cleanup(func() { m.AssertExpectations(t) })
+	t.Cleanup(func() {
+		m.AssertExpectations(t)
+	})
 
 	return m
 }
+
+// Ensure interface compliance.
+var _ fmt.Stringer = (*WiFiHandle)(nil)
