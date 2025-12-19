@@ -3,8 +3,8 @@ package wifi_test
 import (
 	"fmt"
 
-	wifi "github.com/mdlayher/wifi"
-	mock "github.com/stretchr/testify/mock"
+	"github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/mock"
 )
 
 // WiFiHandle is a mock implementation of WiFiHandle.
@@ -26,10 +26,18 @@ func (_m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	if rf, ok := ret.Get(0).(func() ([]*wifi.Interface, error)); ok {
 		return rf()
 	}
+
 	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
 		r0 = rf()
-	} else if ret.Get(0) != nil {
-		r0 = ret.Get(0).([]*wifi.Interface)
+	} else {
+		v := ret.Get(0)
+		if v != nil {
+			var ok bool
+			r0, ok = v.([]*wifi.Interface)
+			if !ok {
+				panic("invalid type for Interfaces return value")
+			}
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func() error); ok {
@@ -51,10 +59,10 @@ func NewWiFiHandle(t interface {
 	mock.TestingT
 	Cleanup(fn func())
 }) *WiFiHandle {
-	mock := &WiFiHandle{}
-	mock.Mock.Test(t)
+	m := &WiFiHandle{}
+	m.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() { m.AssertExpectations(t) })
 
-	return mock
+	return m
 }
