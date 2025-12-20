@@ -1,50 +1,53 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
 
 func main() {
-	var (
-		departNum, emplsNum, minTemp, maxTemp, temp int
-		operand                                     string
-	)
+	reader := bufio.NewReader(os.Stdin)
 
-	_, err := fmt.Scan(&departNum)
-	if err != nil {
-		fmt.Println("Incorrect number of departments")
+	var departments, workers int
 
+	if _, err := fmt.Fscan(reader, &departments); err != nil {
 		return
 	}
 
-	for range departNum {
-		_, err = fmt.Scan(&emplsNum)
-
-		minTemp = 15
-		maxTemp = 30
-
-		if err != nil {
-			fmt.Println("Incorrect number of employees")
-
+	for range departments {
+		if _, err := fmt.Fscan(reader, &workers); err != nil {
 			return
 		}
 
-		for range emplsNum {
-			_, err = fmt.Scan(&operand, &temp)
-			if err != nil {
-				fmt.Println("Incorrect number if temperature")
+		minTemp := 15
+		maxTemp := 30
 
+		for range workers {
+			var (
+				operator    string
+				temperature int
+			)
+
+			if _, err := fmt.Fscan(reader, &operator, &temperature); err != nil {
 				return
 			}
 
-			if operand[0] == '>' && temp > minTemp {
-				minTemp = temp
-			} else if operand[0] == '<' && temp < maxTemp {
-				maxTemp = temp
+			switch operator {
+			case ">=":
+				if temperature > minTemp {
+					minTemp = temperature
+				}
+			case "<=":
+				if temperature < maxTemp {
+					maxTemp = temperature
+				}
 			}
 
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
-			} else {
+			if minTemp > maxTemp {
 				fmt.Println(-1)
+			} else {
+				fmt.Println(minTemp)
 			}
 		}
 	}
