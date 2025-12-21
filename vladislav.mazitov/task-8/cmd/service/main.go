@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/identicalaffiliation/task-8/config"
 	"log"
+
+	"github.com/identicalaffiliation/task-8/config"
 )
 
 func main() {
