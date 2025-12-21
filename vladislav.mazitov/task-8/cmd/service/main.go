@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/identicalaffiliation/task-8/config"
 	"fmt"
+	"github.com/identicalaffiliation/task-8/config"
 	"log"
 )
 

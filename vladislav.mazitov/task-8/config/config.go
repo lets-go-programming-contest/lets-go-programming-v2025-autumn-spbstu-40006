@@ -19,4 +19,3 @@ func Load(data []byte) (Config, error) {
 
 	return config, nil
 }
-
