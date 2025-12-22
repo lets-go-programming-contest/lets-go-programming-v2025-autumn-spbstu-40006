@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errTestQuery = errors.New("database operation failed")
+	errTestRows  = errors.New("rows processing error")
+)
+
 type DatabaseTestCase struct {
 	name        string
 	query       string
@@ -21,7 +26,7 @@ type DatabaseTestCase struct {
 }
 
 func TestDatabaseOperations(t *testing.T) {
-	testError := errors.New("database operation failed")
+	t.Parallel()
 
 	testCases := []DatabaseTestCase{
 		{
@@ -37,10 +42,10 @@ func TestDatabaseOperations(t *testing.T) {
 			setupMock: setupQueryMock,
 		},
 		{
-			name:        "err while proccess",
+			name:        "err while process",
 			query:       "SELECT name FROM users",
 			expectError: true,
-			errorType:   testError,
+			errorType:   errTestQuery,
 			setupMock:   setupErrorMock,
 		},
 		{
@@ -57,17 +62,16 @@ func TestDatabaseOperations(t *testing.T) {
 			setupMock: setupQueryMock,
 		},
 		{
-			name:        "err while proccessing str",
+			name:        "err while processing str",
 			query:       "SELECT DISTINCT name FROM users",
 			mockRows:    []string{"Анна"},
 			expectError: true,
-			errorType:   testError,
+			errorType:   errTestRows,
 			setupMock:   setupRowsErrorMock,
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -78,6 +82,7 @@ func TestDatabaseOperations(t *testing.T) {
 			tc.setupMock(mock, tc.mockRows)
 
 			service := db.New(sqlDB)
+
 			var result []string
 			var execErr error
 
@@ -90,7 +95,7 @@ func TestDatabaseOperations(t *testing.T) {
 			if tc.expectError {
 				require.Error(t, execErr)
 				if tc.errorType != nil {
-					assert.ErrorIs(t, execErr, tc.errorType)
+					require.ErrorIs(t, execErr, tc.errorType)
 				}
 			} else {
 				require.NoError(t, execErr)
@@ -103,6 +108,8 @@ func TestDatabaseOperations(t *testing.T) {
 }
 
 func TestDatabaseEdgeScenarios(t *testing.T) {
+	t.Parallel()
+
 	t.Run("process nil", func(t *testing.T) {
 		t.Parallel()
 
@@ -161,12 +168,13 @@ func setupQueryMock(mock sqlmock.Sqlmock, rows []string) {
 	for _, row := range rows {
 		sqlRows.AddRow(row)
 	}
+
 	mock.ExpectQuery("SELECT (name|DISTINCT name) FROM users").WillReturnRows(sqlRows)
 }
 
 func setupErrorMock(mock sqlmock.Sqlmock, _ []string) {
 	mock.ExpectQuery("SELECT (name|DISTINCT name) FROM users").
-		WillReturnError(errors.New("database operation failed"))
+		WillReturnError(errTestQuery)
 }
 
 func setupScanErrorMock(mock sqlmock.Sqlmock, _ []string) {
@@ -179,11 +187,14 @@ func setupRowsErrorMock(mock sqlmock.Sqlmock, rows []string) {
 	for _, row := range rows {
 		sqlRows.AddRow(row)
 	}
-	sqlRows.CloseError(errors.New("rows processing error"))
+
+	sqlRows.CloseError(errTestRows)
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(sqlRows)
 }
 
 func TestDatabaseIntegration(t *testing.T) {
+	t.Parallel()
+
 	t.Run("method calls", func(t *testing.T) {
 		t.Parallel()
 
@@ -226,12 +237,15 @@ func (m *CustomDBMock) Query(query string, args ...any) (*sql.Rows, error) {
 }
 
 func TestWithCustomMock(t *testing.T) {
+	t.Parallel()
+
 	t.Run("custom mock", func(t *testing.T) {
 		t.Parallel()
 
 		mockDB := &CustomDBMock{
 			queryFunc: func(query string, args ...any) (*sql.Rows, error) {
 				rows := &sql.Rows{}
+
 				return rows, nil
 			},
 		}

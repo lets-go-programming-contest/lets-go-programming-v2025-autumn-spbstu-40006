@@ -1,6 +1,8 @@
 package wifi_test
 
 import (
+	"fmt"
+
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,10 +15,25 @@ func (m *MockWiFiInterface) GetInterfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 
 	if args.Get(0) == nil {
-		return []*wifi.Interface{}, args.Error(1)
+		err := args.Error(1)
+		if err != nil {
+			return []*wifi.Interface{}, fmt.Errorf("mock error: %w", err)
+		}
+
+		return []*wifi.Interface{}, nil
 	}
 
-	return args.Get(0).([]*wifi.Interface), args.Error(1)
+	interfaces, ok := args.Get(0).([]*wifi.Interface)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed")
+	}
+
+	err := args.Error(1)
+	if err != nil {
+		return interfaces, fmt.Errorf("mock error: %w", err)
+	}
+
+	return interfaces, nil
 }
 
 type MockWiFiHandler struct {
@@ -27,10 +44,25 @@ func (m *MockWiFiHandler) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 
 	if args.Get(0) == nil {
-		return []*wifi.Interface{}, args.Error(1)
+		err := args.Error(1)
+		if err != nil {
+			return []*wifi.Interface{}, fmt.Errorf("mock error: %w", err)
+		}
+
+		return []*wifi.Interface{}, nil
 	}
 
-	return args.Get(0).([]*wifi.Interface), args.Error(1)
+	interfaces, ok := args.Get(0).([]*wifi.Interface)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed")
+	}
+
+	err := args.Error(1)
+	if err != nil {
+		return interfaces, fmt.Errorf("mock error: %w", err)
+	}
+
+	return interfaces, nil
 }
 
 func (m *MockWiFiHandler) SetupSuccess(interfaces []*wifi.Interface) {
