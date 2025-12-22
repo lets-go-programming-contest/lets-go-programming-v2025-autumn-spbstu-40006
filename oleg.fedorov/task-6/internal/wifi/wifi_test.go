@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	wifi_pkg "github.com/dizey5k/task-6/internal/wifi"
-
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
