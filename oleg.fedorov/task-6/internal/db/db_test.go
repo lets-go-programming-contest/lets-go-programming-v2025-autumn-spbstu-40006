@@ -84,6 +84,7 @@ func TestDatabaseOperations(t *testing.T) {
 			service := db.New(sqlDB)
 
 			var result []string
+
 			var execErr error
 
 			if tc.query == "SELECT DISTINCT name FROM users" {
@@ -94,6 +95,7 @@ func TestDatabaseOperations(t *testing.T) {
 
 			if tc.expectError {
 				require.Error(t, execErr)
+
 				if tc.errorType != nil {
 					require.ErrorIs(t, execErr, tc.errorType)
 				}
