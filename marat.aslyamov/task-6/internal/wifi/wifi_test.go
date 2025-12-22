@@ -5,11 +5,11 @@ import (
 	"net"
 	"testing"
 
+	service "github.com/IvanIgnashin7D/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	service "github.com/tuesdayy1/task-6/internal/wifi"
 )
 
 type MockWiFiHandle struct {
@@ -19,11 +19,18 @@ type MockWiFiHandle struct {
 func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	ret := _m.Called()
 
-	if ifaces := ret.Get(0); ifaces != nil {
-		return ifaces.([]*wifi.Interface), ret.Error(1)
+	ifaces := ret.Get(0)
+	if ifaces == nil {
+		return nil, ret.Error(1)
 	}
-	return nil, ret.Error(1)
+
+	return ifaces.([]*wifi.Interface), ret.Error(1)
 }
+
+var (
+	errInterface  = errors.New("interface error")
+	errPermission = errors.New("permission denied")
+)
 
 func TestWiFiService_New(t *testing.T) {
 	t.Parallel()
@@ -93,7 +100,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		{
 			name: "error from interface",
 			mockSetup: func(m *MockWiFiHandle) {
-				m.On("Interfaces").Return([]*wifi.Interface(nil), errors.New("interface error")).Once()
+				m.On("Interfaces").Return([]*wifi.Interface(nil), errInterface).Once()
 			},
 			wantError:   true,
 			errorSubstr: "getting interfaces",
@@ -101,7 +108,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -114,6 +120,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 			if tc.wantError {
 				require.Error(t, err)
 				assert.Nil(t, addrs)
+
 				if tc.errorSubstr != "" {
 					assert.Contains(t, err.Error(), tc.errorSubstr)
 				}
@@ -121,6 +128,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tc.wantAddrs, addrs)
 			}
+
 			mockHandle.AssertExpectations(t)
 		})
 	}
@@ -181,7 +189,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		{
 			name: "error from interface",
 			mockSetup: func(m *MockWiFiHandle) {
-				m.On("Interfaces").Return([]*wifi.Interface(nil), errors.New("permission denied")).Once()
+				m.On("Interfaces").Return([]*wifi.Interface(nil), errPermission).Once()
 			},
 			wantError:   true,
 			errorSubstr: "getting interfaces",
@@ -189,7 +197,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -202,6 +209,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 			if tc.wantError {
 				require.Error(t, err)
 				assert.Nil(t, names)
+
 				if tc.errorSubstr != "" {
 					assert.Contains(t, err.Error(), tc.errorSubstr)
 				}
@@ -209,6 +217,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, tc.wantNames, names)
 			}
+
 			mockHandle.AssertExpectations(t)
 		})
 	}
