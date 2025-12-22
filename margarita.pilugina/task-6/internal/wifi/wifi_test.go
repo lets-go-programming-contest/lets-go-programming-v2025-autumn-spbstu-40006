@@ -1,68 +1,110 @@
-package wifi
+package wifi_test
 
 import (
-	"errors"
+	"io"
 	"net"
+	"strings"
 	"testing"
 
 	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/require"
 
-	wifimocks "github.com/MargotBush/task-6/internal/wifi/mocks"
+	wifisvc "github.com/MargotBush/task-6/internal/wifi"
 )
 
 func TestWiFiService_GetAddresses_OK(t *testing.T) {
-	m := wifimocks.NewWiFiHandle(t)
+	t.Parallel()
 
-	if1 := &wifi.Interface{Name: "wlan0", HardwareAddr: net.HardwareAddr{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}}
-	if2 := &wifi.Interface{Name: "wlan1", HardwareAddr: net.HardwareAddr{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff}}
+	m := &wiFiHandleMock{}
 
-	m.EXPECT().Interfaces().Return([]*wifi.Interface{if1, if2}, nil)
+	ifaces := []*wifi.Interface{
+		{
+			Name:         "wlan0",
+			HardwareAddr: net.HardwareAddr{0, 1, 2, 3, 4, 5},
+		},
+		{
+			Name:         "wlan1",
+			HardwareAddr: net.HardwareAddr{10, 11, 12, 13, 14, 15},
+		},
+	}
 
-	service := New(m)
-	addrs, err := service.GetAddresses()
-	require.NoError(t, err)
-	require.Equal(t, []net.HardwareAddr{if1.HardwareAddr, if2.HardwareAddr}, addrs)
+	m.On("Interfaces").Return(ifaces, nil).Once()
+
+	service := wifisvc.New(m)
+
+	got, err := service.GetAddresses()
+	if err != nil {
+		t.Fatalf("expected nil error, got: %v", err)
+	}
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 addrs, got: %d", len(got))
+	}
+
+	if got[0].String() != ifaces[0].HardwareAddr.String() {
+		t.Fatalf("unexpected addr[0]: %v", got[0])
+	}
+
+	if got[1].String() != ifaces[1].HardwareAddr.String() {
+		t.Fatalf("unexpected addr[1]: %v", got[1])
+	}
 
 	m.AssertExpectations(t)
 }
 
 func TestWiFiService_GetAddresses_Error(t *testing.T) {
-	m := wifimocks.NewWiFiHandle(t)
+	t.Parallel()
 
-	m.EXPECT().Interfaces().Return(nil, errors.New("no permission"))
+	m := &wiFiHandleMock{}
+	m.On("Interfaces").Return(nil, io.EOF).Once()
 
-	service := New(m)
+	service := wifisvc.New(m)
+
 	_, err := service.GetAddresses()
-	require.Error(t, err) // also covers wrapping "getting interfaces: %w"
+	if err == nil || !strings.Contains(err.Error(), "getting interfaces:") {
+		t.Fatalf("expected wrapped error, got: %v", err)
+	}
 
 	m.AssertExpectations(t)
 }
 
 func TestWiFiService_GetNames_OK(t *testing.T) {
-	m := wifimocks.NewWiFiHandle(t)
+	t.Parallel()
 
-	if1 := &wifi.Interface{Name: "wlan0"}
-	if2 := &wifi.Interface{Name: "wlan1"}
+	m := &wiFiHandleMock{}
 
-	m.EXPECT().Interfaces().Return([]*wifi.Interface{if1, if2}, nil)
+	ifaces := []*wifi.Interface{
+		{Name: "wlan0"},
+		{Name: "wlan1"},
+	}
 
-	service := New(m)
-	names, err := service.GetNames()
-	require.NoError(t, err)
-	require.Equal(t, []string{"wlan0", "wlan1"}, names)
+	m.On("Interfaces").Return(ifaces, nil).Once()
+
+	service := wifisvc.New(m)
+
+	got, err := service.GetNames()
+	if err != nil {
+		t.Fatalf("expected nil error, got: %v", err)
+	}
+
+	if strings.Join(got, ",") != "wlan0,wlan1" {
+		t.Fatalf("unexpected names: %#v", got)
+	}
 
 	m.AssertExpectations(t)
 }
 
 func TestWiFiService_GetNames_Error(t *testing.T) {
-	m := wifimocks.NewWiFiHandle(t)
+	t.Parallel()
 
-	m.EXPECT().Interfaces().Return(nil, errors.New("wifi failure"))
+	m := &wiFiHandleMock{}
+	m.On("Interfaces").Return(nil, io.EOF).Once()
 
-	service := New(m)
+	service := wifisvc.New(m)
+
 	_, err := service.GetNames()
-	require.Error(t, err)
+	if err == nil || !strings.Contains(err.Error(), "getting interfaces:") {
+		t.Fatalf("expected wrapped error, got: %v", err)
+	}
 
 	m.AssertExpectations(t)
 }
