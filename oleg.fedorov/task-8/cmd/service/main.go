@@ -4,33 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dizey5k/task-8/package/config"
+	"github.com/dizey5k/task-8/config"
 )
 
 func main() {
-	loader := config.NewLoader()
-
-	cfg, err := config.GetConfig(loader)
+	cfg, err := config.Load(config.ConfigFile)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		log.Fatalf("err loading cfg: %v", err)
 	}
 
-	fmt.Printf("Environment: %s, Log Level: %s\n",
-		cfg.Environment,
-		cfg.LogLevel)
-
-	displayConfigInfo(cfg)
-}
-
-func displayConfigInfo(cfg *config.Config) {
-	log.Printf("Application running in %s mode", cfg.Environment)
-
-	switch cfg.LogLevel {
-	case "debug":
-		log.Println("Debug logging enabled - detailed information will be shown")
-	case "error":
-		log.Println("Only error logging enabled - minimal output")
-	default:
-		log.Printf("Log level set to: %s", cfg.LogLevel)
-	}
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
