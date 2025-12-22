@@ -1,15 +1,14 @@
 package wifi_test
 
 import (
-	"errors"
 	"net"
 	"testing"
 
-	service "github.com/tuesdayy1/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	service "github.com/tuesdayy1/task-6/internal/wifi"
 )
 
 type MockWiFiHandle struct {
@@ -21,15 +20,20 @@ func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	ifaces := ret.Get(0)
 	if ifaces == nil {
-		return nil, ret.Error(1)
+		return nil, ret.Error(1) //nolint:wrapcheck // mock method
 	}
 
-	return ifaces.([]*wifi.Interface), ret.Error(1)
+	interfaces, ok := ifaces.([]*wifi.Interface)
+	if !ok {
+		return nil, ret.Error(1) //nolint:wrapcheck // mock method
+	}
+
+	return interfaces, ret.Error(1) //nolint:wrapcheck // mock method
 }
 
 var (
-	errInterface  = errors.New("interface error")
-	errPermission = errors.New("permission denied")
+	errInterface  = assert.AnError
+	errPermission = assert.AnError
 )
 
 func TestWiFiService_New(t *testing.T) {
