@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dizey5k/task-8/internal/config"
+	"github.com/dizey5k/task-8/package/config"
 )
 
 func main() {
