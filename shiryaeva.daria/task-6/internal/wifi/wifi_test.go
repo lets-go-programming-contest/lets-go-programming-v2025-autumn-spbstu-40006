@@ -21,6 +21,7 @@ func (m *wiFiHandleMock) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 
 	var out []*wifi.Interface
+	
 	var err error
 
 	v0 := args.Get(0)
