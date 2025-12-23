@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sp3c7r/task-8/internal/config"
+	"github.com/Dora-shi/task-8/internal/config"
 )
 
 func main() {
