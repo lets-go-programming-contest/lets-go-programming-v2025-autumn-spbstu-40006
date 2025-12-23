@@ -18,25 +18,26 @@ type wiFiHandleMock struct {
 }
 
 func (m *wiFiHandleMock) Interfaces() ([]*wifi.Interface, error) {
-	args := m.Called()
-
-	var out []*wifi.Interface
-	v0 := args.Get(0)
-	if v0 != nil {
-		if typed, ok := v0.([]*wifi.Interface); ok {
+  args := m.Called()
+    
+  var out []*wifi.Interface
+  var err error
+    
+  v0 := args.Get(0)
+  if v0 != nil {
+    if typed, ok := v0.([]*wifi.Interface); ok {
 			out = typed
-		}
-	}
-
-	var err error
-	v1 := args.Get(1)
-	if v1 != nil {
-		if typedErr, ok := v1.(error); ok {
+    }
+  }
+    
+  v1 := args.Get(1)
+  if v1 != nil {
+    if typedErr, ok := v1.(error); ok {
 			err = typedErr
 		}
-	}
-
-	return out, err
+  }
+    
+  return out, err
 }
 
 func TestWiFiService_New(t *testing.T) {
