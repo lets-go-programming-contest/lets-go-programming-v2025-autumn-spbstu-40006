@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed dev.yaml
 var devYaml []byte
 
 func Load() (Config, error) {
