@@ -10,16 +10,24 @@ const (
 	initMaxTemp = 30
 )
 
+var (
+	errReadDepartments = errors.New("failed to read departments count")
+	errReadEmployees   = errors.New("failed to read employees count")
+	errReadRequirement = errors.New("failed to read requirement")
+)
+
 func main() {
 	var departmentsCount int
 	if _, err := fmt.Scan(&departmentsCount); err != nil {
-		fmt.Println("Failed to read departments count")
+		fmt.Println(errReadDepartments.Error())
+
 		return
 	}
 
-	for departmentIndex := 0; departmentIndex < departmentsCount; departmentIndex++ {
+	for range departmentsCount {
 		if err := processDepartment(); err != nil {
 			fmt.Println(err.Error())
+
 			return
 		}
 	}
@@ -28,18 +36,20 @@ func main() {
 func processDepartment() error {
 	var employeesCount int
 	if _, err := fmt.Scan(&employeesCount); err != nil {
-		return errors.New("Failed to read employees count")
+		return errReadEmployees
 	}
 
 	currentMinTemp := initMinTemp
 	currentMaxTemp := initMaxTemp
 
-	for employeeIndex := 0; employeeIndex < employeesCount; employeeIndex++ {
-		var operation string
-		var temp int
+	for range employeesCount {
+		var (
+			operation string
+			temp      int
+		)
 
 		if _, err := fmt.Scan(&operation, &temp); err != nil {
-			return errors.New("Failed to read requirement")
+			return errReadRequirement
 		}
 
 		switch operation {
@@ -53,14 +63,17 @@ func processDepartment() error {
 			}
 		default:
 			fmt.Println("Invalid operation")
+
 			continue
 		}
 
 		if currentMinTemp <= currentMaxTemp {
 			fmt.Println(currentMinTemp)
-		} else {
-			fmt.Println(-1)
+
+			continue
 		}
+
+		fmt.Println(-1)
 	}
 
 	return nil
