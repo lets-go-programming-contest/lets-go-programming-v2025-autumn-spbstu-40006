@@ -21,9 +21,7 @@ func (s stubHandle) Interfaces() ([]*wifi.Interface, error) {
 	return s.res, s.err
 }
 
-var (
-	errFail = errors.New("fail")
-)
+var errFail = errors.New("fail")
 
 func TestGetNames_Success(t *testing.T) {
 	t.Parallel()
