@@ -26,14 +26,21 @@ var (
 
 type scoreHeap []int
 
-func (h scoreHeap) Len() int { return len(h) }
-func (h scoreHeap) Less(i, k int) bool { return h[i] < h[k] }
-func (h scoreHeap) Swap(i, k int) { h[i], h[k] = h[k], h[i] }
+func (h *scoreHeap) Len() int {
+	return len(*h)
+}
+
+func (h *scoreHeap) Less(i, k int) bool {
+	return (*h)[i] < (*h)[k]
+}
+
+func (h *scoreHeap) Swap(i, k int) {
+	(*h)[i], (*h)[k] = (*h)[k], (*h)[i]
+}
 
 func (h *scoreHeap) Push(value any) {
 	score, ok := value.(int)
 	if !ok {
-
 		return
 	}
 
@@ -63,14 +70,14 @@ func main() {
 	}
 
 	scores := make([]int, dishesCount)
-	for index := 0; index < dishesCount; index++ {
-		if _, err := fmt.Scan(&scores[index]); err != nil {
+	for idx := range dishesCount {
+		if _, err := fmt.Scan(&scores[idx]); err != nil {
 			fmt.Fprintln(os.Stderr, errReadScore.Error())
 
 			return
 		}
 
-		if scores[index] < minScore || scores[index] > maxScore {
+		if scores[idx] < minScore || scores[idx] > maxScore {
 			fmt.Fprintln(os.Stderr, errInvalidScore.Error())
 
 			return
