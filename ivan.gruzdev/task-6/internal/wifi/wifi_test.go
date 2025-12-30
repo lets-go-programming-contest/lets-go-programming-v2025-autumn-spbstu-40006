@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
@@ -7,6 +7,9 @@ import (
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	mywifi "github.com/MoneyprogerISG/task-6/internal/wifi"
 )
 
 type stubHandle struct {
@@ -18,7 +21,13 @@ func (s stubHandle) Interfaces() ([]*wifi.Interface, error) {
 	return s.res, s.err
 }
 
+var (
+	errFail = errors.New("fail")
+)
+
 func TestGetNames_Success(t *testing.T) {
+	t.Parallel()
+
 	stub := stubHandle{
 		res: []*wifi.Interface{
 			{Name: "wlan0"},
@@ -26,27 +35,31 @@ func TestGetNames_Success(t *testing.T) {
 		},
 	}
 
-	service := New(stub)
+	service := mywifi.New(stub)
 	names, err := service.GetNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"wlan0", "wlan1"}, names)
 }
 
 func TestGetNames_Error(t *testing.T) {
+	t.Parallel()
+
 	stub := stubHandle{
 		res: nil,
-		err: errors.New("fail"),
+		err: errFail,
 	}
 
-	service := New(stub)
+	service := mywifi.New(stub)
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 }
 
 func TestGetAddresses_Success(t *testing.T) {
+	t.Parallel()
+
 	stub := stubHandle{
 		res: []*wifi.Interface{
 			{HardwareAddr: net.HardwareAddr{0x00, 0x11, 0x22}},
@@ -55,10 +68,10 @@ func TestGetAddresses_Success(t *testing.T) {
 		err: nil,
 	}
 
-	service := New(stub)
+	service := mywifi.New(stub)
 	addrs, err := service.GetAddresses()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []net.HardwareAddr{
 		{0x00, 0x11, 0x22},
 		{0x33, 0x44, 0x55},
@@ -66,14 +79,16 @@ func TestGetAddresses_Success(t *testing.T) {
 }
 
 func TestGetAddresses_Error(t *testing.T) {
+	t.Parallel()
+
 	stub := stubHandle{
 		res: nil,
-		err: errors.New("fail"),
+		err: errFail,
 	}
 
-	service := New(stub)
+	service := mywifi.New(stub)
 	addrs, err := service.GetAddresses()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, addrs)
 }
