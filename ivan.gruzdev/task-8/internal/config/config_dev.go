@@ -14,9 +14,11 @@ var devConfig []byte
 
 func GetConfig() (*Config, error) {
 	var cfg Config
+
 	err := yaml.Unmarshal(devConfig, &cfg)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения dev конфигурации: %w", err)
 	}
+
 	return &cfg, nil
 }
