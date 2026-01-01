@@ -21,7 +21,6 @@ func ReadConfig(path string) (*Config, error) {
 
 	var config Config
 	if err := yaml.Unmarshal(file, &config); err != nil {
-
 		return nil, fmt.Errorf("failed to unmarshal yaml file: %w", err)
 	}
 

@@ -13,11 +13,13 @@ func main() {
 	flag.Parse()
 
 	cfg, err := config.ReadConfig(*configPath)
+
 	if err != nil {
 		panic(err)
 	}
 
 	valCurs, err := parser.ParseXML(cfg.InputFile)
+
 	if err != nil {
 		panic(err)
 	}
@@ -29,5 +31,4 @@ func main() {
 	if err := parser.WriteJSON(cfg.OutputFile, valCurs); err != nil {
 		panic(err)
 	}
-
 }

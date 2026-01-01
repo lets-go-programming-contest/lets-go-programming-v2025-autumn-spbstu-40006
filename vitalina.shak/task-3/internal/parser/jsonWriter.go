@@ -15,7 +15,7 @@ const (
 func WriteJSON(path string, data []Valute) error {
 	dir := filepath.Dir(path)
 	if dir != "." && dir != "" {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, outputDirPerm); err != nil {
 			return fmt.Errorf("failed to create dir: %w", err)
 		}
 	}
@@ -25,7 +25,7 @@ func WriteJSON(path string, data []Valute) error {
 		return fmt.Errorf("failed to marshal json file: %w", err)
 	}
 
-	if err := os.WriteFile(path, outData, 0o644); err != nil {
+	if err := os.WriteFile(path, outData, outputFilePerm); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
