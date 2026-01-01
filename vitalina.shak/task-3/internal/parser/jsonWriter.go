@@ -7,6 +7,11 @@ import (
 	"path/filepath"
 )
 
+const (
+	outputDirPerm  = 0o755
+	outputFilePerm = 0o644
+)
+
 func WriteJSON(path string, data []Valute) error {
 	dir := filepath.Dir(path)
 	if dir != "." && dir != "" {

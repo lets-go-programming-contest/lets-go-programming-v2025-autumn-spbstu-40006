@@ -18,9 +18,9 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int           `json:"num_code" xml:"NumCode"`
+	NumCode  int           `json:"num_code"  xml:"NumCode"`
 	CharCode string        `json:"char_code" xml:"CharCode"`
-	Value    CurrencyValue `json:"value" xml:"Value"`
+	Value    CurrencyValue `json:"value"     xml:"Value"`
 }
 
 type CurrencyValue float64
@@ -47,6 +47,7 @@ func ParseXML(path string) ([]Valute, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read xml file: %w", err)
 	}
+
 	var valCurs ValCurs
 
 	decoder := xml.NewDecoder(bytes.NewReader(xmlFile))
