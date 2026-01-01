@@ -13,13 +13,11 @@ func main() {
 	flag.Parse()
 
 	cfg, err := config.ReadConfig(*configPath)
-
 	if err != nil {
 		panic(err)
 	}
 
 	valCurs, err := parser.ParseXML(cfg.InputFile)
-
 	if err != nil {
 		panic(err)
 	}

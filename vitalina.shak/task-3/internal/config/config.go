@@ -15,7 +15,6 @@ type Config struct {
 func ReadConfig(path string) (*Config, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
-
 		return nil, fmt.Errorf("failed to read config file %q: %w", path, err)
 	}
 
