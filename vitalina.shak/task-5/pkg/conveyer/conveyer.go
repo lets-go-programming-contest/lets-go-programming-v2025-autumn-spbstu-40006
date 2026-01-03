@@ -29,23 +29,23 @@ func New(size int) *Conveyer {
 	}
 }
 
-func (conv *Conveyer) provideChannel(channelName  string) chan string {
+func (conv *Conveyer) provideChannel(channelName string) chan string {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
 
-	if channel, ok := conv.channels[channelName ]; ok {
+	if channel, ok := conv.channels[channelName]; ok {
 		return channel
 	}
 	channel := make(chan string, conv.bufSize)
-	conv.channels[channelName ] = channel
+	conv.channels[channelName] = channel
 
 	return channel
 }
 
-func (conv *Conveyer) get(channelName  string) (chan string, bool) {
+func (conv *Conveyer) get(channelName string) (chan string, bool) {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
-	ch, ok := conv.channels[channelName ]
+	ch, ok := conv.channels[channelName]
 
 	return ch, ok
 }
@@ -55,8 +55,8 @@ func (conv *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	inputChannel   := conv.provideChannel(input)
-	outputChannel  := conv.provideChannel(output)
+	inputChannel := conv.provideChannel(input)
+	outputChannel := conv.provideChannel(output)
 
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return handlerFn(ctx, inputChannel, outputChannel)
@@ -70,7 +70,7 @@ func (conv *Conveyer) RegisterMultiplexer(
 ) {
 	inputChannels := make([]chan string, 0, len(inputs))
 	for _, inputId := range inputs {
-		inputChannels  = append(inputChannels, conv.provideChannel(inputId))
+		inputChannels = append(inputChannels, conv.provideChannel(inputId))
 	}
 	outputChannel := conv.provideChannel(output)
 
@@ -86,8 +86,8 @@ func (conv *Conveyer) RegisterSeparator(
 ) {
 	inputChannel := conv.provideChannel(input)
 	outputChannels := make([]chan string, 0, len(outputs))
-	for _, outputId  := range outputs {
-		outputChannels  = append(outputChannels , conv.provideChannel(outputId))
+	for _, outputId := range outputs {
+		outputChannels = append(outputChannels, conv.provideChannel(outputId))
 	}
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return handlerFn(ctx, inputChannel, outputChannels)
