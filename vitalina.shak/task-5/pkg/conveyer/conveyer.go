@@ -23,27 +23,28 @@ type Conveyer struct {
 func New(size int) *Conveyer {
 	return &Conveyer{
 		bufSize:  size,
+		mu:       sync.Mutex{},
 		channels: make(map[string]chan string),
 		handlers: make([]func(context.Context) error, 0),
 	}
 }
 
-func (conv *Conveyer) provideChannel(id string) chan string {
+func (conv *Conveyer) provideChannel(channelName  string) chan string {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
 
-	if channel, ok := conv.channels[id]; ok {
+	if channel, ok := conv.channels[channelName ]; ok {
 		return channel
 	}
 	channel := make(chan string, conv.bufSize)
-	conv.channels[id] = channel
+	conv.channels[channelName ] = channel
 	return channel
 }
 
-func (conv *Conveyer) get(id string) (chan string, bool) {
+func (conv *Conveyer) get(channelName  string) (chan string, bool) {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
-	ch, ok := conv.channels[id]
+	ch, ok := conv.channels[channelName ]
 	return ch, ok
 }
 
@@ -52,11 +53,11 @@ func (conv *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	in := conv.provideChannel(input)
-	out := conv.provideChannel(output)
+	inputChannel   := conv.provideChannel(input)
+	outputChannel  := conv.provideChannel(output)
 
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return handlerFn(ctx, in, out)
+		return handlerFn(ctx, inputChannel, outputChannel)
 	})
 }
 
@@ -65,29 +66,29 @@ func (conv *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	ins := make([]chan string, 0, len(inputs))
+	inputChannels := make([]chan string, 0, len(inputs))
 	for _, id := range inputs {
 		ins = append(ins, conv.provideChannel(id))
 	}
-	out := conv.provideChannel(output)
+	outputChannel := conv.provideChannel(output)
 
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return handlerFn(ctx, ins, out)
+		return handlerFn(ctx, inputChannels, outputChannel)
 	})
 }
 
 func (conv *Conveyer) RegisterSeparator(
 	handlerFn func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
-	outputs []string,
+	outputChannels []string,
 ) {
-	in := conv.provideChannel(input)
+	inputChannel := conv.provideChannel(input)
 	outs := make([]chan string, 0, len(outputs))
-	for _, id := range outputs {
-		outs = append(outs, conv.provideChannel(id))
+	for _, outputId  := range outputs {
+		outs = append(outs, conv.provideChannel(outputId))
 	}
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return handlerFn(ctx, in, outs)
+		return handlerFn(ctx, inputChannel, outputChannels)
 	})
 }
 
