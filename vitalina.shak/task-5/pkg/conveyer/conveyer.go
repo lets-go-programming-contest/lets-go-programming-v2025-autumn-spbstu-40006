@@ -38,6 +38,7 @@ func (conv *Conveyer) provideChannel(channelName  string) chan string {
 	}
 	channel := make(chan string, conv.bufSize)
 	conv.channels[channelName ] = channel
+
 	return channel
 }
 
@@ -45,6 +46,7 @@ func (conv *Conveyer) get(channelName  string) (chan string, bool) {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
 	ch, ok := conv.channels[channelName ]
+
 	return ch, ok
 }
 
@@ -68,7 +70,7 @@ func (conv *Conveyer) RegisterMultiplexer(
 ) {
 	inputChannels := make([]chan string, 0, len(inputs))
 	for _, inputId := range inputs {
-		inputs = append(inputChannels, conv.provideChannel(inputId))
+		inputChannels  = append(inputChannels, conv.provideChannel(inputId))
 	}
 	outputChannel := conv.provideChannel(output)
 
@@ -116,6 +118,7 @@ func (conv *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
@@ -126,6 +129,7 @@ func (conv *Conveyer) Recv(output string) (string, error) {
 	}
 
 	data, ok := <-channel
+
 	if !ok {
 		return undefinedData, nil
 	}
