@@ -38,7 +38,7 @@ func (conv *Conveyer) provideChannel(channelName string) chan string {
 		return channel
 	}
 
-	newChannel  := make(chan string, conv.bufSize)
+	newChannel := make(chan string, conv.bufSize)
 	conv.channels[channelName] = newChannel
 
 	return newChannel
@@ -89,6 +89,7 @@ func (conv *Conveyer) RegisterSeparator(
 ) {
 	inputChannel := conv.provideChannel(input)
 	outputChannels := make([]chan string, 0, len(outputs))
+
 	for _, outputID := range outputs {
 		outputChannels = append(outputChannels, conv.provideChannel(outputID))
 	}
@@ -128,14 +129,14 @@ func (conv *Conveyer) Send(input string, data string) error {
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
-	channel, exists  := conv.get(output)
+	channel, exists := conv.get(output)
 	if !exists {
 		return "", ErrChanNotFound
 	}
 
-	data, isOpen  := <-channel
+	data, isOpen := <-channel
 
-	if !isOpen  {
+	if !isOpen {
 		return undefinedData, nil
 	}
 
