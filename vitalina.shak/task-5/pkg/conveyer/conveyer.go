@@ -67,8 +67,8 @@ func (conv *Conveyer) RegisterMultiplexer(
 	output string,
 ) {
 	inputChannels := make([]chan string, 0, len(inputs))
-	for _, id := range inputs {
-		ins = append(ins, conv.provideChannel(id))
+	for _, inputId := range inputs {
+		inputs = append(ins, conv.provideChannel(inputId))
 	}
 	outputChannel := conv.provideChannel(output)
 
@@ -80,10 +80,10 @@ func (conv *Conveyer) RegisterMultiplexer(
 func (conv *Conveyer) RegisterSeparator(
 	handlerFn func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
-	outputChannels []string,
+	outputs []string,
 ) {
 	inputChannel := conv.provideChannel(input)
-	outs := make([]chan string, 0, len(outputs))
+	outputChannels := make([]chan string, 0, len(outputs))
 	for _, outputId  := range outputs {
 		outs = append(outs, conv.provideChannel(outputId))
 	}
