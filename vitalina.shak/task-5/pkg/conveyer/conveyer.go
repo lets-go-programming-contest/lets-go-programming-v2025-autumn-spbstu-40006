@@ -33,21 +33,23 @@ func (conv *Conveyer) provideChannel(channelName string) chan string {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
 
-	if channel, ok := conv.channels[channelName]; ok {
+	channel, exists := conv.channels[channelName]
+	if exists {
 		return channel
 	}
-	channel := make(chan string, conv.bufSize)
-	conv.channels[channelName] = channel
 
-	return channel
+	newChannel  := make(chan string, conv.bufSize)
+	conv.channels[channelName] = newChannel
+
+	return newChannel
 }
 
 func (conv *Conveyer) get(channelName string) (chan string, bool) {
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
-	ch, ok := conv.channels[channelName]
+	channel, exists := conv.channels[channelName]
 
-	return ch, ok
+	return channel, exists
 }
 
 func (conv *Conveyer) RegisterDecorator(
@@ -69,9 +71,10 @@ func (conv *Conveyer) RegisterMultiplexer(
 	output string,
 ) {
 	inputChannels := make([]chan string, 0, len(inputs))
-	for _, inputId := range inputs {
-		inputChannels = append(inputChannels, conv.provideChannel(inputId))
+	for _, inputID := range inputs {
+		inputChannels = append(inputChannels, conv.provideChannel(inputID))
 	}
+
 	outputChannel := conv.provideChannel(output)
 
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
@@ -86,9 +89,10 @@ func (conv *Conveyer) RegisterSeparator(
 ) {
 	inputChannel := conv.provideChannel(input)
 	outputChannels := make([]chan string, 0, len(outputs))
-	for _, outputId := range outputs {
-		outputChannels = append(outputChannels, conv.provideChannel(outputId))
+	for _, outputID := range outputs {
+		outputChannels = append(outputChannels, conv.provideChannel(outputID))
 	}
+
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return handlerFn(ctx, inputChannel, outputChannels)
 	})
@@ -99,6 +103,7 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 
 	for _, handlerFunc := range conv.handlers {
 		handFunc := handlerFunc
+
 		group.Go(func() error {
 			return handFunc(groupCtx)
 		})
@@ -112,8 +117,8 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conv *Conveyer) Send(input string, data string) error {
-	channel, ok := conv.get(input)
-	if !ok {
+	channel, exists := conv.get(input)
+	if !exists {
 		return ErrChanNotFound
 	}
 
@@ -123,14 +128,14 @@ func (conv *Conveyer) Send(input string, data string) error {
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
-	channel, ok := conv.get(output)
-	if !ok {
+	channel, exists  := conv.get(output)
+	if !exists {
 		return "", ErrChanNotFound
 	}
 
-	data, ok := <-channel
+	data, isOpen  := <-channel
 
-	if !ok {
+	if !isOpen  {
 		return undefinedData, nil
 	}
 
