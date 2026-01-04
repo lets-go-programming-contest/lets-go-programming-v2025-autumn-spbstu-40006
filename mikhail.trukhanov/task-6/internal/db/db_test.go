@@ -11,11 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
-	dbMock, mock, err := sqlmock.New()
+type dbMock = sqlmock.Sqlmock
+
+func newMockDB(t *testing.T) (*sql.DB, dbMock) {
+	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	t.Cleanup(func() { dbMock.Close() })
-	return dbMock, mock
+	t.Cleanup(func() { db.Close() })
+
+	return db, mock
 }
 
 const queryNames = "SELECT name FROM users"
