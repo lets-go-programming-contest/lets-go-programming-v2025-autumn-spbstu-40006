@@ -21,6 +21,7 @@ func TestDBService_GetNames(t *testing.T) {
 		dbMock, mock, err := sqlmock.New()
 		require.NoError(t, err)
 		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).
