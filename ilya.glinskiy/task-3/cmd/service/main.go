@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/bloomkicks/task-3/internal/io"
 )
 
 type Config struct {
@@ -12,33 +15,50 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-type Input struct {
-}
-
 func main() {
-	var config Config
+	var (
+		input  io.Input
+		config Config
+		err    error
+	)
 
 	if len(os.Args) < 3 || os.Args[1] != "-config" {
-		fmt.Println("Config file must be passed in parameters")
+		fmt.Println("Config must be provided in arguments")
 
 		return
 	}
 
 	var configPath string = os.Args[2]
-
-	content, err := os.ReadFile(configPath)
+	err = io.ReadConfig(configPath, &config)
 	if err != nil {
-		fmt.Println("Couldn't open config file")
-
-		return
+		panic(err)
 	}
 
-	err = yaml.Unmarshal(content, &config)
+	err = io.ReadInput(config.InputFile, &input)
 	if err != nil {
-		fmt.Println("Something wrong I can feel it")
-
-		return
+		panic(err)
 	}
 
-	content, err = os.ReadFile(configPath)
+	formattedValutes := make([]io.JSONValute, len(input.Valutes))
+	for i, valute := range input.Valutes {
+		value, err := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
+		if err != nil {
+			panic("Couldn't read Valute property: Value")
+		}
+
+		formattedValutes[i] = io.JSONValute{
+			Value:    value,
+			NumCode:  valute.NumCode,
+			CharCode: valute.CharCode,
+		}
+	}
+
+	sort.Slice(formattedValutes, func(i int, j int) bool {
+		return formattedValutes[i].Value > formattedValutes[j].Value
+	})
+
+	err = io.WriteOutput(config.OutputFile, formattedValutes)
+	if err != nil {
+		panic(err)
+	}
 }
