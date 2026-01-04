@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"database/sql"
 	"regexp"
 	"testing"
 
@@ -11,16 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type dbMock = sqlmock.Sqlmock
-
-func newMockDB(t *testing.T) (*sql.DB, dbMock) {
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-	t.Cleanup(func() { db.Close() })
-
-	return db, mock
-}
-
 const queryNames = "SELECT name FROM users"
 
 func TestDBService_GetNames(t *testing.T) {
@@ -29,7 +18,9 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("success with data", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).
@@ -48,7 +39,10 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("success empty", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"})
@@ -65,7 +59,10 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("query error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(assert.AnError)
@@ -80,7 +77,10 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("scan error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -97,7 +97,10 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("rows error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).
@@ -120,7 +123,10 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Run("success with data", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).
@@ -139,7 +145,10 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Run("success empty", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"})
@@ -156,7 +165,10 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Run("query error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(assert.AnError)
@@ -171,7 +183,10 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Run("scan error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -188,7 +203,10 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Run("rows error", func(t *testing.T) {
 		t.Parallel()
 
-		dbMock, mock := newMockDB(t)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
 		service := db.New(dbMock)
 
 		rows := sqlmock.NewRows([]string{"name"}).
