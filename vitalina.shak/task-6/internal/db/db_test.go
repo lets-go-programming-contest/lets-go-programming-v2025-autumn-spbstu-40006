@@ -10,6 +10,17 @@ import (
 	internaldb "github.com/vitsh1/task-6/internal/db"
 )
 
+func TestDB_New(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	service := internaldb.New(mockDB)
+	require.Equal(t, mockDB, service.DB)
+}
+
 func TestDB_GetNames_OK(t *testing.T) {
 	t.Parallel()
 

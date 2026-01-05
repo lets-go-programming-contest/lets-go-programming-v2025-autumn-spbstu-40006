@@ -11,6 +11,16 @@ import (
 	internalwifi "github.com/vitsh1/task-6/internal/wifi"
 )
 
+func TestWiFi_New(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+
+	service := internalwifi.New(mockWiFi)
+
+	require.Equal(t, mockWiFi, service.WiFi)
+}
+
 func TestWiFi_GetAddresses_OK(t *testing.T) {
 	t.Parallel()
 
