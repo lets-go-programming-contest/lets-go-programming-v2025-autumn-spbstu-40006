@@ -11,6 +11,8 @@ import (
 	internalwifi "github.com/vitsh1/task-6/internal/wifi"
 )
 
+var errExpected = errors.New("error")
+
 func TestWiFi_New(t *testing.T) {
 	t.Parallel()
 
@@ -61,7 +63,7 @@ func TestWiFi_GetAddresses_Error(t *testing.T) {
 
 	mockWiFi := NewWiFiHandle(t)
 
-	expected := errors.New("error")
+	expected := errExpected
 	mockWiFi.On("Interfaces").Return(([]*wifi.Interface)(nil), expected).Once()
 
 	service := internalwifi.New(mockWiFi)
@@ -100,7 +102,7 @@ func TestWiFiService_GetNames_Error(t *testing.T) {
 
 	mockWiFi := NewWiFiHandle(t)
 
-	expected := errors.New("error")
+	expected := errExpected
 	mockWiFi.On("Interfaces").Return(([]*wifi.Interface)(nil), expected).Once()
 
 	service := internalwifi.New(mockWiFi)

@@ -10,6 +10,12 @@ import (
 	internaldb "github.com/vitsh1/task-6/internal/db"
 )
 
+var (
+	errQuery = errors.New("query error")
+	errScan  = errors.New("scan error")
+	errRows  = errors.New("rows error")
+)
+
 func TestDB_New(t *testing.T) {
 	t.Parallel()
 
@@ -72,7 +78,7 @@ func TestDB_GetNames_QueryError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	expected := errors.New("query error")
+	expected := errQuery
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnError(expected)
 
@@ -94,7 +100,7 @@ func TestDB_GetNames_ScanError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	scanErr := errors.New("scan error")
+	scanErr := errScan
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("vita")
@@ -120,7 +126,7 @@ func TestDB_GetNames_RowsError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	rowsErr := errors.New("rows error")
+	rowsErr := errRows
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("vita")
@@ -189,7 +195,7 @@ func TestDB_GetUniqueNames_QueryError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	expected := errors.New("query error")
+	expected := errQuery
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(expected)
 
@@ -211,7 +217,7 @@ func TestDB_GetUniqueNames_ScanError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	scanErr := errors.New("scan error")
+	scanErr := errScan
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("vita")
@@ -237,7 +243,7 @@ func TestDB_GetUniqueNames_RowsError(t *testing.T) {
 	require.NoError(t, err)
 	defer mockDB.Close()
 
-	rowsErr := errors.New("rows error")
+	rowsErr := errRows
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("vita")

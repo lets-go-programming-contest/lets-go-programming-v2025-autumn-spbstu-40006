@@ -1,6 +1,8 @@
 package wifi_test
 
 import (
+	"fmt"
+
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
@@ -11,7 +13,7 @@ type WiFiHandle struct {
 
 func NewWiFiHandle(t interface {
 	mock.TestingT
-	Cleanup(func())
+	Cleanup(f func())
 },
 ) *WiFiHandle {
 	m := &WiFiHandle{}
@@ -28,12 +30,21 @@ func (m *WiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 
 	var ifaces []*wifi.Interface
-	if first := args.Get(0); first != nil {
+
+	first := args.Get(0)
+
+	if first != nil {
 		casted, ok := first.([]*wifi.Interface)
 		if ok {
 			ifaces = casted
 		}
 	}
 
-	return ifaces, args.Error(1)
+	err := args.Error(1)
+
+	if err != nil {
+		return ifaces, fmt.Errorf("mock error: %w", err)
+	}
+
+	return ifaces, nil
 }
