@@ -1,10 +1,7 @@
 module github.com/bloomkicks/task-3
 
-go 1.24.0
+go 1.22.7
 
-toolchain go1.24.11
+require gopkg.in/yaml.v2 v2.4.0
 
-require (
-	golang.org/x/text v0.32.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
+require golang.org/x/text v0.22.0

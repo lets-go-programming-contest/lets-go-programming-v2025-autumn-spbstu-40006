@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
 type Input struct {
