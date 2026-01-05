@@ -32,6 +32,26 @@ func TestDB_GetNames_OK(t *testing.T) {
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestDB_GetNames_EmptyList(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+
+	service := internaldb.New(mockDB)
+
+	names, err := service.GetNames()
+	require.NoError(t, err)
+	require.Empty(t, names)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestDB_GetNames_QueryError(t *testing.T) {
 	t.Parallel()
 
@@ -63,7 +83,7 @@ func TestDB_GetNames_ScanError(t *testing.T) {
 
 	scanErr := errors.New("scan error")
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("ok")
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(123)
 
 	rows.RowError(0, scanErr)
 
@@ -85,7 +105,7 @@ func TestDB_GetNames_RowsError(t *testing.T) {
 
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	mockDB.Close()
+	defer mockDB.Close()
 
 	rowsErr := errors.New("rows error")
 
@@ -112,7 +132,7 @@ func TestDB_GetUniqueNames_OK(t *testing.T) {
 
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	mockDB.Close()
+	defer mockDB.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("vita").
@@ -129,12 +149,32 @@ func TestDB_GetUniqueNames_OK(t *testing.T) {
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestDB_GetUniqueNames_EmptyList(t *testing.T) {
+	t.Parallel()
+
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mockDB.Close()
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
+
+	service := internaldb.New(mockDB)
+
+	names, err := service.GetUniqueNames()
+	require.NoError(t, err)
+	require.Empty(t, names)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestDB_GetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
 
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	mockDB.Close()
+	defer mockDB.Close()
 
 	expected := errors.New("query error")
 
@@ -156,11 +196,11 @@ func TestDB_GetUniqueNames_ScanError(t *testing.T) {
 
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	mockDB.Close()
+	defer mockDB.Close()
 
 	scanErr := errors.New("scan error")
 
-	rows := sqlmock.NewRows([]string{"name"}).AddRow("ok")
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("123")
 	rows.RowError(0, scanErr)
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
@@ -176,12 +216,12 @@ func TestDB_GetUniqueNames_ScanError(t *testing.T) {
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestDB_GetUniqueNames_RowsErr(t *testing.T) {
+func TestDB_GetUniqueNames_RowsError(t *testing.T) {
 	t.Parallel()
 
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	mockDB.Close()
+	defer mockDB.Close()
 
 	rowsErr := errors.New("rows error")
 
