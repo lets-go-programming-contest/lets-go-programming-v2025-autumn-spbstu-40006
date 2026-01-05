@@ -12,7 +12,8 @@ type WiFiHandle struct {
 func NewWiFiHandle(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *WiFiHandle {
+},
+) *WiFiHandle {
 	m := &WiFiHandle{}
 	m.Mock.Test(t)
 
