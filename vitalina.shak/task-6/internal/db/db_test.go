@@ -19,6 +19,8 @@ func TestDB_New(t *testing.T) {
 
 	service := internaldb.New(mockDB)
 	require.Equal(t, mockDB, service.DB)
+
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestDB_GetNames_OK(t *testing.T) {
