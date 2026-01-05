@@ -43,6 +43,19 @@ func TestWiFi_GetAddresses_OK(t *testing.T) {
 	require.Equal(t, []net.HardwareAddr{addr1, addr2}, addrs)
 }
 
+func TestWiFi_GetAddresses_Empty(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := NewWiFiHandle(t)
+	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, nil).Once()
+
+	service := internalwifi.New(mockWiFi)
+
+	addrs, err := service.GetAddresses()
+	require.NoError(t, err)
+	require.Empty(t, addrs)
+}
+
 func TestWiFi_GetAddresses_Error(t *testing.T) {
 	t.Parallel()
 
