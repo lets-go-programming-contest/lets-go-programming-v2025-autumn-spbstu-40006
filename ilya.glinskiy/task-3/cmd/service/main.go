@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/bloomkicks/task-3/internal/io"
 )
@@ -33,25 +31,12 @@ func main() {
 		panic(err)
 	}
 
-	formattedValutes := make([]io.JSONValute, len(input.Valutes))
-	for index, valute := range input.Valutes {
-		value, err := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
-		if err != nil {
-			panic("couldn't read valute property: value")
-		}
-
-		formattedValutes[index] = io.JSONValute{
-			Value:    value,
-			NumCode:  valute.NumCode,
-			CharCode: valute.CharCode,
-		}
-	}
-
-	sort.Slice(formattedValutes, func(i int, j int) bool {
-		return formattedValutes[i].Value > formattedValutes[j].Value
+	sortedValutes := make([]io.JSONValute, len(input.Valutes))
+	sort.Slice(sortedValutes, func(i int, j int) bool {
+		return sortedValutes[i].Value > sortedValutes[j].Value
 	})
 
-	err = io.WriteOutput(config.OutputFile, formattedValutes)
+	err = io.WriteOutput(config.OutputFile, sortedValutes)
 	if err != nil {
 		panic(err)
 	}

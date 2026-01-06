@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 
 	"golang.org/x/text/encoding/charmap"
 )
 
 type Input struct {
-	XMLName xml.Name    `xml:"ValCurs"`
-	Valutes []XMLValute `xml:"Valute"`
+	XMLName xml.Name `xml:"ValCurs"`
+	Valutes []Valute `xml:"Valute"`
 }
 
-type XMLValute struct {
-	ID        string `xml:"ID,attr"`
-	NumCode   int    `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Name      string `xml:"Name"`
-	Nominal   string `xml:"Nominal"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
+type ValuteValue float64
+
+type Valute struct {
+	NumCode  int         `xml:"NumCode" json:"num_code"`
+	CharCode string      `xml:"CharCode" json:"char_code"`
+	Value    ValuteValue `xml:"Value" json:"value"`
 }
 
 func CharsetReader(charset string, input io.Reader) (io.Reader, error) {
@@ -31,6 +31,24 @@ func CharsetReader(charset string, input io.Reader) (io.Reader, error) {
 	default:
 		return input, nil
 	}
+}
+
+func (value *ValuteValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var str string
+
+	err := decoder.DecodeElement(&str, &start)
+	if err != nil {
+		return fmt.Errorf("couldn't decode element: %w", err)
+	}
+
+	val, err := strconv.ParseFloat(strings.Replace(str, ",", ".", 1), 64)
+	if err != nil {
+		return fmt.Errorf("couldn't parse float: %w", err)
+	}
+
+	*value = ValuteValue(val)
+
+	return nil
 }
 
 func ReadInput(path string, input *Input) (err error) {
