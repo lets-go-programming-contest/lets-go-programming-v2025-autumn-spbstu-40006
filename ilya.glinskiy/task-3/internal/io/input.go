@@ -19,18 +19,9 @@ type Input struct {
 type ValuteValue float64
 
 type Valute struct {
-	NumCode  int         `json:"num_code" xml:"NumCode"`
+	NumCode  int         `json:"num_code"  xml:"NumCode"`
 	CharCode string      `json:"char_code" xml:"CharCode"`
-	Value    ValuteValue `json:"value" xml:"Value"`
-}
-
-func CharsetReader(charset string, input io.Reader) (io.Reader, error) {
-	switch charset {
-	case "windows-1251":
-		return charmap.Windows1251.NewDecoder().Reader(input), nil
-	default:
-		return input, nil
-	}
+	Value    ValuteValue `json:"value"     xml:"Value"`
 }
 
 func (value *ValuteValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
@@ -47,6 +38,7 @@ func (value *ValuteValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElem
 	}
 
 	*value = ValuteValue(val)
+
 	return nil
 }
 
@@ -64,7 +56,14 @@ func ReadInput(path string, input *Input) (err error) {
 	}()
 
 	decoder := xml.NewDecoder(inputFile)
-	decoder.CharsetReader = CharsetReader
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch charset {
+		case "windows-1251":
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		default:
+			return input, nil
+		}
+	}
 
 	err = decoder.Decode(input)
 	if err != nil {

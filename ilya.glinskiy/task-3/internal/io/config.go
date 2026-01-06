@@ -15,7 +15,7 @@ type Config struct {
 func ReadConfig(path string, config *Config) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("couldn't open config file: %w", err)
+		return fmt.Errorf("couldn't open config file \"%s\": %w", path, err)
 	}
 
 	err = yaml.Unmarshal(content, config)

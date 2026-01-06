@@ -31,12 +31,11 @@ func main() {
 		panic(err)
 	}
 
-	sortedValutes := make([]io.JSONValute, len(input.Valutes))
-	sort.Slice(sortedValutes, func(i int, j int) bool {
+	sort.Slice(input.Valutes, func(i int, j int) bool {
 		return input.Valutes[i].Value > input.Valutes[j].Value
 	})
 
-	err = io.WriteOutput(config.OutputFile, sortedValutes)
+	err = io.WriteOutput(config.OutputFile, input.Valutes)
 	if err != nil {
 		panic(err)
 	}

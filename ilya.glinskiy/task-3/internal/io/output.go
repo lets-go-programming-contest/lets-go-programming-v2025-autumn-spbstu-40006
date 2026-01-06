@@ -7,13 +7,7 @@ import (
 	"path/filepath"
 )
 
-type JSONValute struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
-
-func WriteOutput(path string, output []JSONValute) error {
+func WriteOutput(path string, output []Valute) error {
 	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("couldn't create directory for output file: %w", err)
