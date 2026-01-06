@@ -33,7 +33,7 @@ func main() {
 
 	sortedValutes := make([]io.JSONValute, len(input.Valutes))
 	sort.Slice(sortedValutes, func(i int, j int) bool {
-		return sortedValutes[i].Value > sortedValutes[j].Value
+		return input.Valutes[i].Value > input.Valutes[j].Value
 	})
 
 	err = io.WriteOutput(config.OutputFile, sortedValutes)

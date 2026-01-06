@@ -19,9 +19,9 @@ type Input struct {
 type ValuteValue float64
 
 type Valute struct {
-	NumCode  int         `xml:"NumCode" json:"num_code"`
-	CharCode string      `xml:"CharCode" json:"char_code"`
-	Value    ValuteValue `xml:"Value" json:"value"`
+	NumCode  int         `json:"num_code" xml:"NumCode"`
+	CharCode string      `json:"char_code" xml:"CharCode"`
+	Value    ValuteValue `json:"value" xml:"Value"`
 }
 
 func CharsetReader(charset string, input io.Reader) (io.Reader, error) {
@@ -47,7 +47,6 @@ func (value *ValuteValue) UnmarshalXML(decoder *xml.Decoder, start xml.StartElem
 	}
 
 	*value = ValuteValue(val)
-
 	return nil
 }
 
@@ -72,5 +71,5 @@ func ReadInput(path string, input *Input) (err error) {
 		return fmt.Errorf("couldn't decode input file: %w", err)
 	}
 
-	return err
+	return
 }
