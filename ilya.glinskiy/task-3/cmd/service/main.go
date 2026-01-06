@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"flag"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,26 +9,21 @@ import (
 	"github.com/bloomkicks/task-3/internal/io"
 )
 
-type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
-}
-
 func main() {
 	var (
 		input  io.Input
-		config Config
+		config io.Config
 		err    error
 	)
 
-	if len(os.Args) < 3 || os.Args[1] != "-config" {
-		fmt.Println("Config must be provided in arguments")
+	configPath := flag.String("config", "", "config path")
+	flag.Parse()
 
-		return
+	if *configPath == "" {
+		panic("Config must be provided in arguments")
 	}
 
-	var configPath string = os.Args[2]
-	err = io.ReadConfig(configPath, &config)
+	err = io.ReadConfig(*configPath, &config)
 	if err != nil {
 		panic(err)
 	}
