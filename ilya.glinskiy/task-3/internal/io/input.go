@@ -2,7 +2,6 @@ package io
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -30,19 +29,20 @@ func CharsetReader(charset string, input io.Reader) (io.Reader, error) {
 	case "windows-1251":
 		return charmap.Windows1251.NewDecoder().Reader(input), nil
 	default:
-		return nil, errors.New("unknown charsets")
+		return input, nil
 	}
 }
 
-func ReadInput(path string, input interface{}) error {
+func ReadInput(path string, input *Input) (err error) {
 	inputFile, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("Couldn't open input file")
+		return fmt.Errorf("couldn't open input file: %w", err)
 	}
+
 	defer func() {
-		err = inputFile.Close()
-		if err != nil {
-			panic("Couldn't close input file")
+		closeErr := inputFile.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("couldn't close input file: %w", closeErr)
 		}
 	}()
 
@@ -51,8 +51,8 @@ func ReadInput(path string, input interface{}) error {
 
 	err = decoder.Decode(input)
 	if err != nil {
-		return fmt.Errorf("Couldn't read input file")
+		return fmt.Errorf("couldn't decode input file: %w", err)
 	}
 
-	return nil
+	return err
 }

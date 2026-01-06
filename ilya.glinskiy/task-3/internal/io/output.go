@@ -16,17 +16,17 @@ type JSONValute struct {
 func WriteOutput(path string, output []JSONValute) error {
 	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("Couldn't create directory for OutputFile")
+		return fmt.Errorf("couldn't create directory for output file: %w", err)
 	}
 
-	jsonData, err := json.MarshalIndent(output, "", "  ")
+	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("Couldn't marshal valutes into json")
+		return fmt.Errorf("couldn't create output file: %w", err)
 	}
 
-	err = os.WriteFile(path, jsonData, 0600)
+	err = json.NewEncoder(file).Encode(output)
 	if err != nil {
-		return fmt.Errorf("Couldn't write an output file")
+		return fmt.Errorf("couldn't encode json into output file: %w", err)
 	}
 
 	return nil

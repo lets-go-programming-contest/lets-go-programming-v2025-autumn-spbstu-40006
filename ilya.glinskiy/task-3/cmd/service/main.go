@@ -16,11 +16,11 @@ func main() {
 		err    error
 	)
 
-	configPath := flag.String("config", "", "config path")
+	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
 
 	if *configPath == "" {
-		panic("Config must be provided in arguments")
+		panic("couldn't find path to config file")
 	}
 
 	err = io.ReadConfig(*configPath, &config)
@@ -34,13 +34,13 @@ func main() {
 	}
 
 	formattedValutes := make([]io.JSONValute, len(input.Valutes))
-	for i, valute := range input.Valutes {
+	for index, valute := range input.Valutes {
 		value, err := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
 		if err != nil {
-			panic("Couldn't read Valute property: Value")
+			panic("couldn't read valute property: value")
 		}
 
-		formattedValutes[i] = io.JSONValute{
+		formattedValutes[index] = io.JSONValute{
 			Value:    value,
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,

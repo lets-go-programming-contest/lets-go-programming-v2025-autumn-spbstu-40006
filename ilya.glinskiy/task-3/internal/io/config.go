@@ -12,15 +12,15 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func ReadConfig(path string, config interface{}) error {
+func ReadConfig(path string, config *Config) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("Couldn't open config file")
+		return fmt.Errorf("couldn't open config file: %w", err)
 	}
 
 	err = yaml.Unmarshal(content, config)
 	if err != nil {
-		return fmt.Errorf("Couldn't read config file")
+		return fmt.Errorf("couldn't unmarshal config file: %w", err)
 	}
 
 	return nil
