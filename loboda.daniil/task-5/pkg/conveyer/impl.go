@@ -93,33 +93,63 @@ func (c *conveyerImpl) RegisterSeparator(handler SeparatorFunc, inputName string
 }
 
 func (c *conveyerImpl) Run(ctx context.Context) error {
-	c.mu.Lock()
-	if c.running {
-		c.mu.Unlock()
-
-		return ErrAlreadyRunning
+	workersCopy, err := c.beginRun()
+	if err != nil {
+		return err
 	}
-
-	c.running = true
-	workersCopy := append([]func(context.Context) error(nil), c.workers...)
-	c.mu.Unlock()
 
 	runCtx, cancelFunc := context.WithCancel(ctx)
 	defer cancelFunc()
 
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(len(workersCopy))
-
 	errorChan := make(chan error, 1)
 
-	for _, worker := range workersCopy {
+	var waitGroup sync.WaitGroup
+
+	c.launchWorkers(runCtx, workersCopy, &waitGroup, errorChan)
+
+	runErr := waitForStop(ctx, errorChan)
+
+	cancelFunc()
+	waitGroup.Wait()
+
+	channelsToClose := c.endRun()
+
+	for _, channel := range channelsToClose {
+		safeClose(channel)
+	}
+
+	return runErr
+}
+
+func (c *conveyerImpl) beginRun() ([]func(context.Context) error, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.running {
+		return nil, ErrAlreadyRunning
+	}
+
+	c.running = true
+	workersCopy := append([]func(context.Context) error(nil), c.workers...)
+
+	return workersCopy, nil
+}
+
+func (c *conveyerImpl) launchWorkers(
+	ctx context.Context,
+	workers []func(context.Context) error,
+	waitGroup *sync.WaitGroup,
+	errorChan chan<- error,
+) {
+	waitGroup.Add(len(workers))
+
+	for _, worker := range workers {
 		currentWorker := worker
 
 		workerFunc := func() {
 			defer waitGroup.Done()
 
-			err := currentWorker(runCtx)
+			err := currentWorker(ctx)
 			if err != nil {
 				select {
 				case errorChan <- err:
@@ -130,31 +160,29 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 
 		go workerFunc()
 	}
+}
 
-	var runErr error
-	select {
-	case <-ctx.Done():
-	case runErr = <-errorChan:
-	}
-
-	cancelFunc()
-	waitGroup.Wait()
-
+func (c *conveyerImpl) endRun() []chan string {
 	c.mu.Lock()
-	channelsCopy := make([]chan string, 0, len(c.channels))
+	defer c.mu.Unlock()
 
+	channelsCopy := make([]chan string, 0, len(c.channels))
 	for _, channel := range c.channels {
 		channelsCopy = append(channelsCopy, channel)
 	}
 
 	c.running = false
-	c.mu.Unlock()
 
-	for _, channel := range channelsCopy {
-		safeClose(channel)
+	return channelsCopy
+}
+
+func waitForStop(ctx context.Context, errorChan <-chan error) error {
+	select {
+	case <-ctx.Done():
+		return nil
+	case runErr := <-errorChan:
+		return runErr
 	}
-
-	return runErr
 }
 
 func (c *conveyerImpl) Send(inputName string, data string) error {

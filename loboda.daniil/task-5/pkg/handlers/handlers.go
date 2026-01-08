@@ -54,6 +54,7 @@ func SeparatorFunc(ctx context.Context, inputChan chan string, outputChans []cha
 
 	if len(outputChans) == 0 {
 		drainInput(ctx, inputChan)
+
 		return nil
 	}
 
