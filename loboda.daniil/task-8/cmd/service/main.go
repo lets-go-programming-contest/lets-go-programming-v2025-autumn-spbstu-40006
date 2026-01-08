@@ -12,6 +12,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
