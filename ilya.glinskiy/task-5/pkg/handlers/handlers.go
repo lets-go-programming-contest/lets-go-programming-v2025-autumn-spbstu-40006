@@ -3,18 +3,22 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync/atomic"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	const prefix = "decorated: "
-	const errorSubstring = "no decorator"
+	const (
+		prefix         = "decorated: "
+		errorSubstring = "no decorator"
+	)
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("decorator context error: %w", ctx.Err())
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -33,8 +37,9 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case output <- result:
+				continue
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("decorator output error: %w", ctx.Err())
 			}
 		}
 	}
@@ -50,18 +55,21 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("separator context error: %w", ctx.Err())
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			index := int(atomic.AddUint64(&counter, 1)-1) % len(outputs)
+			current := atomic.AddUint64(&counter, 1)
+			index := int((current - 1) % uint64(len(outputs)))
 
 			select {
 			case outputs[index] <- data:
+				continue
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("separator output error: %w", ctx.Err())
 			}
 		}
 	}
@@ -70,50 +78,74 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	const filterSubstring = "no multiplexer"
 
-	errChan := make(chan error, 1)
-	done := make(chan struct{})
+	processInput := func(inputChan chan string, stopChan <-chan struct{}) error {
+		for {
+			select {
+			case <-stopChan:
+				return nil
+			case <-ctx.Done():
+				return fmt.Errorf("multiplexer context error: %w", ctx.Err())
+			case data, ok := <-inputChan:
+				if !ok {
+					return nil
+				}
 
-	for i, input := range inputs {
-		go func(ch chan string, idx int) {
-			for {
+				if strings.Contains(data, filterSubstring) {
+					continue
+				}
+
 				select {
-				case <-done:
-					return
+				case output <- data:
+					continue
 				case <-ctx.Done():
-					select {
-					case errChan <- ctx.Err():
-					default:
-					}
-					return
-				case data, ok := <-ch:
-					if !ok {
-						return
-					}
-
-					if strings.Contains(data, filterSubstring) {
-						continue
-					}
-
-					select {
-					case output <- data:
-					case <-ctx.Done():
-						select {
-						case errChan <- ctx.Err():
-						default:
-						}
-						return
-					}
+					return fmt.Errorf("multiplexer output error: %w", ctx.Err())
+				case <-stopChan:
+					return nil
 				}
 			}
-		}(input, i)
+		}
 	}
 
-	select {
-	case err := <-errChan:
-		close(done)
-		return err
-	case <-ctx.Done():
-		close(done)
-		return ctx.Err()
+	stopChan := make(chan struct{})
+	errChan := make(chan error, len(inputs))
+
+	for _, inputChan := range inputs {
+		go func(ch chan string) {
+			errChan <- processInput(ch, stopChan)
+		}(inputChan)
 	}
+
+	var firstErr error
+	errCount := 0
+
+	for range inputs {
+		select {
+		case err := <-errChan:
+			errCount++
+
+			if err != nil && firstErr == nil {
+				firstErr = err
+				close(stopChan)
+			}
+
+			if errCount == len(inputs) {
+				if firstErr != nil {
+					return fmt.Errorf("multiplexer error: %w", firstErr)
+				}
+
+				return nil
+			}
+
+		case <-ctx.Done():
+			close(stopChan)
+
+			for i := errCount; i < len(inputs); i++ {
+				<-errChan
+			}
+
+			return fmt.Errorf("multiplexer cancelled: %w", ctx.Err())
+		}
+	}
+
+	return nil
 }
