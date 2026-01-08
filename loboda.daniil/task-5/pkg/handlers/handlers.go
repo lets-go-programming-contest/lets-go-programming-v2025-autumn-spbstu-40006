@@ -13,6 +13,8 @@ const (
 	prefix               = "decorated: "
 	noDecoratorSubstring = "no decorator"
 	noMultiplexerSubstr  = "no multiplexer"
+
+	mergedBufferMultiplier = 2
 )
 
 func PrefixDecoratorFunc(ctx context.Context, inputChan chan string, outputChan chan string) error {
@@ -51,7 +53,8 @@ func SeparatorFunc(ctx context.Context, inputChan chan string, outputChans []cha
 	defer closeAll(outputChans)
 
 	if len(outputChans) == 0 {
-		return drainInput(ctx, inputChan)
+		drainInput(ctx, inputChan)
+		return nil
 	}
 
 	index := 0
@@ -86,9 +89,10 @@ func MultiplexerFunc(ctx context.Context, inputChans []chan string, outputChan c
 		return nil
 	}
 
-	mergedChan := make(chan string, len(inputChans)*2)
+	mergedChan := make(chan string, len(inputChans)*mergedBufferMultiplier)
 
 	var waitGroup sync.WaitGroup
+
 	waitGroup.Add(len(inputChans))
 
 	for _, inputChan := range inputChans {
@@ -109,7 +113,9 @@ func MultiplexerFunc(ctx context.Context, inputChans []chan string, outputChan c
 
 	go closer()
 
-	return forwardMerged(ctx, mergedChan, outputChan)
+	forwardMerged(ctx, mergedChan, outputChan)
+
+	return nil
 }
 
 func forwardInput(ctx context.Context, inputChan <-chan string, mergedChan chan<- string) {
@@ -137,20 +143,20 @@ func forwardInput(ctx context.Context, inputChan <-chan string, mergedChan chan<
 	}
 }
 
-func forwardMerged(ctx context.Context, mergedChan <-chan string, outputChan chan<- string) error {
+func forwardMerged(ctx context.Context, mergedChan <-chan string, outputChan chan<- string) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 
 		case data, open := <-mergedChan:
 			if !open {
-				return nil
+				return
 			}
 
 			select {
 			case <-ctx.Done():
-				return nil
+				return
 
 			case outputChan <- data:
 			}
@@ -158,15 +164,15 @@ func forwardMerged(ctx context.Context, mergedChan <-chan string, outputChan cha
 	}
 }
 
-func drainInput(ctx context.Context, inputChan <-chan string) error {
+func drainInput(ctx context.Context, inputChan <-chan string) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 
 		case _, open := <-inputChan:
 			if !open {
-				return nil
+				return
 			}
 		}
 	}
