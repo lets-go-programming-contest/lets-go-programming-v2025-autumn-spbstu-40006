@@ -1,0 +1,5 @@
+with-expecter: true
+inpackage: true
+testonly: true
+filename: "mock_{{.InterfaceName | snakecase}}.go"
+dir: "{{.InterfaceDir}}"
