@@ -1,8 +1,6 @@
 module loboda.daniil/task-6
 
-go 1.23.0
-
-toolchain go1.24.11
+go 1.22
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
