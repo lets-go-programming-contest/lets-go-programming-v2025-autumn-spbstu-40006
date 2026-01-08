@@ -30,7 +30,6 @@ func TestWiFiService_GetAddresses_Success(t *testing.T) {
 
 	svc := wifisvc.New(m)
 	got, err := svc.GetAddresses()
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -76,7 +75,6 @@ func TestWiFiService_GetNames_Success(t *testing.T) {
 
 	svc := wifisvc.New(m)
 	got, err := svc.GetNames()
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
