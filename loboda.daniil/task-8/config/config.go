@@ -16,5 +16,6 @@ func Load() (Config, error) {
 	if err := yaml.Unmarshal(rawConfigYAML, &cfg); err != nil {
 		return Config{}, fmt.Errorf("parse embedded config yaml: %w", err)
 	}
+	
 	return cfg, nil
 }
