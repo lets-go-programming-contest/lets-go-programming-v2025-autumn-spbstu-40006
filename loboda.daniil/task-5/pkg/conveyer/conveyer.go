@@ -2,20 +2,24 @@ package conveyer
 
 import "context"
 
-type decoratorFunc func(ctx context.Context, input chan string, output chan string) error
-type multiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error
-type separatorFunc func(ctx context.Context, input chan string, outputs []chan string) error
+type DecoratorFunc func(ctx context.Context, inputChan chan string, outputChan chan string) error
+
+type MultiplexerFunc func(ctx context.Context, inputChans []chan string, outputChan chan string) error
+
+type SeparatorFunc func(ctx context.Context, inputChan chan string, outputChans []chan string) error
 
 type conveyer interface {
-	RegisterDecorator(fn decoratorFunc, input string, output string)
-	RegisterMultiplexer(fn multiplexerFunc, inputs []string, output string)
-	RegisterSeparator(fn separatorFunc, input string, outputs []string)
+	RegisterDecorator(handler DecoratorFunc, inputName string, outputName string)
+	RegisterMultiplexer(handler MultiplexerFunc, inputNames []string, outputName string)
+	RegisterSeparator(handler SeparatorFunc, inputName string, outputNames []string)
 
 	Run(ctx context.Context) error
-	Send(input string, data string) error
-	Recv(output string) (string, error)
+	Send(inputName string, data string) error
+	Recv(outputName string) (string, error)
 }
 
-func New(size int) conveyer {
-	return newImpl(size)
+func New(size int) *conveyerImpl {
+	return newConveyerImpl(size)
 }
+
+var _ conveyer = (*conveyerImpl)(nil)

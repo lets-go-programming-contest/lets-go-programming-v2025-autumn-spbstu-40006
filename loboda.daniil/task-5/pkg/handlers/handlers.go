@@ -7,130 +7,173 @@ import (
 	"sync"
 )
 
-var errCantBeDecorated = errors.New("can’t be decorated")
+var ErrCantBeDecorated = errors.New("can't be decorated (can’t be decorated)")
 
 const (
-	prefix              = "decorated: "
-	noDecoratorSubstr   = "no decorator"
-	noMultiplexerSubstr = "no multiplexer"
+	prefix               = "decorated: "
+	noDecoratorSubstring = "no decorator"
+	noMultiplexerSubstr  = "no multiplexer"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, inputChan chan string, outputChan chan string) error {
+	defer close(outputChan)
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
-			if !ok {
+
+		case data, open := <-inputChan:
+			if !open {
 				return nil
 			}
 
-			if strings.Contains(data, noDecoratorSubstr) {
-				return errCantBeDecorated
+			if strings.Contains(data, noDecoratorSubstring) {
+				return ErrCantBeDecorated
 			}
 
+			result := data
 			if !strings.HasPrefix(data, prefix) {
-				data = prefix + data
+				result = prefix + data
 			}
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- data:
+
+			case outputChan <- result:
 			}
 		}
 	}
 }
 
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	if len(outputs) == 0 {
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case _, ok := <-input:
-				if !ok {
-					return nil
-				}
-			}
-		}
+func SeparatorFunc(ctx context.Context, inputChan chan string, outputChans []chan string) error {
+	defer closeAll(outputChans)
+
+	if len(outputChans) == 0 {
+		return drainInput(ctx, inputChan)
 	}
 
-	i := 0
+	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
-			if !ok {
+
+		case data, open := <-inputChan:
+			if !open {
 				return nil
 			}
 
-			out := outputs[i%len(outputs)]
-			i++
+			currentOutput := outputChans[index%len(outputChans)]
+			index++
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case out <- data:
+
+			case currentOutput <- data:
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	if len(inputs) == 0 {
+func MultiplexerFunc(ctx context.Context, inputChans []chan string, outputChan chan string) error {
+	defer close(outputChan)
+
+	if len(inputChans) == 0 {
 		return nil
 	}
 
-	merged := make(chan string)
+	mergedChan := make(chan string, len(inputChans)*2)
 
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(inputChans))
 
-	for _, in := range inputs {
-		inputChan := in
-		go func() {
-			defer wg.Done()
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case data, ok := <-inputChan:
-					if !ok {
-						return
-					}
-					if strings.Contains(data, noMultiplexerSubstr) {
-						continue
-					}
-					select {
-					case <-ctx.Done():
-						return
-					case merged <- data:
-					}
-				}
-			}
-		}()
+	for _, inputChan := range inputChans {
+		currentInput := inputChan
+
+		forwarder := func() {
+			defer waitGroup.Done()
+			forwardInput(ctx, currentInput, mergedChan)
+		}
+
+		go forwarder()
 	}
 
-	go func() {
-		wg.Wait()
-		close(merged)
-	}()
+	closer := func() {
+		waitGroup.Wait()
+		close(mergedChan)
+	}
 
+	go closer()
+
+	return forwardMerged(ctx, mergedChan, outputChan)
+}
+
+func forwardInput(ctx context.Context, inputChan <-chan string, mergedChan chan<- string) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		case data, open := <-inputChan:
+			if !open {
+				return
+			}
+
+			if strings.Contains(data, noMultiplexerSubstr) {
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+
+			case mergedChan <- data:
+			}
+		}
+	}
+}
+
+func forwardMerged(ctx context.Context, mergedChan <-chan string, outputChan chan<- string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-merged:
-			if !ok {
+
+		case data, open := <-mergedChan:
+			if !open {
 				return nil
 			}
+
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- data:
+
+			case outputChan <- data:
 			}
 		}
+	}
+}
+
+func drainInput(ctx context.Context, inputChan <-chan string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case _, open := <-inputChan:
+			if !open {
+				return nil
+			}
+		}
+	}
+}
+
+func closeAll(chans []chan string) {
+	for _, channel := range chans {
+		close(channel)
 	}
 }
