@@ -264,3 +264,46 @@ func TestDBService_GetUniqueNames_RowsErr(t *testing.T) {
 		t.Fatalf("expectations: %v", err)
 	}
 }
+
+func TestDBService_GetUniqueNames_Dedup(t *testing.T) {
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock.New: %v", err)
+	}
+	defer dbConn.Close()
+
+	// Дубликат "alice" должен быть отброшен внутри логики UniqueNames.
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("alice").
+		AddRow("bob").
+		AddRow("alice")
+	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
+
+	svc := db.New(dbConn)
+
+	got, err := svc.GetUniqueNames()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Проверяем как множество (не завязываемся на порядок).
+	if len(got) != 2 {
+		t.Fatalf("expected 2 unique names, got %v", got)
+	}
+
+	set := map[string]bool{}
+	for _, v := range got {
+		set[v] = true
+	}
+
+	if !set["alice"] || !set["bob"] {
+		t.Fatalf("expected alice and bob, got %v", got)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("expectations: %v", err)
+	}
+}
+
