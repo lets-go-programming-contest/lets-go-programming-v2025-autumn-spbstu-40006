@@ -1,4 +1,4 @@
-module loboda.daniil/task8
+module loboda.daniil/task-8
 
 go 1.22.7
 
