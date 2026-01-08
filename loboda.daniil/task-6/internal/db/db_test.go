@@ -31,6 +31,7 @@ func TestDBService_GetNames_Success(t *testing.T) {
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	got, err := svc.GetNames()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -58,6 +59,7 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 	mock.ExpectQuery("SELECT name FROM users").WillReturnError(errBoom)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetNames()
 	if err == nil {
 		t.Fatalf("expected error")
@@ -85,11 +87,12 @@ func TestDBService_GetNames_ScanError(t *testing.T) {
 	}
 	defer dbConn.Close()
 
-	// type mismatch -> rows.Scan() error
+	// чтобы rows.Next() было true, но Scan упал -> кладём int вместо string
 	rows := sqlmock.NewRows([]string{"name"}).AddRow(123)
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetNames()
 	if err == nil {
 		t.Fatalf("expected error")
@@ -119,6 +122,7 @@ func TestDBService_GetNames_RowsErr(t *testing.T) {
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetNames()
 	if err == nil {
 		t.Fatalf("expected error")
@@ -152,6 +156,7 @@ func TestDBService_GetUniqueNames_Success(t *testing.T) {
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	got, err := svc.GetUniqueNames()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -179,6 +184,7 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(errBoom)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetUniqueNames()
 	if err == nil {
 		t.Fatalf("expected error")
@@ -210,6 +216,7 @@ func TestDBService_GetUniqueNames_ScanError(t *testing.T) {
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetUniqueNames()
 	if err == nil {
 		t.Fatalf("expected error")
@@ -239,6 +246,7 @@ func TestDBService_GetUniqueNames_RowsErr(t *testing.T) {
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
 	svc := db.New(dbConn)
+
 	_, err = svc.GetUniqueNames()
 	if err == nil {
 		t.Fatalf("expected error")
