@@ -11,6 +11,7 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "load config error: %v", err)
+
 		return
 	}
 
