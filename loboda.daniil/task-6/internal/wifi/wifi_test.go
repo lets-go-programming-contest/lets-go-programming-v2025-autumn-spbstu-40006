@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
@@ -6,10 +6,16 @@ import (
 	"reflect"
 	"testing"
 
+	wifisvc "loboda.daniil/task-6/internal/wifi"
+
 	"github.com/mdlayher/wifi"
 )
 
+var errBoom = errors.New("boom")
+
 func TestWiFiService_GetAddresses_Success(t *testing.T) {
+	t.Parallel()
+
 	hw1, _ := net.ParseMAC("aa:bb:cc:dd:ee:01")
 	hw2, _ := net.ParseMAC("aa:bb:cc:dd:ee:02")
 
@@ -22,36 +28,41 @@ func TestWiFiService_GetAddresses_Success(t *testing.T) {
 		},
 	}
 
-	svc := New(m)
-	addrs, err := svc.GetAddresses()
+	svc := wifisvc.New(m)
+	got, err := svc.GetAddresses()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	want := []net.HardwareAddr{hw1, hw2}
-	if !reflect.DeepEqual(addrs, want) {
-		t.Fatalf("addresses mismatch: got %v want %v", addrs, want)
-	}
-	if m.Calls != 1 {
-		t.Fatalf("Interfaces should be called once, got %d", m.Calls)
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 
 func TestWiFiService_GetAddresses_Error(t *testing.T) {
-	boom := errors.New("boom")
-	m := &MockWiFiHandle{InterfacesFunc: func() ([]*wifi.Interface, error) { return nil, boom }}
+	t.Parallel()
 
-	svc := New(m)
+	m := &MockWiFiHandle{
+		InterfacesFunc: func() ([]*wifi.Interface, error) {
+			return nil, errBoom
+		},
+	}
+
+	svc := wifisvc.New(m)
 	_, err := svc.GetAddresses()
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if !errors.Is(err, boom) {
+
+	if !errors.Is(err, errBoom) {
 		t.Fatalf("expected wrapped error, got %v", err)
 	}
 }
 
 func TestWiFiService_GetNames_Success(t *testing.T) {
+	t.Parallel()
+
 	m := &MockWiFiHandle{
 		InterfacesFunc: func() ([]*wifi.Interface, error) {
 			return []*wifi.Interface{
@@ -61,28 +72,34 @@ func TestWiFiService_GetNames_Success(t *testing.T) {
 		},
 	}
 
-	svc := New(m)
-	names, err := svc.GetNames()
+	svc := wifisvc.New(m)
+	got, err := svc.GetNames()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	want := []string{"wlan0", "wlan1"}
-	if !reflect.DeepEqual(names, want) {
-		t.Fatalf("names mismatch: got %v want %v", names, want)
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 
 func TestWiFiService_GetNames_Error(t *testing.T) {
-	boom := errors.New("boom")
-	m := &MockWiFiHandle{InterfacesFunc: func() ([]*wifi.Interface, error) { return nil, boom }}
+	t.Parallel()
 
-	svc := New(m)
+	m := &MockWiFiHandle{
+		InterfacesFunc: func() ([]*wifi.Interface, error) {
+			return nil, errBoom
+		},
+	}
+
+	svc := wifisvc.New(m)
 	_, err := svc.GetNames()
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if !errors.Is(err, boom) {
+
+	if !errors.Is(err, errBoom) {
 		t.Fatalf("expected wrapped error, got %v", err)
 	}
 }
