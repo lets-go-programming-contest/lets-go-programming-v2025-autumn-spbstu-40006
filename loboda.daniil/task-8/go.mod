@@ -1,4 +1,4 @@
-module loboda.daniil/task-8
+module github.com/Daniil-drom/task-8
 
 go 1.22.7
 

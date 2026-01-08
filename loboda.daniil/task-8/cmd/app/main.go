@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"loboda.daniil/task-8/config"
+	"github.com/Daniil-drom/task-8/config"
 )
 
 func main() {
